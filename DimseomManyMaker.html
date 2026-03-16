@@ -1630,6 +1630,24 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
             <label class="field-label">팀 캐치프레이즈</label>
             <input class="field-input" type="text" id="team-catch" value="팀 캐치프레이즈" oninput="update()">
           </div>
+          <div class="field-row">
+            <label class="field-label">팀명 텍스트 색</label>
+            <div class="color-row" style="margin-bottom:0;">
+              <div class="color-swatch-btn" id="team-name-color-swatch" style="background:#ffffff;">
+                <input type="color" id="team-name-color" value="#ffffff" oninput="updateTeamColor()">
+              </div>
+              <div class="color-label-info"><strong>팀명 색상</strong></div>
+            </div>
+          </div>
+          <div class="field-row">
+            <label class="field-label">캐치프레이즈 텍스트 색</label>
+            <div class="color-row" style="margin-bottom:0;">
+              <div class="color-swatch-btn" id="team-catch-color-swatch" style="background:#ffffff;">
+                <input type="color" id="team-catch-color" value="#ffffff" oninput="updateTeamColor()">
+              </div>
+              <div class="color-label-info"><strong>캐치프레이즈 색상</strong></div>
+            </div>
+          </div>
           <div class="field-row" style="margin-top:14px;">
             <label class="field-label">이미지 배경색</label>
             <div class="color-row" style="margin-bottom:0;">
@@ -2666,7 +2684,7 @@ function getStorageKey() {
 function collectData() {
   const data = { __playerCount: playerCount };
   const fields = [
-    'team-name','team-catch','header-color','img-bg-color',
+    'team-name','team-catch','team-name-color','team-catch-color','header-color','img-bg-color',
   ];
   CHARS.forEach(ch => {
     fields.push(
@@ -2703,6 +2721,7 @@ function applyData(data) {
     });
   });
   updateHeaderColor();
+  updateTeamColor();
   updateImgBgColor();
 }
 
@@ -2839,6 +2858,7 @@ function resetAll() {
 
   const defaults = {
     'team-name':'TEAM NAME', 'team-catch':'팀 캐치프레이즈',
+    'team-name-color':'#ffffff', 'team-catch-color':'#ffffff',
     'header-color':'#1E1C1A', 'img-bg-color':'#F2F1EF',
   };
   const charDefaults = {
@@ -2896,6 +2916,7 @@ function resetAll() {
     });
   });
   updateHeaderColor();
+  updateTeamColor();
   updateImgBgColor();
   if (currentFont !== 'noto') {
     applyFontFamily("'Noto Sans KR', sans-serif");
@@ -3067,6 +3088,23 @@ function updateHeaderColor() {
   if (header) header.style.background = color;
 }
 
+function updateTeamColor() {
+  const nameColor  = v('team-name-color')?.value;
+  const catchColor = v('team-catch-color')?.value;
+  if (nameColor) {
+    const nameSwatch = v('team-name-color-swatch');
+    if (nameSwatch) nameSwatch.style.background = nameColor;
+    const teamName = v('s-team-name');
+    if (teamName) teamName.style.color = nameColor;
+  }
+  if (catchColor) {
+    const catchSwatch = v('team-catch-color-swatch');
+    if (catchSwatch) catchSwatch.style.background = catchColor;
+    const teamCatch = v('s-team-catch');
+    if (teamCatch) teamCatch.style.color = catchColor;
+  }
+}
+
 function updateImgBgColor() {
   const input = v('img-bg-color');
   if (!input) return;
@@ -3088,6 +3126,7 @@ function initAll() {
     });
   });
   updateHeaderColor();
+  updateTeamColor();
   updateImgBgColor();
 
   // 이미지 wrap 클릭 바인딩 (이미 onclick으로 처리됨)
