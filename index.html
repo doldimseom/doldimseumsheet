@@ -756,33 +756,32 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 .color-label-info strong { display: block; font-size: 10px; font-weight: 700; color: var(--text); letter-spacing: 0.06em; }
 
 .chip-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 10px; }
-.chip-color-row { display: flex; gap: 6px; align-items: center; }
+.chip-color-row { display: flex; gap: 6px; margin-bottom: 6px; }
 .chip-color-swatch {
-  width: 26px; height: 26px; border-radius: 5px;
+  width: 28px; height: 28px;
+  border-radius: 7px;
   border: 1.5px solid rgba(0,0,0,0.12);
-  cursor: pointer; position: relative; overflow: hidden; flex-shrink: 0;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 .chip-color-swatch input[type=color] {
-  position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px);
+  position: absolute; inset: -4px;
+  width: calc(100% + 8px); height: calc(100% + 8px);
   opacity: 0; cursor: pointer;
 }
-.chip-label { font-size: 10px; font-weight: 700; color: var(--text); letter-spacing: 0.08em; }
 .chip-label-input {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: 0.08em;
-  background: transparent;
-  border: none;
-  border-bottom: 1px dashed var(--input-border);
-  border-radius: 0;
-  padding: 1px 2px;
-  width: 52px;
-  outline: none;
+  flex: 1;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
   font-family: 'Noto Sans KR', sans-serif;
-  transition: border-color 0.15s;
+  color: var(--text);
+  outline: none;
 }
-.chip-label-input:focus { border-bottom-color: #AAA; }
 
 /* ── 프리뷰 영역 ── */
 .preview-area {
@@ -2202,10 +2201,18 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
                 <button class="badge-text-btn dark-btn" id="a-badge-dark" onclick="setBadgeTextColor('a','dark')" title="배지 글자 검정"></button>
               </div>
             </div>
-            <div class="chip-grid">
-              <div class="chip-color-row"><div class="chip-color-swatch" style="background:#c3b4a7;"><input type="color" id="a-hair-color" value="#c3b4a7" oninput="updateChipColor('a','hair')"></div><span class="chip-label">HAIR</span></div>
-              <div class="chip-color-row"><div class="chip-color-swatch" style="background:#9b91f3;"><input type="color" id="a-eye-color" value="#9b91f3" oninput="updateChipColor('a','eye')"></div><span class="chip-label">EYE</span></div>
-              <div class="chip-color-row"><div class="chip-color-swatch" style="background:#c1c0b8;"><input type="color" id="a-etc-color" value="#c1c0b8" oninput="updateChipColor('a','etc')"></div><input class="chip-label-input" type="text" id="a-etc-label" value="EYE" oninput="updateChipLabel('a','etc',this.value)"></div>
+            <label class="field-label" style="margin-top:10px;display:block;">캐릭터 컬러칩</label>
+            <div class="chip-color-row">
+              <div class="chip-color-swatch" id="a-hair-swatch" style="background:#c3b4a7;" title="HAIR 색"><input type="color" id="a-hair-color" value="#c3b4a7" oninput="updateChipColor('a','hair')"></div>
+              <input class="chip-label-input" type="text" id="a-hair-label" value="HAIR" oninput="updateChipLabel('a','hair',this.value)" maxlength="6">
+            </div>
+            <div class="chip-color-row">
+              <div class="chip-color-swatch" id="a-eye-swatch" style="background:#9b91f3;" title="EYE 색"><input type="color" id="a-eye-color" value="#9b91f3" oninput="updateChipColor('a','eye')"></div>
+              <input class="chip-label-input" type="text" id="a-eye-label" value="EYE" oninput="updateChipLabel('a','eye',this.value)" maxlength="6">
+            </div>
+            <div class="chip-color-row">
+              <div class="chip-color-swatch" id="a-etc-swatch" style="background:#c1c0b8;" title="ETC 색"><input type="color" id="a-etc-color" value="#c1c0b8" oninput="updateChipColor('a','etc')"></div>
+              <input class="chip-label-input" type="text" id="a-etc-label" value="EYE" oninput="updateChipLabel('a','etc',this.value)" maxlength="6">
             </div>
           </div>
           <div class="char-label"><span class="char-label-badge">B</span>캐릭터 B</div>
@@ -2218,10 +2225,18 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
                 <button class="badge-text-btn dark-btn" id="b-badge-dark" onclick="setBadgeTextColor('b','dark')" title="배지 글자 검정"></button>
               </div>
             </div>
-            <div class="chip-grid">
-              <div class="chip-color-row"><div class="chip-color-swatch" style="background:#e5e8d3;"><input type="color" id="b-hair-color" value="#e5e8d3" oninput="updateChipColor('b','hair')"></div><span class="chip-label">HAIR</span></div>
-              <div class="chip-color-row"><div class="chip-color-swatch" style="background:#c1c0b8;"><input type="color" id="b-eye-color" value="#c1c0b8" oninput="updateChipColor('b','eye')"></div><span class="chip-label">EYE</span></div>
-              <div class="chip-color-row"><div class="chip-color-swatch" style="background:#9b91f3;"><input type="color" id="b-etc-color" value="#9b91f3" oninput="updateChipColor('b','etc')"></div><input class="chip-label-input" type="text" id="b-etc-label" value="EYE" oninput="updateChipLabel('b','etc',this.value)"></div>
+            <label class="field-label" style="margin-top:10px;display:block;">캐릭터 컬러칩</label>
+            <div class="chip-color-row">
+              <div class="chip-color-swatch" id="b-hair-swatch" style="background:#e5e8d3;" title="HAIR 색"><input type="color" id="b-hair-color" value="#e5e8d3" oninput="updateChipColor('b','hair')"></div>
+              <input class="chip-label-input" type="text" id="b-hair-label" value="HAIR" oninput="updateChipLabel('b','hair',this.value)" maxlength="6">
+            </div>
+            <div class="chip-color-row">
+              <div class="chip-color-swatch" id="b-eye-swatch" style="background:#c1c0b8;" title="EYE 색"><input type="color" id="b-eye-color" value="#c1c0b8" oninput="updateChipColor('b','eye')"></div>
+              <input class="chip-label-input" type="text" id="b-eye-label" value="EYE" oninput="updateChipLabel('b','eye',this.value)" maxlength="6">
+            </div>
+            <div class="chip-color-row">
+              <div class="chip-color-swatch" id="b-etc-swatch" style="background:#9b91f3;" title="ETC 색"><input type="color" id="b-etc-color" value="#9b91f3" oninput="updateChipColor('b','etc')"></div>
+              <input class="chip-label-input" type="text" id="b-etc-label" value="EYE" oninput="updateChipLabel('b','etc',this.value)" maxlength="6">
             </div>
           </div>
         </div>
@@ -3046,12 +3061,12 @@ function applyAccentColor(ch, color) {
 }
 
 function updateChipColor(ch, type) {
-  const color = v(ch + '-' + type + '-color').value;
-  // 편집 패널 스와치 업데이트
-  v(ch + '-' + type + '-color').parentElement.style.background = color;
-  // 시트 칩 업데이트
-  const chipId = 's-' + ch + '-' + type + '-chip';
-  v(chipId).style.background = color;
+  const color = v(ch + '-' + type + '-color')?.value;
+  if (!color) return;
+  const swatch = v(ch + '-' + type + '-swatch');
+  if (swatch) swatch.style.background = color;
+  const chip = v('s-' + ch + '-' + type + '-chip');
+  if (chip) chip.style.background = color;
 }
 
 // 태그 배경용: 채도 + 투명도 동시 낮춤
@@ -3263,6 +3278,7 @@ function deleteImg(key) {
 
   // 편집 모드 종료
   if (activeEditId === previewId) exitEditMode();
+  markDirty();
 
   // imgStore 초기화
   delete imgStore[previewId];
@@ -3336,7 +3352,7 @@ function bindWrapClick(previewId) {
 function loadImg(input, boxId, previewId) {
   const file = input.files[0];
   if (!file) return;
-  const reader = new FileReader();
+  markDirty();
   reader.onload = e => {
     const src = e.target.result;
     imgStore[previewId] = src;
@@ -3784,11 +3800,7 @@ window.addEventListener('DOMContentLoaded', () => {
   update();
   // 초기 컬러칩 색상 반영
   ['a','b'].forEach(ch => {
-    ['hair','eye','etc'].forEach(type => {
-      const color = v(ch + '-' + type + '-color').value;
-      v(ch + '-' + type + '-color').parentElement.style.background = color;
-      v('s-' + ch + '-' + type + '-chip').style.background = color;
-    });
+    ['hair','eye','etc'].forEach(type => updateChipColor(ch, type));
   });
   // 페어 컬러 초기화
   updatePairColor();
@@ -3796,10 +3808,12 @@ window.addEventListener('DOMContentLoaded', () => {
   updateHeaderColor();
   updateSheetBgColor();
   updateImgBgColor();
-  // ETC 칩 라벨 초기화
+  // 칩 라벨 초기화 (hair/eye/etc 모두)
   ['a','b'].forEach(ch => {
-    const labelEl = v(ch + '-etc-label');
-    if (labelEl) updateChipLabel(ch, 'etc', labelEl.value);
+    ['hair','eye','etc'].forEach(type => {
+      const labelEl = v(ch + '-' + type + '-label');
+      if (labelEl) updateChipLabel(ch, type, labelEl.value);
+    });
   });
   // 초기 스탯 이름 반영
   ['a','b'].forEach(ch => {
@@ -3940,6 +3954,24 @@ window.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.stat-name-input').forEach(el => {
     el.setAttribute('maxlength', '8');
   });
+
+  // 수정 감지 — 텍스트 입력 시 isDirty 플래그 설정
+  document.querySelectorAll('.content-panel input, .content-panel textarea').forEach(el => {
+    el.addEventListener('input', () => markDirty());
+  });
+
+  // 초기화 완료 후 dirty 플래그 리셋
+  setTimeout(() => { isDirty = false; }, 500);
+});
+
+// 수정 여부 추적
+let isDirty = false;
+function markDirty() { isDirty = true; }
+
+window.addEventListener('beforeunload', e => {
+  if (!isDirty) return;
+  e.preventDefault();
+  e.returnValue = '';
 });
 
 // ══════════════════════════════════════════
@@ -4031,8 +4063,8 @@ function collectData() {
     'b-appear-title','b-appear-main','b-appear-list',
     'b-core-title','b-core-main','b-core-list',
     'a-color','b-color',
-    'a-hair-color','a-eye-color','a-etc-color','a-etc-label',
-    'b-hair-color','b-eye-color','b-etc-color','b-etc-label',
+    'a-hair-color','a-eye-color','a-etc-color','a-hair-label','a-eye-label','a-etc-label',
+    'b-hair-color','b-eye-color','b-etc-color','b-hair-label','b-eye-label','b-etc-label',
     'a-stat-str-name','a-stat-agi-name','a-stat-int-name',
     'a-stat-str','a-stat-agi','a-stat-int',
     'b-stat-str-name','b-stat-agi-name','b-stat-int-name',
@@ -4071,9 +4103,9 @@ function applyData(data) {
     updateColor(ch);
     ['hair','eye','etc'].forEach(type => {
       updateChipColor(ch, type);
+      const labelEl = v(ch + '-' + type + '-label');
+      if (labelEl) updateChipLabel(ch, type, labelEl.value);
     });
-    const etcLabel = v(ch + '-etc-label');
-    if (etcLabel) updateChipLabel(ch, 'etc', etcLabel.value);
     ['str','agi','int'].forEach(stat => {
       const nameEl = v(ch + '-stat-' + stat + '-name');
       if (nameEl) updateStatName(ch, stat, nameEl.value);
@@ -4210,7 +4242,7 @@ function resetSlotAll() {
     localStorage.removeItem('dss_tour_seen');
   } catch(e) {}
   closeSlotModal();
-  renderSlotList();
+  location.reload();
 }
 
 function saveToSlot(i) {
@@ -4297,8 +4329,8 @@ function resetAll() {
     'b-core-title': '핵심 특징', 'b-core-main': '핵심 특징 한 줄 예시',
     'b-core-list': '핵심 특징 예시 1\n핵심 특징 예시 2\n핵심 특징 예시 3',
     'a-color': '#9481f3', 'b-color': '#cac307',
-    'a-hair-color': '#c3b4a7', 'a-eye-color': '#9b91f3', 'a-etc-color': '#c1c0b8', 'a-etc-label': 'EYE',
-    'b-hair-color': '#e5e8d3', 'b-eye-color': '#c1c0b8', 'b-etc-color': '#9b91f3', 'b-etc-label': 'EYE',
+    'a-hair-color': '#c3b4a7', 'a-eye-color': '#9b91f3', 'a-etc-color': '#c1c0b8', 'a-hair-label': 'HAIR', 'a-eye-label': 'EYE', 'a-etc-label': 'EYE',
+    'b-hair-color': '#e5e8d3', 'b-eye-color': '#c1c0b8', 'b-etc-color': '#9b91f3', 'b-hair-label': 'HAIR', 'b-eye-label': 'EYE', 'b-etc-label': 'EYE',
     'a-stat-str-name': '스탯1', 'a-stat-agi-name': '스탯2', 'a-stat-int-name': '스탯3',
     'a-stat-str': '75', 'a-stat-agi': '60', 'a-stat-int': '90',
     'b-stat-str-name': '스탯1', 'b-stat-agi-name': '스탯2', 'b-stat-int-name': '스탯3',
@@ -4340,9 +4372,11 @@ function resetAll() {
   update();
   ['a','b'].forEach(ch => {
     updateColor(ch);
-    ['hair','eye','etc'].forEach(type => updateChipColor(ch, type));
-    const etcLabel = v(ch + '-etc-label');
-    if (etcLabel) updateChipLabel(ch, 'etc', etcLabel.value);
+    ['hair','eye','etc'].forEach(type => {
+      updateChipColor(ch, type);
+      const labelEl = v(ch + '-' + type + '-label');
+      if (labelEl) updateChipLabel(ch, type, labelEl.value);
+    });
     ['str','agi','int'].forEach(stat => {
       const nameEl = v(ch + '-stat-' + stat + '-name');
       if (nameEl) updateStatName(ch, stat, nameEl.value);
@@ -4361,6 +4395,7 @@ function resetAll() {
     v('font-toggle-label').textContent = 'Noto';
     v('font-toggle-btn').style.color = '';
   }
+  isDirty = false;
 }
 
 // ══════════════════════════════════════════
@@ -4468,6 +4503,7 @@ function removeFromLibrary(libId) {
 
 // 시트에 스티커 배치 (라이브러리 썸네일 클릭 시)
 function placeSticker(src) {
+  markDirty();
   const sheet = document.getElementById('sheet');
   const sw = sheet.offsetWidth;
   const sh = sheet.offsetHeight;
@@ -4512,6 +4548,7 @@ function addTextSticker() {
   const input = document.getElementById('text-sticker-input');
   const text = input.value.trim();
   if (!text) { input.focus(); return; }
+  markDirty();
 
   const color = document.getElementById('text-sticker-color').value;
   const size  = selectedTextSize;
@@ -5445,7 +5482,7 @@ function matchMainImgHeight() {
   <button class="tour-close-btn" onclick="tourClose()" title="닫기">✕</button>
   <div class="tour-done-icon">✦</div>
   <div class="tour-done-title">PC · 크롬 사용 권장</div>
-  <div class="tour-done-desc" style="margin-bottom:20px;">이제 시트를 자유롭게 편집할 수 있습니다.<br>· <strong style="color:#2C2825;">?</strong> 버튼으로 도움말을 다시 볼 수 있습니다.<br>· <strong style="color:#2C2825;">🪨</strong> 버튼으로 다른 시트를 볼 수 있습니다.</div>
+  <div class="tour-done-desc" style="margin-bottom:20px;">이제 시트를 자유롭게 편집할 수 있습니다.<br>· <strong style="color:#2C2825;">?</strong> 버튼으로 도움말을 다시 볼 수 있습니다.<br>· <strong style="color:#2C2825;">🪨</strong> 버튼으로 다른 시트를 볼 수 있습니다.<br><br>⚠ 입력 중 영문이 한글로 변경되지 않을 경우. 브라우저 외부 영역을 클릭하거나 한글을 복사/붙여넣기하면 해결됩니다.</div>
   <button class="tour-done-btn" onclick="tourClose()">시작하기</button>
 </div>
 
@@ -5462,9 +5499,10 @@ function matchMainImgHeight() {
         <span class="hub-link-name">캐릭터시트 메이커</span>
         <span class="hub-link-badge">현재 페이지</span>
       </div>
-      <div class="hub-link-item dimmed">
-        <span class="hub-link-name">준비 중...</span>
-      </div>
+      <a class="hub-link-item" href="https://doldimseom.github.io/doldimseumsheet/DimseomManyMaker.html" target="_blank" style="text-decoration:none;">
+        <span class="hub-link-name">매니메이커</span>
+        <span class="hub-link-arrow">→</span>
+      </a>
     </div>
   </div>
 </div>
