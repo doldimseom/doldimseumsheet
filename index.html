@@ -3349,6 +3349,8 @@ function bindWrapClick(previewId) {
   });
 }
 
+const reader = new FileReader();
+
 function loadImg(input, boxId, previewId) {
   const file = input.files[0];
   if (!file) return;
