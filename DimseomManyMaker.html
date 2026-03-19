@@ -814,6 +814,40 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 .sticker-handle.delete { top: -8px; right: -8px; color: #6B5FD0; }
 .sticker-handle.resize { bottom: -8px; right: -8px; cursor: se-resize; color: rgba(155,145,243,0.8); }
 .sticker-handle.rotate { top: -8px; left: -8px; cursor: grab; color: rgba(155,145,243,0.8); }
+.sticker-handle.lock { bottom: -8px; left: -8px; cursor: pointer; font-size: 9px; }
+
+.sticker-order-btn {
+  flex: 1;
+  padding: 7px 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--input-border);
+  background: transparent;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s;
+}
+.sticker-order-btn:hover { background: var(--input-bg); }
+
+.sticker-align-icon-btn {
+  width: 28px;
+  height: 26px;
+  border-radius: 5px;
+  border: 1px solid var(--input-border);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  transition: background 0.12s;
+}
+.sticker-align-icon-btn:hover { background: var(--input-bg); }
 
 #sticker-edit-bar {
   display: none;
@@ -1944,6 +1978,52 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
           <!-- 이미지 라이브러리 그리드 -->
           <div class="sticker-library-grid" id="sticker-library-grid">
             <div class="sticker-library-empty">업로드한 이미지가 없어요</div>
+          </div>
+
+          <!-- 잠금 + 순서 변경 (단일 선택) -->
+          <div id="sticker-action-btns" style="display:none; gap:6px; margin-bottom:8px;">
+            <button id="sticker-lock-btn" class="sticker-order-btn" onclick="toggleStickerLock()" title="잠금">
+              <svg id="sticker-lock-icon" width="11" height="13" viewBox="0 0 11 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1" y="5.5" width="9" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M3 5.5V3.5C3 2.12 4.12 1 5.5 1C6.88 1 8 2.12 8 3.5V5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              잠금
+            </button>
+            <button class="sticker-order-btn" onclick="bringToFront(selectedStickerIds[0])">↑ 맨 앞으로</button>
+            <button class="sticker-order-btn" onclick="sendToBack(selectedStickerIds[0])">↓ 맨 뒤로</button>
+          </div>
+
+          <!-- 정렬 버튼 (다중 선택) -->
+          <div id="sticker-align-btns" style="display:none; flex-direction:column; gap:6px; margin-bottom:8px;">
+            <div style="font-size:9px; font-weight:700; letter-spacing:0.08em; color:var(--label-color); font-family:'Noto Sans KR',sans-serif;">정렬</div>
+            <div style="display:flex; gap:3px; align-items:center;">
+              <button class="sticker-align-icon-btn" onclick="alignStickers('left')" title="좌측 정렬">
+                <svg width="18" height="18" viewBox="0 0 100 100"><rect x="8" y="10" width="10" height="80" rx="2" fill="#6B6560"/><rect x="22" y="18" width="52" height="28" rx="4" fill="#6B6560"/><rect x="22" y="54" width="36" height="28" rx="4" fill="#6B6560"/></svg>
+              </button>
+              <button class="sticker-align-icon-btn" onclick="alignStickers('center-h')" title="가로 중앙 정렬">
+                <svg width="18" height="18" viewBox="0 0 100 100"><rect x="45" y="10" width="10" height="80" rx="2" fill="#6B6560"/><rect x="18" y="18" width="64" height="28" rx="4" fill="#6B6560"/><rect x="27" y="54" width="46" height="28" rx="4" fill="#6B6560"/></svg>
+              </button>
+              <button class="sticker-align-icon-btn" onclick="alignStickers('right')" title="우측 정렬">
+                <svg width="18" height="18" viewBox="0 0 100 100"><rect x="82" y="10" width="10" height="80" rx="2" fill="#6B6560"/><rect x="26" y="18" width="52" height="28" rx="4" fill="#6B6560"/><rect x="42" y="54" width="36" height="28" rx="4" fill="#6B6560"/></svg>
+              </button>
+              <div style="width:1px; height:22px; background:var(--panel-border); margin:0 1px;"></div>
+              <button class="sticker-align-icon-btn" onclick="alignStickers('top')" title="상단 정렬">
+                <svg width="18" height="18" viewBox="0 0 100 100"><rect x="10" y="8" width="80" height="10" rx="2" fill="#6B6560"/><rect x="18" y="22" width="28" height="52" rx="4" fill="#6B6560"/><rect x="54" y="22" width="28" height="36" rx="4" fill="#6B6560"/></svg>
+              </button>
+              <button class="sticker-align-icon-btn" onclick="alignStickers('center-v')" title="세로 중앙 정렬">
+                <svg width="18" height="18" viewBox="0 0 100 100"><rect x="10" y="45" width="80" height="10" rx="2" fill="#6B6560"/><rect x="18" y="18" width="28" height="64" rx="4" fill="#6B6560"/><rect x="54" y="27" width="28" height="46" rx="4" fill="#6B6560"/></svg>
+              </button>
+              <button class="sticker-align-icon-btn" onclick="alignStickers('bottom')" title="하단 정렬">
+                <svg width="18" height="18" viewBox="0 0 100 100"><rect x="10" y="82" width="80" height="10" rx="2" fill="#6B6560"/><rect x="18" y="26" width="28" height="52" rx="4" fill="#6B6560"/><rect x="54" y="42" width="28" height="36" rx="4" fill="#6B6560"/></svg>
+              </button>
+              <div style="width:1px; height:22px; background:var(--panel-border); margin:0 1px;"></div>
+              <button class="sticker-align-icon-btn" onclick="alignStickers('distribute-h')" title="가로 간격 균등">
+                <svg width="18" height="18" viewBox="0 0 100 100"><rect x="8" y="20" width="10" height="60" rx="2" fill="#6B6560"/><rect x="82" y="20" width="10" height="60" rx="2" fill="#6B6560"/><rect x="36" y="30" width="28" height="40" rx="4" fill="#6B6560"/></svg>
+              </button>
+              <button class="sticker-align-icon-btn" onclick="alignStickers('distribute-v')" title="세로 간격 균등">
+                <svg width="18" height="18" viewBox="0 0 100 100"><rect x="20" y="8" width="60" height="10" rx="2" fill="#6B6560"/><rect x="20" y="82" width="60" height="10" rx="2" fill="#6B6560"/><rect x="30" y="36" width="40" height="28" rx="4" fill="#6B6560"/></svg>
+              </button>
+            </div>
           </div>
 
           <!-- 전체 삭제 -->
@@ -3298,7 +3378,7 @@ function placeSticker(src) {
       id: ++stickerIdCounter, type:'img', content:src,
       x: Math.round(sw*0.1+Math.random()*sw*0.6),
       y: Math.round(sh*0.05+Math.random()*sh*0.4),
-      size: Math.max(80, initSize), rotate:0
+      size: Math.max(80, initSize), rotate:0, locked:false
     };
     stickers.push(sticker);
     renderSticker(sticker);
@@ -3325,7 +3405,7 @@ function addTextSticker() {
     id: ++stickerIdCounter, type:'text', content:text, color,
     x: Math.round(sw*0.15+Math.random()*sw*0.5),
     y: Math.round(sh*0.1+Math.random()*sh*0.4),
-    size, rotate:0
+    size, rotate:0, locked:false
   };
   stickers.push(sticker);
   renderSticker(sticker);
@@ -3363,7 +3443,7 @@ function placeTextSticker(item) {
     id:++stickerIdCounter, type:'text', content:item.content, color:item.color,
     x:Math.round(sw*0.15+Math.random()*sw*0.5),
     y:Math.round(sh*0.1+Math.random()*sh*0.4),
-    size:item.size, rotate:0
+    size:item.size, rotate:0, locked:false
   };
   stickers.push(sticker);
   renderSticker(sticker);
@@ -3416,6 +3496,7 @@ function bindStickerEvents(el, sticker) {
   let dragging = false, startX, startY, startPositions = [];
   el.addEventListener('mousedown', e => {
     if (!stickerEditMode) return;
+    if (sticker.locked) { selectSticker(sticker.id); return; }
     if (e.target.classList.contains('sticker-handle')) return;
     e.stopPropagation();
     if (e.shiftKey) { toggleStickerSelection(sticker.id); }
@@ -3450,12 +3531,28 @@ function updateStickerHandles(el, sticker) {
     delH.className='sticker-handle delete'; delH.textContent='\u2715';
     delH.addEventListener('mousedown', e => { e.stopPropagation(); removeSticker(sticker.id); });
     el.appendChild(delH);
-    const resH = document.createElement('div');
-    resH.className='sticker-handle resize'; resH.textContent='\u2921';
-    bindResizeHandle(resH, sticker); el.appendChild(resH);
-    const rotH = document.createElement('div');
-    rotH.className='sticker-handle rotate'; rotH.textContent='\u21bb';
-    bindRotateHandle(rotH, sticker, el); el.appendChild(rotH);
+
+    const lockH = document.createElement('div');
+    lockH.className = 'sticker-handle lock';
+    lockH.innerHTML = sticker.locked
+      ? `<svg width="9" height="11" viewBox="0 0 11 13" fill="none"><rect x="1" y="5.5" width="9" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M3 5.5V3.5C3 2.12 4.12 1 5.5 1C6.88 1 8 2.12 8 3.5V5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`
+      : `<svg width="9" height="11" viewBox="0 0 11 13" fill="none"><rect x="1" y="5.5" width="9" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M3 5.5V3.5C3 2.12 4.12 1 5.5 1C6.88 1 8 2.12 8 3.5V5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="2 2"/></svg>`;
+    lockH.title = sticker.locked ? '잠금 해제' : '잠금';
+    lockH.addEventListener('mousedown', e => {
+      e.stopPropagation();
+      sticker.locked = !sticker.locked;
+      renderSticker(sticker);
+    });
+    el.appendChild(lockH);
+
+    if (!sticker.locked) {
+      const resH = document.createElement('div');
+      resH.className='sticker-handle resize'; resH.textContent='\u2921';
+      bindResizeHandle(resH, sticker); el.appendChild(resH);
+      const rotH = document.createElement('div');
+      rotH.className='sticker-handle rotate'; rotH.textContent='\u21bb';
+      bindRotateHandle(rotH, sticker, el); el.appendChild(rotH);
+    }
   } else {
     const resH = document.createElement('div');
     resH.className='sticker-handle resize'; resH.textContent='\u2921';
@@ -3473,6 +3570,7 @@ function updateStickerHandles(el, sticker) {
 function bindResizeHandle(handle, sticker) {
   handle.addEventListener('mousedown', e=>{
     e.stopPropagation(); e.preventDefault();
+    if (sticker.locked) return;
     const startX=e.clientX, startSize=sticker.size;
     const onMove=e2=>{
       const ratio=Math.max(0.2,1+(e2.clientX-startX)/120);
@@ -3493,6 +3591,8 @@ function bindResizeHandle(handle, sticker) {
 function bindRotateHandle(handle, sticker, el) {
   handle.addEventListener('mousedown', e=>{
     e.stopPropagation(); e.preventDefault();
+    if (sticker.locked) return;
+    const el = document.getElementById('sticker-' + sticker.id);
     const rect=el.getBoundingClientRect();
     const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
     const startAngle=Math.atan2(e.clientY-cy,e.clientX-cx)*180/Math.PI;
@@ -3580,7 +3680,96 @@ function _refreshStickerSelection() {
     el.classList.toggle('selected',selectedStickerIds.includes(s.id));
     updateStickerHandles(el,s);
   });
+  const actionBtns = document.getElementById('sticker-action-btns');
+  const alignBtns  = document.getElementById('sticker-align-btns');
+  const lockBtn    = document.getElementById('sticker-lock-btn');
+  const isSingle = selectedStickerIds.length === 1;
+  const isMulti  = selectedStickerIds.length > 1;
+  if (actionBtns) actionBtns.style.display = isSingle ? 'flex' : 'none';
+  if (alignBtns)  alignBtns.style.display  = isMulti  ? 'flex' : 'none';
+  if (isSingle && lockBtn) {
+    const s = stickers.find(s => s.id === selectedStickerIds[0]);
+    if (s) {
+      const lockSvgLocked   = `<svg width="11" height="13" viewBox="0 0 11 13" fill="none"><rect x="1" y="5.5" width="9" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M3 5.5V3.5C3 2.12 4.12 1 5.5 1C6.88 1 8 2.12 8 3.5V5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+      const lockSvgUnlocked = `<svg width="11" height="13" viewBox="0 0 11 13" fill="none"><rect x="1" y="5.5" width="9" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M3 5.5V3.5C3 2.12 4.12 1 5.5 1C6.88 1 8 2.12 8 3.5V5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="2 2"/></svg>`;
+      lockBtn.innerHTML = s.locked ? lockSvgLocked + ' 잠금 해제' : lockSvgUnlocked + ' 잠금';
+    }
+  }
 }
+// ── 앞뒤 순서 변경 ──
+function bringToFront(id) {
+  const idx = stickers.findIndex(s => s.id === id);
+  if (idx === -1) return;
+  const [item] = stickers.splice(idx, 1);
+  stickers.push(item);
+  const layer = stickerLayer();
+  const el = document.getElementById('sticker-' + id);
+  if (el && layer) layer.appendChild(el);
+}
+function sendToBack(id) {
+  const idx = stickers.findIndex(s => s.id === id);
+  if (idx === -1) return;
+  const [item] = stickers.splice(idx, 1);
+  stickers.unshift(item);
+  const layer = stickerLayer();
+  const el = document.getElementById('sticker-' + id);
+  const firstSticker = layer.querySelector('.sticker-item');
+  if (el && layer && firstSticker) layer.insertBefore(el, firstSticker);
+}
+
+// ── 잠금 토글 ──
+function toggleStickerLock() {
+  if (selectedStickerIds.length !== 1) return;
+  const s = stickers.find(s => s.id === selectedStickerIds[0]);
+  if (!s) return;
+  s.locked = !s.locked;
+  renderSticker(s);
+  _refreshStickerSelection();
+}
+
+// ── 정렬 ──
+function alignStickers(type) {
+  const selected = stickers.filter(s => selectedStickerIds.includes(s.id));
+  if (selected.length < 2) return;
+  if (type === 'left') {
+    const minX = Math.min(...selected.map(s => s.x));
+    selected.forEach(s => s.x = minX);
+  } else if (type === 'right') {
+    const maxX = Math.max(...selected.map(s => { const el = document.getElementById('sticker-'+s.id); return s.x+(el?el.offsetWidth:0); }));
+    selected.forEach(s => { const el = document.getElementById('sticker-'+s.id); s.x = maxX-(el?el.offsetWidth:0); });
+  } else if (type === 'center-h') {
+    const minX = Math.min(...selected.map(s => s.x));
+    const maxX = Math.max(...selected.map(s => { const el = document.getElementById('sticker-'+s.id); return s.x+(el?el.offsetWidth:0); }));
+    const cx = (minX+maxX)/2;
+    selected.forEach(s => { const el = document.getElementById('sticker-'+s.id); s.x = cx-(el?el.offsetWidth/2:0); });
+  } else if (type === 'top') {
+    const minY = Math.min(...selected.map(s => s.y));
+    selected.forEach(s => s.y = minY);
+  } else if (type === 'bottom') {
+    const maxY = Math.max(...selected.map(s => { const el = document.getElementById('sticker-'+s.id); return s.y+(el?el.offsetHeight:0); }));
+    selected.forEach(s => { const el = document.getElementById('sticker-'+s.id); s.y = maxY-(el?el.offsetHeight:0); });
+  } else if (type === 'center-v') {
+    const minY = Math.min(...selected.map(s => s.y));
+    const maxY = Math.max(...selected.map(s => { const el = document.getElementById('sticker-'+s.id); return s.y+(el?el.offsetHeight:0); }));
+    const cy = (minY+maxY)/2;
+    selected.forEach(s => { const el = document.getElementById('sticker-'+s.id); s.y = cy-(el?el.offsetHeight/2:0); });
+  } else if (type === 'distribute-h') {
+    if (selected.length < 3) return;
+    selected.sort((a,b) => a.x-b.x);
+    const gap = (selected[selected.length-1].x - selected[0].x) / (selected.length-1);
+    selected.forEach((s,i) => { s.x = selected[0].x + gap*i; });
+  } else if (type === 'distribute-v') {
+    if (selected.length < 3) return;
+    selected.sort((a,b) => a.y-b.y);
+    const gap = (selected[selected.length-1].y - selected[0].y) / (selected.length-1);
+    selected.forEach((s,i) => { s.y = selected[0].y + gap*i; });
+  }
+  selected.forEach(s => {
+    const el = document.getElementById('sticker-'+s.id);
+    if (el) { el.style.left=s.x+'px'; el.style.top=s.y+'px'; }
+  });
+}
+
 function removeSticker(id) {
   stickers=stickers.filter(s=>s.id!==id);
   const el=document.getElementById('sticker-'+id);
@@ -3660,7 +3849,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sticker={
           id:++stickerIdCounter, type:'img', content:item.src,
           x:Math.round(dropX-initSize/2), y:Math.round(dropY-initSize/2),
-          size:initSize, rotate:0
+          size:initSize, rotate:0, locked:false
         };
         stickers.push(sticker); renderSticker(sticker);
         if(!stickerEditMode) toggleStickerEdit();
