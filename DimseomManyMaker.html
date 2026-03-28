@@ -1234,33 +1234,6 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   line-height: 1;
 }
 #hub-btn:hover { background: var(--panel-border); }
-#hub-modal-backdrop {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(10,9,8,0.45);
-  backdrop-filter: blur(2px);
-  align-items: center;
-  justify-content: center;
-}
-#hub-modal-backdrop.open { display: flex; }
-#hub-modal { background: #FAFAF9; border-radius: 16px; width: 300px; box-shadow: 0 8px 40px rgba(0,0,0,0.22); overflow: hidden; }
-#hub-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 14px; border-bottom: 1px solid var(--panel-border); }
-#hub-modal-title { font-size: 13px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 7px; font-family: 'Noto Sans KR', sans-serif; }
-#hub-modal-close { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--panel-border); background: transparent; color: var(--label-color); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.12s; }
-#hub-modal-close:hover { background: var(--panel-border); }
-#hub-modal-desc { padding: 14px 20px 4px; font-size: 11px; color: var(--text-dim); font-family: 'Noto Sans KR', sans-serif; line-height: 1.6; }
-#hub-modal-list { padding: 10px 14px 16px; display: flex; flex-direction: column; gap: 6px; }
-.hub-link-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--panel-border); background: #fff; text-decoration: none; transition: border-color 0.12s, background 0.12s; cursor: pointer; }
-.hub-link-item:hover { border-color: #BBB6B0; background: var(--input-bg); }
-.hub-link-item.current { border-color: #AFA9EC; background: #EEEDFE0A; cursor: default; }
-.hub-link-name { font-size: 12px; font-weight: 600; color: var(--text); font-family: 'Noto Sans KR', sans-serif; }
-.hub-link-item.current .hub-link-name { color: #534AB7; }
-.hub-link-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: #EEEDFE; color: #534AB7; letter-spacing: 0.04em; }
-.hub-link-arrow { font-size: 11px; color: var(--label-color); }
-.hub-link-item.dimmed { opacity: 0.45; cursor: default; }
-.hub-link-item.dimmed .hub-link-name { font-weight: 400; }
 
 #tour-trigger-btn {
   width: 26px; height: 26px;
@@ -4017,19 +3990,15 @@ window.addEventListener('resize',()=>{
 });
 
 // ══════════════════════════════════════════
-// HUB: 공방 팝업
 // ══════════════════════════════════════════
-function openHubModal() { document.getElementById('hub-modal-backdrop').classList.add('open'); }
-function closeHubModal() { document.getElementById('hub-modal-backdrop').classList.remove('open'); }
+// HUB: 공방 버튼
+// ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-  const backdrop=document.getElementById('hub-modal-backdrop');
-  if(backdrop) backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeHubModal();});
-
   const headerLeft=document.getElementById('app-header-left');
   if(headerLeft){
     const hubBtn=document.createElement('button');
     hubBtn.id='hub-btn'; hubBtn.title='돌딤섬 공방';
-    hubBtn.textContent='🪨'; hubBtn.onclick=openHubModal;
+    hubBtn.textContent='🪨'; hubBtn.onclick=()=>window.open('https://doldimseom.tistory.com/','_blank');
     headerLeft.appendChild(hubBtn);
     const tourBtn=document.createElement('button');
     tourBtn.id='tour-trigger-btn'; tourBtn.title='사용 가이드';
@@ -4072,33 +4041,6 @@ document.addEventListener('DOMContentLoaded', () => {
   <button class="tour-done-btn" onclick="tourClose()">시작하기</button>
 </div>
 
-<!-- 허브 팝업 모달 -->
-<div id="hub-modal-backdrop">
-  <div id="hub-modal">
-    <div id="hub-modal-header">
-      <div id="hub-modal-title">🪨 돌딤섬 공방</div>
-      <button id="hub-modal-close" onclick="closeHubModal()">✕</button>
-    </div>
-    <div id="hub-modal-desc">다른 시트 보기</div>
-    <div id="hub-modal-list">
-      <a class="hub-link-item" href="https://doldimseom.github.io/doldimseumsheet/index.html" target="_blank" style="text-decoration:none;">
-        <span class="hub-link-name">캐릭터시트 메이커 (2인)</span>
-        <span class="hub-link-arrow">→</span>
-      </a>
-      <div class="hub-link-item current">
-        <span class="hub-link-name">매니메이커 (1-4인)</span>
-        <span class="hub-link-badge">현재 페이지</span>
-      </div>
-      <a class="hub-link-item" href="https://doldimseom.github.io/doldimseumsheet/DimseomReceipt.html" target="_blank" style="text-decoration:none;">
-        <span class="hub-link-name">영수증 메이커 (2인)</span>
-        <span class="hub-link-arrow">→</span>
-      </a>
-    </div>
-  </div>
-</div>
-  
-<!-- html2canvas v1.4.1 | MIT License | https://html2canvas.hertzen.com -->
-<!-- Pretendard | SIL OFL 1.1 | https://github.com/orioncactus/pretendard -->
-  
+
 </body>
 </html>
