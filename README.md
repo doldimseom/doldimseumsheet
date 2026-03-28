@@ -3,18 +3,7 @@
 
 툴/프로그램 없이 간단하게 만드는 캐릭터 시트 모음집 사이트 템플릿입니다.
 
-https://doldimseom.github.io/doldimseumsheet/
-
-
-
-## 시트 목록
-
-| 시트 | 설명 | 링크 |
-|---|---|---|
-| 캐릭터시트 메이커 | 2인 캐릭터 정리틀 | [바로가기](https://doldimseom.github.io/doldimseumsheet/index.html) |
-| 매니메이커 | 1-4인 캐릭터 정리틀 | [바로가기](https://doldimseom.github.io/doldimseumsheet/DimseomManyMaker.html) |
-| 영수증 메이커 | 2인 영수증 페어틀 | [바로가기](https://doldimseom.github.io/doldimseumsheet/DimseomReceipt.html) |
-| 트레이너 카드 메이커 | 포켓몬 트레이너 카드 | 제작 중 |
+https://doldimseom.github.io/doldimseomsheet/
 
 
 ## 안내사항
