@@ -3,7 +3,7 @@
 
 툴/프로그램 없이 간단하게 만드는 캐릭터 시트 모음집 사이트 템플릿입니다.
 
-https://doldimseom.github.io/doldimseomsheet/
+https://doldimseom.github.io/doldimseumsheet/
 
 
 ## 안내사항
