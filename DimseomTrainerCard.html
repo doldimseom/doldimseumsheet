@@ -18,24 +18,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>돌딤섬 영수증 메이커</title>
+<title>돌딤섬 트레이너 카드 메이커</title>
 
 <!-- 파비콘 -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪨</text></svg>">
 
 <!-- OG 태그 -->
 <meta property="og:type"        content="website">
-<meta property="og:title"       content="돌딤섬 영수증 메이커">
-<meta property="og:description" content="캐릭터 정보를 입력하고 PNG로 저장하는 영수증 스타일 캐릭터시트 메이커입니다.">
-<meta property="og:image"       content="https://doldimseom.github.io/doldimseomsheet/og-receipt.png">
+<meta property="og:title"       content="돌딤섬 트레이너카드 메이커">
+<meta property="og:description" content="포켓몬 트레이너 정보를 입력하고 PNG로 저장하는 트레이너 카드 메이커입니다.">
+<meta property="og:image"       content="https://doldimseom.github.io/doldimseomsheet/og-trainercard.png">
 <meta name="twitter:card"       content="summary_large_image">
-<meta name="twitter:title"      content="돌딤섬 영수증 메이커">
-<meta name="twitter:description" content="캐릭터 정보를 입력하고 PNG로 저장하는 영수증 스타일 캐릭터시트 메이커입니다.">
-<meta name="twitter:image"      content="https://doldimseom.github.io/doldimseumsheet/og-receipt.png">
+<meta name="twitter:title"      content="돌딤섬 트레이너카드 메이커">
+<meta name="twitter:description" content="포켓몬 트레이너 정보를 입력하고 PNG로 저장하는 트레이너 카드 메이커입니다.">
+<meta name="twitter:image"      content="https://doldimseom.github.io/doldimseumsheet/og-trainercard.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Lekton:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<!-- 스프라이트 렌더링 모드 동적 전환용 -->
+<style id="tc-sprite-rendering">.tc-slot-sprite { image-rendering: auto; }</style>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Cinzel:wght@400;600;700&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
 /* Google Fonts는 <head> link 태그로 로드 (dom-to-image CORS 우회) */
 
@@ -65,13 +66,6 @@
   --sheet-text: #1E1C1A;
   --sheet-dim: #6B6560;
   --sheet-dimmer: #A09890;
-  /* 영수증 커스텀 컬러 */
-  --rc-title-color: #1a1410;
-  --rc-body-color: #1a1410;
-  --rc-sheet-bg: #FFFFFF;
-  --rc-sub-color: #6b5f50;
-  --rc-deco-color: #1a1410;
-  --rc-barcode-color: #1a1410;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -228,7 +222,8 @@ body {
   width: 100%;
   position: relative;
   overflow: hidden;
-  background: var(--img-bg, #F2F1EF);
+  border-radius: 10px;
+  background: var(--img-bg, #fafaf9);
   flex-shrink: 0;
   cursor: pointer;
 }
@@ -669,7 +664,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   color: rgba(255,255,255,0.85);
   font-size: 9px;
   font-family: 'Noto Sans KR', sans-serif;
-  padding: 9px 8px;
+  padding: 3px 8px;
   border-radius: 4px;
   white-space: nowrap;
   pointer-events: none;
@@ -802,109 +797,403 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 .preview-area::-webkit-scrollbar { width: 6px; height: 6px; }
 .preview-area::-webkit-scrollbar-thumb { background: #D8D4CF; border-radius: 3px; }
 
-/* ══════════════════════════════════════════
+/* ══════════════════════════════════════════════
    SHEET ZONE: CSS — 시트 스타일 수정 여기
-   시트 레이아웃, 카드, 텍스트 스타일,
-   컬러 변수(--sheet-*) 등
-══════════════════════════════════════════ */
+   트레이너 카드 전용 스타일
+══════════════════════════════════════════════ */
 
-/* ══════════════════════════════════════════
-   캐릭터 시트 (출력용) — 영수증
-══════════════════════════════════════════ */
+/* ── 트레이너 카드 (출력용) ── */
 #sheet {
-  width: 380px;
-  background: var(--rc-sheet-bg, #FFFFFF);
-  font-family: 'Special Elite', monospace;
-  color: var(--rc-body-color, #1a1410);
+  width: 840px;
+  height: 540px;
+  background: #FFFFFF;
+  border-radius: 20px;
+  font-family: 'Noto Sans KR', sans-serif;
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
-  border: none;
 }
 
-/* 기존 시트 구조 숨김 (JS 참조 ID 유지용) */
+/* ── 헤더 배너 ── */
+.tc-header {
+  height: 84px;
+  flex-shrink: 0;
+  position: relative;
+  background: transparent;
+}
+.tc-header-left {
+  position: absolute;
+  top: 0; left: 0;
+  width: 315px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 22px 0 28px;
+  gap: 10px;
+}
+.tc-header-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.tc-header-sub {
+  font-size: 10px;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.14em;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tc-header-id {
+  position: absolute;
+  top: 0; right: 22px;
+  height: 84px;
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 38px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.22);
+  letter-spacing: 0.14em;
+}
+
+/* ── 바디 (헤더 아래 전체) ── */
+.tc-body {
+  position: absolute;
+  left: 0; right: 0;
+  top: 84px;
+  bottom: 0;
+  display: flex;
+  background: #FFFFFF;
+}
+
+/* ── 왼쪽 패널 ── */
+.tc-left {
+  width: 258px;
+  flex-shrink: 0;
+  padding: 14px 20px 14px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  overflow: hidden;
+}
+
+/* 트레이너 이미지 */
+.tc-trainer-img-wrap {
+  width: 100%;
+  aspect-ratio: 1/1;
+  border-radius: 10px;
+  background: var(--img-bg, #fafaf9);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.tc-trainer-img-wrap img {
+  position: absolute;
+  transform-origin: center center;
+  display: block;
+  max-width: none;
+}
+.tc-trainer-img-wrap.img-loaded { cursor: crosshair; }
+.tc-img-placeholder {
+  font-size: 9px;
+  color: #BCBAB7;
+  letter-spacing: 0.1em;
+  pointer-events: none;
+  text-align: center;
+  line-height: 2;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 프로필 그리드 */
+.tc-profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.tc-profile-item {
+  padding: 5px 0;
+  border-bottom: 1px solid #E0DBD5;
+}
+.tc-profile-key {
+  font-size: 8px;
+  font-weight: 700;
+  color: #A09890;
+  margin-bottom: 1px;
+  font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.08em;
+}
+.tc-profile-val {
+  font-size: 10px;
+  font-weight: 500;
+  color: #1E1C1A;
+  font-family: 'Noto Sans KR', sans-serif;
+  white-space: normal;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* 태그 행 */
+.tc-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.tc-tag {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 0 7px 2px;
+  height: 16px;
+  line-height: 1;
+  border: 1px solid #C8C4BE;
+  background: transparent;
+  color: #6B6560;
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.04em;
+}
+
+/* 소개 텍스트 */
+.tc-bio {
+  font-size: 10px;
+  color: #6B6560;
+  line-height: 1.65;
+  font-family: 'Noto Sans KR', sans-serif;
+  white-space: pre-wrap;
+}
+
+/* ── 오른쪽 패널 ── */
+.tc-right {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 26px 22px 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ENTRY 섹션 헤더 */
+.tc-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 6px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #1E1C1A;
+  flex-shrink: 0;
+}
+.tc-section-num {
+  width: 14px; height: 14px;
+  background: #1E1C1A;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 7px; font-weight: 700; color: #fff;
+  font-family: 'Barlow Condensed', sans-serif;
+  flex-shrink: 0;
+  line-height: 1;
+  padding-bottom: 1px;
+}
+.tc-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: #1E1C1A;
+  letter-spacing: 0.22em;
+  font-family: 'Barlow Condensed', sans-serif;
+}
+
+/* 포켓몬 슬롯 그리드 */
+.tc-pokemon-grid {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.tc-pokemon-row {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.tc-pokemon-slot {
+  border-radius: 10px;
+  background-color: var(--entry-bg, #fafaf9);
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 4px 5px;
+  gap: 2px;
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  transition: background-color 0.15s;
+}
+.tc-slot-num {
+  position: absolute;
+  top: 7px; right: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #A09890;
+  font-family: 'Barlow Condensed', sans-serif;
+}
+.tc-slot-sprite {
+  width: 120px; height: 120px;
+  image-rendering: auto;
+  flex-shrink: 0;
+  object-fit: contain;
+  position: relative;
+  z-index: 1;
+}
+.tc-pokeball-deco {
+  z-index: 0;
+}
+.tc-slot-empty-icon {
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  color: #D0CDC8;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.tc-slot-name {
+  font-size: 9px;
+  font-weight: 700;
+  color: #1E1C1A;
+  text-align: center;
+  line-height: 1.2;
+  word-break: keep-all;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.tc-slot-types {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.tc-type-badge {
+  font-size: 7px;
+  font-weight: 700;
+  padding: 0 4px;
+  height: 12px;
+  line-height: 12px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Barlow Condensed', sans-serif;
+}
+.tc-type-노말   { background:#EDEAE6; color:#6B6560; }
+.tc-type-불꽃   { background:#FDE8DF; color:#A0442A; }
+.tc-type-물     { background:#DDE8F8; color:#2A5A9A; }
+.tc-type-풀     { background:#DDF0E4; color:#2A7A4A; }
+.tc-type-전기   { background:#FBF0D2; color:#8A6A10; }
+.tc-type-얼음   { background:#DDF0F8; color:#2A7A8A; }
+.tc-type-격투   { background:#F8E0DC; color:#9A3020; }
+.tc-type-독     { background:#F0DDF0; color:#7A3A8A; }
+.tc-type-땅     { background:#F5EDDB; color:#8A6030; }
+.tc-type-비행   { background:#E8E0F8; color:#5A48A0; }
+.tc-type-에스퍼 { background:#F5DDF0; color:#8A3A78; }
+.tc-type-벌레   { background:#E8F0D0; color:#608020; }
+.tc-type-바위   { background:#EDEAE0; color:#706840; }
+.tc-type-고스트 { background:#E0D8F0; color:#483880; }
+.tc-type-드래곤 { background:#DDD8F8; color:#3030A0; }
+.tc-type-악     { background:#E0DDD8; color:#483028; }
+.tc-type-강철   { background:#E0E4EC; color:#485878; }
+.tc-type-페어리 { background:#F8DDF0; color:#9A3870; }
+
+/* ── 세로 구분선 ── */
+.tc-divider {
+  display: none;
+}
+
+/* ── 마스터 필수 ID 유지용 — 화면에서 숨김 ── */
 .sheet-header { display: none !important; }
 .sheet-main   { display: none !important; }
+.side-card    { display: none !important; }
+.center-col   { display: none !important; }
 .pair-block   { display: none !important; }
-#center-imgs-split  { display: none !important; }
-#center-imgs-unified { display: none !important; }
 
-/* 영수증 내부 패딩 */
-.rc-inner { padding: 32px 28px 28px; }
-
-/* 상단 별 장식 */
-.rc-stars { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--rc-deco-color, #1a1410); }
-
-/* 타이틀 */
-.rc-title { text-align: center; margin-bottom: 6px; }
-.rc-title-main {
-  font-family: 'Special Elite', monospace;
-  font-size: 32px;
-  letter-spacing: 0.04em;
-  line-height: 1.3;
-  color: var(--rc-title-color, #1a1410);
+/* 스프라이트 모드 토글 */
+.sprite-mode-toggle {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
 }
-.rc-title-sub { font-size: 12px; letter-spacing: 0.16em; color: var(--rc-sub-color, #6b5f50); margin-top: 8px; }
-
-/* 구분선 */
-.rc-dash { border-top: 1px dashed #b0a898; margin: 12px 0; }
-
-/* 캐릭터 정보 */
-.rc-info { display: flex; justify-content: space-between; align-items: flex-start; font-size: 13px; margin-bottom: 6px; }
-.rc-info-left { line-height: 2.1; }
-.rc-info-right { text-align: right; line-height: 2.1; font-size: 12px; }
-
-/* 체크박스 */
-.rc-checkbox { border: 1.5px solid var(--rc-body-color, #1a1410); width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-left: 4px; }
-.rc-checkbox.checked::after { content: '✓'; font-size: 9px; display: block; text-align: center; line-height: 11px; color: var(--rc-body-color, #1a1410); }
-
-/* 테이블 헤더 */
-.rc-table-header {
-  border-top: 1px dashed #b0a898;
-  border-bottom: 1px dashed #b0a898;
-  display: grid;
-  grid-template-columns: 26px 1fr 32px 80px;
-  font-size: 11px; font-weight: 700; padding: 4px 0; letter-spacing: 0.05em; margin-top: 8px;
+.sprite-mode-btn {
+  flex: 1;
+  padding: 9px 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--panel-border);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text);
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  text-align: center;
+  transition: background 0.15s;
+}
+.sprite-mode-btn:hover { background: var(--input-bg); }
+.sprite-mode-btn.active {
+  background: var(--text);
+  color: #fff;
+  border-color: var(--text);
 }
 
-/* 이미지 영역 */
-.rc-img-wrap {
-  width: 100%; background: var(--img-bg, #F2F1EF);
-  display: flex; align-items: center; justify-content: center;
-  line-height: 0; position: relative; cursor: pointer; overflow: hidden; min-height: 280px;
-}
-.rc-img-wrap img { position: absolute; transform-origin: center center; display: block; max-width: none; }
-.rc-img-wrap.img-loaded { cursor: crosshair; }
-.rc-img-placeholder { font-size: 13px; color: #a09880; letter-spacing: 0.08em; line-height: normal; pointer-events: none; }
-
-/* 품목 행 */
-.rc-item-row { display: grid; grid-template-columns: 26px 1fr 32px 80px; font-size: 12px; padding: 4px 0; letter-spacing: 0.02em; align-items: center; }
-.rc-item-num  { color: #888; }
-.rc-item-qty  { text-align: center; }
-.rc-item-total { text-align: right; }
-
-/* Discount / TOTAL */
-.rc-discount { font-size: 14px; margin-bottom: 6px; margin-top: 16px; }
-.rc-total { font-family: 'Special Elite', monospace; font-size: 20px; margin-bottom: 12px; }
-
-/* Thank you */
-.rc-thankyou { text-align: center; margin: 14px 0 12px; }
-.rc-thankyou-main {
-  font-family: 'Special Elite', monospace; font-size: 18px; letter-spacing: 0.04em;
-  display: flex; justify-content: center; align-items: center; gap: 8px;
-  color: var(--rc-body-color, #1a1410);
+/* 도트 모드일 때 픽셀 렌더링 */
+#sheet.sprite-dot .tc-slot-sprite {
+  image-rendering: pixelated;
 }
 
-/* Date / 바코드 */
-.rc-date { font-size: 12px; color: var(--rc-body-color, #6b5f50); margin-bottom: 8px; letter-spacing: 0.04em; }
-.rc-barcode { text-align: center; margin-bottom: 6px; color: var(--rc-barcode-color, #1a1410); }
-.rc-barcode svg rect { fill: currentColor; }
-
-/* 통화 선택 동그라미 */
-#s-rc-currency { position: relative; }
-#s-rc-currency span { display: inline-block; padding: 0px 4px; border-radius: 50%; border: 1.2px solid transparent; }
-#s-rc-currency span.rc-cur-selected {
-  border: 1.2px solid var(--rc-body-color, #1a1410);
+/* 포켓몬 검색 자동완성 드롭다운 */
+.poke-search-wrap {
+  position: relative;
+}
+.poke-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0; right: 0;
+  background: #fff;
+  border: 1px solid var(--input-border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  max-height: 160px;
+  overflow-y: auto;
+  z-index: 500;
+  display: none;
+}
+.poke-dropdown.open { display: block; }
+.poke-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.poke-dropdown-item:hover { background: var(--input-bg); }
+.poke-dropdown-item img {
+  width: 28px; height: 28px;
+  image-rendering: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.poke-dropdown-num {
+  font-size: 9px;
+  color: var(--label-color);
+  font-family: 'Cinzel', serif;
+  flex-shrink: 0;
 }
 
 /* ══════════════════════════════════════════
@@ -1001,6 +1290,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 #sticker-edit-bar-inner > span { position: relative; z-index: 1; }
 
 /* 스티커 드래그 앤 드롭 */
+
 .sticker-thumb-item.dragging { opacity: 0.45; border-color: #AAA; }
 #sheet.sticker-drop-over::after {
   content: '';
@@ -1446,6 +1736,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   white-space: pre-wrap;
 }
 
+
 /* ══════════════════════════════════════════
    TOUR: CSS
 ══════════════════════════════════════════ */
@@ -1704,7 +1995,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
         <path d="M7 1L2 6L7 11" stroke="#9B9189" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
-    <div class="app-title">RECEIPT MAKER</div>
+    <div class="app-title">TRAINER CARD MAKER</div>
   </div>
   <div id="app-header-right" style="display:flex; align-items:center; gap:8px;">
     <button class="save-btn" onclick="saveAsPNG()">
@@ -1728,27 +2019,29 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 
     <!-- 아이콘 네비 -->
     <nav class="side-nav">
-      <button class="side-nav-btn active" onclick="switchSection('name')" title="헤더">
-        <span class="nav-icon">H</span>
-        <span class="nav-label">헤더</span>
+      <button class="side-nav-btn active" onclick="switchSection('name')" title="트레이너">
+        <span class="nav-icon">T</span>
+        <span class="nav-label">트레이너</span>
       </button>
-      <button class="side-nav-btn" onclick="switchSection('item')" title="품목">
-        <span class="nav-icon">IT</span>
-        <span class="nav-label">품목</span>
-      </button>
-      <button class="side-nav-btn" onclick="switchSection('footer')" title="푸터">
-        <span class="nav-icon">F</span>
-        <span class="nav-label">푸터</span>
-      </button>
-      <div class="side-nav-divider"></div>
-      <button class="side-nav-btn" onclick="switchSection('color')" title="컬러">
-        <span class="nav-icon">C</span>
-        <span class="nav-label">컬러</span>
+      <button class="side-nav-btn" onclick="switchSection('pokemon')" title="포켓몬">
+        <span class="nav-icon" style="display:flex;align-items:center;justify-content:center;">
+          <svg width="13" height="13" viewBox="0 0 100 100">
+            <path d="M2.2,46 A48,48 0 0,1 97.8,46 L71.6,46 A22,22 0 0,0 28.4,46 Z" fill="currentColor"/>
+            <path d="M2.2,54 A48,48 0 0,0 97.8,54 L71.6,54 A22,22 0 0,1 28.4,54 Z" fill="currentColor"/>
+            <circle cx="50" cy="50" r="10" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="nav-label">포켓몬</span>
       </button>
       <div class="side-nav-divider"></div>
       <button class="side-nav-btn" onclick="switchSection('image')" title="이미지">
         <span class="nav-icon">I</span>
         <span class="nav-label">이미지</span>
+      </button>
+      <div class="side-nav-divider"></div>
+      <button class="side-nav-btn" onclick="switchSection('color')" title="컬러">
+        <span class="nav-icon">C</span>
+        <span class="nav-label">컬러</span>
       </button>
       <div class="side-nav-divider"></div>
       <button class="side-nav-btn" onclick="switchSection('sticker')" title="스티커">
@@ -1763,9 +2056,9 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
           <span class="nav-icon" style="font-size:9px; letter-spacing:0;">⊞</span>
           <span class="nav-label" id="img-mode-label">분리</span>
         </button>
-        <button class="side-nav-icon-btn" id="font-toggle-btn" onclick="toggleFont()" title="폰트 전환 (Special Elite ↔ Lekton)">
+        <button class="side-nav-icon-btn" id="font-toggle-btn" onclick="toggleFont()" title="폰트 전환 (Noto Sans KR ↔ Pretendard)">
           <span class="nav-icon" style="font-size:9px; letter-spacing:0;">가A</span>
-          <span class="nav-label" id="font-toggle-label">SE</span>
+          <span class="nav-label" id="font-toggle-label">Noto</span>
         </button>
         <button class="side-nav-icon-btn" onclick="openSlotModal()" title="저장/불러오기">
           <span class="nav-icon">↓↑</span>
@@ -1788,245 +2081,183 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
            (update() 함수와 collectData() 함수도 함께 수정)
       ══════════════════════════════════════════ -->
 
-      <!-- 헤더 -->
+      <!-- ══════════════════════════════════════════
+           SHEET ZONE: HTML — 트레이너 카드 편집 패널
+      ══════════════════════════════════════════ -->
+
+      <!-- 트레이너 정보 -->
       <div class="section-panel active" id="sec-name">
         <div class="section-panel-header">
-          <div class="section-panel-title"><span class="section-panel-badge">H</span>헤더</div>
-          <div class="section-panel-sub">HEADER</div>
+          <div class="section-panel-title"><span class="section-panel-badge">T</span>트레이너</div>
+          <div class="section-panel-sub">TRAINER INFO</div>
         </div>
         <div class="section-panel-body">
 
           <div class="field-row">
-            <label class="field-label">부제 문구</label>
-            <input class="field-input" type="text" id="rc-subtitle-input" value="I HAVE A KINDA COOL DAY" oninput="update()">
-          </div>
-
-          <div class="char-label" style="margin-top:8px;"><span class="char-label-badge">C</span>캐릭터</div>
-          <div class="field-row">
-            <label class="field-label">캐릭터 A 이름</label>
-            <input class="field-input" type="text" id="rc-char-a-input" value="" placeholder="Char A 이름" oninput="update()">
+            <label class="field-label">이름 (한글)</label>
+            <input class="field-input" type="text" id="tc-name-input" value="트레이너명" oninput="update()">
           </div>
           <div class="field-row">
-            <label class="field-label">캐릭터 B 이름</label>
-            <input class="field-input" type="text" id="rc-char-b-input" value="" placeholder="Char B 이름" oninput="update()">
-          </div>
-
-          <div class="char-label" style="margin-top:8px;"><span class="char-label-badge">+</span>기타</div>
-          <div class="field-row">
-            <label class="field-label">체크리스트 1</label>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <input class="field-input" type="text" id="rc-relation-input" value="1st Meet" placeholder="예: 1st Meet" oninput="update()" style="flex:1;">
-              <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--label-color);cursor:pointer;white-space:nowrap;">
-                <input type="checkbox" id="rc-check-relation" onchange="update()"> 체크
-              </label>
-            </div>
+            <label class="field-label">이름 (영문)</label>
+            <input class="field-input" type="text" id="tc-sub-input" value="TRAINER NAME" oninput="update()">
           </div>
           <div class="field-row">
-            <label class="field-label">체크리스트 2</label>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <input class="field-input" type="text" id="rc-coupon-input" value="Using Coupon" placeholder="예: Using Coupon" oninput="update()" style="flex:1;">
-              <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--label-color);cursor:pointer;white-space:nowrap;">
-                <input type="checkbox" id="rc-check-coupon" onchange="update()"> 체크
-              </label>
-            </div>
+            <label class="field-label">ID No.</label>
+            <input class="field-input" type="text" id="tc-id-input" value="00001" oninput="update()">
           </div>
           <div class="field-row">
-            <label class="field-label">통화 선택</label>
-            <div style="display:flex; flex-direction:column; gap:6px; margin-top:2px;">
-              <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text);cursor:pointer;">
-                <input type="radio" name="rc-currency-radio" id="rc-radio-krw" value="KRW" onchange="update()"> KRW
-              </label>
-              <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text);cursor:pointer;">
-                <input type="radio" name="rc-currency-radio" id="rc-radio-usd" value="USD" onchange="update()" checked> USD
-              </label>
-              <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text);cursor:pointer;">
-                <input type="radio" name="rc-currency-radio" id="rc-radio-etc" value="ETC" onchange="update()">
-                <input class="field-input" type="text" id="rc-etc-input" value="ETC" placeholder="직접 입력" maxlength="6"
-                  style="width:80px;padding:3px 7px;font-size:12px;" oninput="document.getElementById('rc-radio-etc').checked=true; update()">
-              </label>
-            </div>
+            <label class="field-label">직업</label>
+            <input class="field-input" type="text" id="tc-job-input" value="직업" oninput="update()">
+          </div>
+          <div class="field-row">
+            <label class="field-label">출신지</span></label>
+            <input class="field-input" type="text" id="tc-origin-input" value="신오지방" oninput="update()">
+          </div>
+          <div class="field-row">
+            <label class="field-label">태그 <span style="font-size:9px;color:var(--label-color);">(쉼표로 구분)</span></label>
+            <input class="field-input" type="text" id="tc-tags-input" value="태그1, 태그2, 태그3" oninput="update()">
+          </div>
+          <div class="field-row">
+            <label class="field-label">소개</label>
+            <textarea class="field-input" id="tc-bio-input" oninput="update()">간단한 캐릭터 소개</textarea>
+          </div>
+          <div class="field-row">
+            <label class="field-label">엔트리 항목</label>
+            <input class="field-input" type="text" id="tc-entry-title-input" value="ENTRY" oninput="update()">
           </div>
 
         </div>
       </div>
 
-      <!-- 품목 -->
-      <div class="section-panel" id="sec-item">
+      <!-- 포켓몬 엔트리 -->
+      <div class="section-panel" id="sec-pokemon">
         <div class="section-panel-header">
-          <div class="section-panel-title"><span class="section-panel-badge">IT</span>품목</div>
-          <div class="section-panel-sub">ITEM</div>
+          <div class="section-panel-title"><span class="section-panel-badge" style="display:flex;align-items:center;justify-content:center;"><svg width="10" height="10" viewBox="0 0 100 100"><path d="M2.2,46 A48,48 0 0,1 97.8,46 L71.6,46 A22,22 0 0,0 28.4,46 Z" fill="white"/><path d="M2.2,54 A48,48 0 0,0 97.8,54 L71.6,54 A22,22 0 0,1 28.4,54 Z" fill="white"/><circle cx="50" cy="50" r="10" fill="white"/></svg></span>포켓몬 엔트리</div>
+          <div class="section-panel-sub">POKÉMON ENTRY</div>
         </div>
         <div class="section-panel-body">
-
-          <div style="display:grid;grid-template-columns:1fr 48px 72px 24px;gap:4px;margin-bottom:4px;">
-            <span style="font-size:9px;color:var(--label-color);font-weight:700;letter-spacing:0.08em;">품목명</span>
-            <span style="font-size:9px;color:var(--label-color);font-weight:700;letter-spacing:0.08em;text-align:center;">수량</span>
-            <span style="font-size:9px;color:var(--label-color);font-weight:700;letter-spacing:0.08em;text-align:right;">금액</span>
-            <span></span>
+          <div class="sticker-section-sub" style="margin-bottom:10px;">
+            <ul>
+              <li>포켓몬 이름을 한글로 검색하면 자동완성이 표시됩니다.</li>
+              <li>선택 시 이미지와 타입이 자동으로 시트에 추가됩니다.</li>
+              <li>이미지 로딩 시간이 조금 있습니다.</li>
+              <li><span style="color:#7C6FCF; font-weight:700;">⚠ 도트는 비공식 이미지가 포함되어 있습니다.</span></li>
+              <li><a href="https://pokemonkorea.co.kr/pokedex" target="_blank" rel="noopener" style="color:var(--text-dim);text-decoration:underline;text-underline-offset:2px;">공식 포켓몬 도감</a></li>
+            </ul>
           </div>
-          <div id="rc-item-list"></div>
-          <button class="field-input" style="cursor:pointer;text-align:center;color:var(--label-color);margin-top:4px;" onclick="rcAddItem()">＋ 품목 추가</button>
-
-          <div class="char-label" style="margin-top:16px;"><span class="char-label-badge">$</span>합계</div>
-          <div class="field-row">
-            <label class="field-label">Discount</label>
-            <input class="field-input" type="text" id="rc-discount-input" value="" placeholder="예: -5,000" oninput="update()">
+          <!-- 스프라이트 모드 토글 -->
+          <div class="sprite-mode-toggle">
+            <button id="sprite-mode-illust" class="sprite-mode-btn active" onclick="setSpriteMode('illust')">
+              일러스트
+            </button>
+            <button id="sprite-mode-dot" class="sprite-mode-btn" onclick="setSpriteMode('dot')">
+              도트
+            </button>
           </div>
-          <div class="field-row">
-            <label class="field-label">TOTAL</label>
-            <input class="field-input" type="text" id="rc-total-input" value="" placeholder="예: 15,000" oninput="update()">
-          </div>
-
+          <!-- 로딩 배너 -->
+          <div id="poke-load-banner" style="display:none;"></div>
+          <!-- 슬롯 1~6 -->
+          <div id="pokemon-slots-panel"></div>
         </div>
       </div>
 
-      <!-- 푸터 -->
-      <div class="section-panel" id="sec-footer">
-        <div class="section-panel-header">
-          <div class="section-panel-title"><span class="section-panel-badge">F</span>푸터</div>
-          <div class="section-panel-sub">FOOTER</div>
-        </div>
-        <div class="section-panel-body">
-
-          <div class="field-row">
-            <label class="field-label">Thank you 문구</label>
-            <input class="field-input" type="text" id="rc-thankyou-input" value="Thank you for shipping !" oninput="update()">
-          </div>
-          <div class="field-row">
-            <label class="field-label">Date (연)</label>
-            <input class="field-input" type="text" id="rc-date-y" value="" placeholder="YYYY" maxlength="4" oninput="update()">
-          </div>
-          <div class="field-row">
-            <label class="field-label">Date (월)</label>
-            <input class="field-input" type="text" id="rc-date-m" value="" placeholder="MM" maxlength="2" oninput="update()">
-          </div>
-          <div class="field-row">
-            <label class="field-label">Date (일)</label>
-            <input class="field-input" type="text" id="rc-date-d" value="" placeholder="DD" maxlength="2" oninput="update()">
-          </div>
-
-        </div>
-      </div>
-
-      <!-- 컬러 -->
-      <div class="section-panel" id="sec-color">
-        <div class="section-panel-header">
-          <div class="section-panel-title"><span class="section-panel-badge">C</span>컬러</div>
-          <div class="section-panel-sub">COLOR</div>
-        </div>
-        <div class="section-panel-body">
-          <div class="field-row">
-            <label class="field-label">RECEIPT 타이틀 색</label>
-            <div class="color-row" style="margin-bottom:0;">
-              <div class="color-swatch-btn" id="rc-title-color-swatch" style="background:#1a1410;">
-                <input type="color" id="rc-title-color" value="#1a1410" oninput="updateRcTitleColor()">
-              </div>
-              <div class="color-label-info"><strong>RECEIPT</strong>타이틀 텍스트 색</div>
-            </div>
-          </div>
-          <div class="field-row" style="margin-top:12px;">
-            <label class="field-label">부제 문구 색</label>
-            <div class="color-row" style="margin-bottom:0;">
-              <div class="color-swatch-btn" id="rc-sub-color-swatch" style="background:#6b5f50;">
-                <input type="color" id="rc-sub-color" value="#6b5f50" oninput="updateRcSubColor()">
-              </div>
-              <div class="color-label-info"><strong>부제</strong>부제 문구 텍스트 색</div>
-            </div>
-          </div>
-          <div class="field-row" style="margin-top:12px;">
-            <label class="field-label">본문 폰트 색</label>
-            <div class="color-row" style="margin-bottom:0;">
-              <div class="color-swatch-btn" id="rc-body-color-swatch" style="background:#1a1410;">
-                <input type="color" id="rc-body-color" value="#1a1410" oninput="updateRcBodyColor()">
-              </div>
-              <div class="color-label-info"><strong>본문</strong>영수증 전체 텍스트 색</div>
-            </div>
-          </div>
-          <div class="field-row" style="margin-top:12px;">
-            <label class="field-label">영수증 바탕색</label>
-            <div class="color-row" style="margin-bottom:0;">
-              <div class="color-swatch-btn" id="rc-sheet-bg-swatch" style="background:#FFFFFF;">
-                <input type="color" id="rc-sheet-bg" value="#FFFFFF" oninput="updateRcSheetBg()">
-              </div>
-              <div class="color-label-info"><strong>배경</strong>영수증 시트 배경색</div>
-            </div>
-          </div>
-          <div class="field-row" style="margin-top:12px;">
-            <label class="field-label">별 장식 색</label>
-            <div class="color-row" style="margin-bottom:0;">
-              <div class="color-swatch-btn" id="rc-deco-color-swatch" style="background:#1a1410;">
-                <input type="color" id="rc-deco-color" value="#1a1410" oninput="updateRcDecoColor()">
-              </div>
-              <div class="color-label-info"><strong>별</strong>상단 · 하단 별 장식 색</div>
-            </div>
-          </div>
-          <div class="field-row" style="margin-top:12px;">
-            <label class="field-label">바코드 색</label>
-            <div class="color-row" style="margin-bottom:0;">
-              <div class="color-swatch-btn" id="rc-barcode-color-swatch" style="background:#1a1410;">
-                <input type="color" id="rc-barcode-color" value="#1a1410" oninput="updateRcBarcodeColor()">
-              </div>
-              <div class="color-label-info"><strong>바코드</strong>바코드 막대 색</div>
-            </div>
-          </div>
-          <div class="field-row" style="margin-top:12px;">
-            <label class="field-label">바깥 배경색</label>
-            <div class="color-row" style="margin-bottom:0;">
-              <div class="color-swatch-btn" id="rc-app-bg-swatch" style="background:#FFFFFF;">
-                <input type="color" id="rc-app-bg" value="#FFFFFF" oninput="updateRcAppBg()">
-              </div>
-              <div class="color-label-info"><strong>캔버스</strong>영수증 바깥 배경색</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 이미지 -->
+      <!-- 이미지 섹션 (APP FRAME 이미지 시스템 유지) -->
       <div class="section-panel" id="sec-image">
         <div class="section-panel-header">
           <div class="section-panel-title"><span class="section-panel-badge">I</span>이미지</div>
           <div class="section-panel-sub">IMAGE</div>
         </div>
         <div class="section-panel-body">
-          <div class="sticker-section-sub">
+          <div class="sticker-section-sub" style="margin-bottom:10px;">
             <ul>
-              <li>시트 이미지란을 클릭해도 이미지를 추가할 수 있습니다.</li>
-              <li>이미지를 선택한 상태에서 Delete키를 눌러도 삭제할 수 있습니다.</li>
+              <li>이미지란을 클릭해도 업로드할 수 있습니다.</li>
+              <li>이미지를 선택한 상태에서 Delete키를 눌러 삭제할 수 있습니다.</li>
             </ul>
           </div>
-          <!-- 기본 모드: A/B 메인 이미지 각각 -->
+          <label class="field-label">트레이너 이미지</label>
           <div id="image-mode-split">
           <div id="image-a">
-            <div class="img-row">
-              <div style="width:100%">
-                <div class="img-field-header"><label class="field-label" style="margin-bottom:0;">메인 이미지</label><button class="img-delete-btn" id="a-main-del" onclick="deleteImg('pair-main')">✕ 삭제</button></div>
-                <div class="img-upload-box" id="pair-main-box" onclick="triggerUpload('pair-main-input')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="#C8C2BB" stroke-width="1.5" stroke-linecap="round"/></svg><span>클릭하여 업로드</span><input type="file" id="pair-main-input" accept="image/*" onchange="loadImg(this,'pair-main-box','pair-main-preview')"></div>
-              </div>
+            <div class="img-field-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <label class="field-label" style="margin-bottom:0;">메인 이미지</label>
+              <button class="img-delete-btn" id="a-main-del" onclick="deleteImg('a-main')">✕ 삭제</button>
+            </div>
+            <div class="img-upload-box" id="a-main-box" onclick="triggerUpload('a-main-input')">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="#C8C2BB" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <span>클릭하여 업로드</span>
+              <input type="file" id="a-main-input" accept="image/*" onchange="loadImg(this,'a-main-box','a-main-preview')">
             </div>
           </div>
-          </div><!-- /image-mode-split -->
-
-          <!-- 통합 모드: 합본 메인 이미지 1개 -->
-          <div id="image-mode-unified" style="display:none;">
-          <div class="char-label" style="margin-top:8px;"><span class="char-label-badge" style="background:#9481f3;">⊞</span>합본 메인 이미지</div>
-          <div>
-            <div class="img-field-header"><label class="field-label" style="margin-bottom:0;">메인 이미지 (A+B 합본)</label><button class="img-delete-btn" id="pair-main-del" onclick="deleteImg('pair-main')">✕ 삭제</button></div>
-            <div class="img-upload-box unified-img-upload-box" id="pair-main-box-u" onclick="triggerUpload('pair-main-input-u')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="#C8C2BB" stroke-width="1.5" stroke-linecap="round"/></svg><span>클릭하여 업로드</span><input type="file" id="pair-main-input-u" accept="image/*" onchange="loadImg(this,'pair-main-box-u','pair-main-preview')"></div>
           </div>
-          </div><!-- /image-mode-unified -->
+          <div id="image-mode-unified" style="display:none;"></div>
 
-          <!-- 이미지란 배경색 -->
-          <div class="field-row" style="margin-top:14px; padding-top:12px; border-top:1px solid var(--panel-border);">
-            <label class="field-label">이미지란 배경색</label>
+        </div>
+      </div>
+
+      <!-- 컬러 프리셋 -->
+      <div class="section-panel" id="sec-color">
+        <div class="section-panel-header">
+          <div class="section-panel-title"><span class="section-panel-badge">C</span>컬러</div>
+          <div class="section-panel-sub">COLOR PRESET</div>
+        </div>
+        <div class="section-panel-body">
+
+          <!-- 색상 4종 -->
+          <div class="field-row">
+            <label class="field-label">헤더 배경색</label>
             <div class="color-row" style="margin-bottom:0;">
-              <div class="color-swatch-btn" id="img-bg-color-swatch" style="background:#F2F1EF;">
-                <input type="color" id="img-bg-color" value="#F2F1EF" oninput="updateImgBgColor()">
+              <div class="color-swatch-btn" id="header-color-swatch" style="background:#1E1C1A;">
+                <input type="color" id="header-color" value="#1E1C1A" oninput="updateHeaderColor()">
               </div>
-              <div class="color-label-info">
-                <strong>이미지란 배경</strong>전체 이미지란 일괄 변경
-              </div>
+              <div class="color-label-info"><strong>헤더 배경</strong>상단 배너 배경색</div>
             </div>
           </div>
+          <div class="field-row">
+            <label class="field-label">엔트리 슬롯 배경색</label>
+            <div class="color-row" style="margin-bottom:0;">
+              <div class="color-swatch-btn" id="entry-bg-color-swatch" style="background:#fafaf9;">
+                <input type="color" id="entry-bg-color" value="#fafaf9" oninput="updateEntryBgColor()">
+              </div>
+              <div class="color-label-info"><strong>엔트리 슬롯 배경</strong>포켓몬 슬롯 배경색</div>
+            </div>
+          </div>
+          <div class="field-row">
+            <label class="field-label">메인 이미지 배경색</label>
+            <div class="color-row" style="margin-bottom:0;">
+              <div class="color-swatch-btn" id="img-bg-color-swatch" style="background:#fafaf9;">
+                <input type="color" id="img-bg-color" value="#fafaf9" oninput="updateImgBgColor()">
+              </div>
+              <div class="color-label-info"><strong>메인 이미지 배경</strong>트레이너 이미지란 배경색</div>
+            </div>
+          </div>
+          <div class="field-row" style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--panel-border);">
+            <label class="field-label">캔버스 배경색</label>
+            <div class="color-row" style="margin-bottom:0;">
+              <div class="color-swatch-btn" id="app-bg-color-swatch" style="background:#FFFFFF;">
+                <input type="color" id="app-bg-color" value="#FFFFFF" oninput="updateAppBgColor()">
+              </div>
+              <div class="color-label-info"><strong>캔버스</strong>카 바깥 배경색</div>
+            </div>
+          </div>
+
+          <!-- 타입 프리셋 -->
+          <label class="field-label" style="margin-bottom:8px;">타입 프리셋</label>
+          <div class="sticker-section-sub" style="margin-bottom:10px;">
+            <ul><li>타입을 선택하면 4가지 색상이 한 번에 적용됩니다.</li></ul>
+          </div>
+          <div id="type-preset-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px;"></div>
+          <button onclick="resetColorPreset()" style="
+            width:100%; margin-top:8px; padding:8px 0;
+            border-radius:7px; border:1.5px solid var(--panel-border);
+            background:transparent; color:var(--text-dim);
+            font-size:11px; font-weight:700;
+            font-family:'Noto Sans KR',sans-serif;
+            cursor:pointer; letter-spacing:0.06em;
+            transition:background 0.15s, color 0.15s;
+          "
+          onmouseenter="this.style.background='var(--input-bg)';this.style.color='var(--text)'"
+          onmouseleave="this.style.background='transparent';this.style.color='var(--text-dim)'"
+          >↺ 기본값으로 되돌리기</button>
+
         </div>
       </div>
 
@@ -2169,8 +2400,8 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   <!-- 프리뷰 -->
   <div class="preview-area" id="preview-area">
   <div style="display:flex; flex-direction:column; align-items:center; min-width:fit-content;">
-    <div id="capture-wrap" style="padding:32px 24px; background:transparent; display:inline-block; filter: drop-shadow(0 4px 24px rgba(44,40,37,0.10)) drop-shadow(0 1px 4px rgba(44,40,37,0.06));">
-    <div id="sheet">
+    <div id="capture-wrap" style="padding:32px 24px; background:var(--app-bg); display:inline-block;">
+    <div id="sheet" style="box-shadow: 0 4px 24px rgba(44,40,37,0.10), 0 1px 4px rgba(44,40,37,0.06); border-radius:20px;">
 
       <!-- 스티커 레이어 -->
       <div id="sticker-layer">
@@ -2182,149 +2413,222 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
         </div>
       </div>
 
-      <!-- JS 참조용 숨김 ID — 절대 삭제 금지 -->
-      <div style="display:none;">
-        <div class="sheet-header">
-          <div class="char-badge" id="s-a-badge">A</div>
-          <div id="s-a-name-ko"></div><div id="s-a-name-en"></div>
-          <div id="s-pair-name"></div><div id="s-pair-catchphrase"></div>
-          <div class="char-badge" id="s-b-badge">B</div>
-          <div id="s-b-name-ko"></div><div id="s-b-name-en"></div>
+      <!-- ══════════════════════════════════════════
+           SHEET ZONE: HTML — 트레이너 카드 레이아웃
+      ══════════════════════════════════════════ -->
+
+      <!-- 마스터 필수 ID — display:none 으로 숨김 유지 (JS 오류 방지) -->
+      <div style="display:none">
+        <div id="s-a-badge"></div>
+        <div id="s-a-name-ko"></div>
+        <div id="s-a-name-en"></div>
+        <div id="s-b-badge"></div>
+        <div id="s-b-name-ko"></div>
+        <div id="s-b-name-en"></div>
+        <div id="s-pair-name"></div>
+        <div id="s-pair-catchphrase"></div>
+        <div id="s-a-tags"></div>
+        <div id="s-a-tag-keywords"></div>
+        <div id="s-a-gender"></div>
+        <div id="s-a-age"></div>
+        <div id="s-a-job"></div>
+        <div id="s-a-animal"></div>
+        <div id="s-a-body"></div>
+        <div id="s-a-appear-title"></div>
+        <div id="s-a-appear-main"></div>
+        <ul id="s-a-appear-list"></ul>
+        <div id="s-a-appear-badge"></div>
+        <div id="s-a-core-title"></div>
+        <div id="s-a-core-main"></div>
+        <ul id="s-a-core-list"></ul>
+        <div id="s-a-core-block"></div>
+        <div id="s-a-stat-block"></div>
+        <div id="s-a-stat-str" style="width:0%"></div>
+        <div id="s-a-stat-str-val"></div>
+        <span id="s-a-stat-str-key"></span>
+        <div id="s-a-stat-agi" style="width:0%"></div>
+        <div id="s-a-stat-agi-val"></div>
+        <span id="s-a-stat-agi-key"></span>
+        <div id="s-a-stat-int" style="width:0%"></div>
+        <div id="s-a-stat-int-val"></div>
+        <span id="s-a-stat-int-key"></span>
+        <div id="s-a-hair-chip"></div>
+        <div id="s-a-eye-chip"></div>
+        <div id="s-a-etc-chip"></div>
+        <div id="s-b-tags"></div>
+        <div id="s-b-tag-keywords"></div>
+        <div id="s-b-gender"></div>
+        <div id="s-b-age"></div>
+        <div id="s-b-job"></div>
+        <div id="s-b-animal"></div>
+        <div id="s-b-body"></div>
+        <div id="s-b-appear-title"></div>
+        <div id="s-b-appear-main"></div>
+        <ul id="s-b-appear-list"></ul>
+        <div id="s-b-appear-badge"></div>
+        <div id="s-b-core-title"></div>
+        <div id="s-b-core-main"></div>
+        <ul id="s-b-core-list"></ul>
+        <div id="s-b-stat-block"></div>
+        <div id="s-b-stat-str" style="width:0%"></div>
+        <div id="s-b-stat-str-val"></div>
+        <span id="s-b-stat-str-key"></span>
+        <div id="s-b-stat-agi" style="width:0%"></div>
+        <div id="s-b-stat-agi-val"></div>
+        <span id="s-b-stat-agi-key"></span>
+        <div id="s-b-stat-int" style="width:0%"></div>
+        <div id="s-b-stat-int-val"></div>
+        <span id="s-b-stat-int-key"></span>
+        <div id="s-b-hair-chip"></div>
+        <div id="s-b-eye-chip"></div>
+        <div id="s-b-etc-chip"></div>
+        <div id="s-pair-title"></div>
+        <p id="s-pair-body"></p>
+        <!-- 마스터 이미지 프리뷰 ID (APP FRAME 이미지 시스템용) -->
+        <div style="position:absolute;width:1px;height:1px;overflow:hidden;">
+          <img id="a-sub-preview" src="" alt="" style="display:none;">
+          <span id="a-sub-ph"></span>
+          <img id="b-sub-preview" src="" alt="" style="display:none;">
+          <span id="b-sub-ph"></span>
+          <img id="b-main-preview" src="" alt="" style="display:none;">
+          <span id="b-main-ph"></span>
+          <img id="pair-main-preview" src="" alt="" style="display:none;">
+          <span id="pair-main-ph"></span>
         </div>
-        <div id="side-a">
-          <img id="a-sub-preview" src="" alt="">
-          <img id="a-main-preview" src="" alt="">
-          <div id="s-a-hair-chip"></div><div id="s-a-eye-chip"></div><div id="s-a-etc-chip"></div>
-          <div id="s-a-tags"></div><div id="s-a-tag-keywords"></div>
-          <div id="s-a-gender"></div><div id="s-a-age"></div><div id="s-a-job"></div>
-          <div id="s-a-animal"></div><div id="s-a-body"></div>
-          <div id="s-a-appear-title"></div><div id="s-a-appear-main"></div>
-          <div id="s-a-appear-list"></div><div id="s-a-appear-badge"></div>
-          <div id="s-a-core-block">
-            <div id="s-a-core-title"></div><div id="s-a-core-main"></div><div id="s-a-core-list"></div>
+        <!-- 마스터 구조 유지용 더미 -->
+        <div class="sheet-header"></div>
+        <div class="sheet-main">
+          <div class="side-card" id="side-a"></div>
+          <div class="side-card" id="side-b"></div>
+          <div class="center-col">
+            <div class="center-imgs-area">
+              <div class="main-imgs-row" id="center-imgs-split">
+                <div class="main-img-wrap">
+                  <div class="main-img-placeholder" id="a-main-ph-dummy"></div>
+                </div>
+                <div class="main-img-wrap">
+                  <div class="main-img-placeholder" id="b-main-ph-dummy2"></div>
+                </div>
+              </div>
+              <div class="main-imgs-row" id="center-imgs-unified" style="display:none;">
+                <div class="unified-main-img-wrap main-img-wrap">
+                  <div class="main-img-placeholder" id="pair-main-ph-dummy"></div>
+                </div>
+              </div>
+            </div>
+            <div class="pair-block">
+              <div class="pair-block-header">
+                <div class="pair-block-badge">P</div>
+                <div class="pair-block-title" id="s-pair-title-dup">페어</div>
+              </div>
+            </div>
           </div>
-          <div id="s-a-stat-block">
-            <div id="s-a-stat-str"></div><div id="s-a-stat-str-val"></div><div id="s-a-stat-str-key"></div>
-            <div id="s-a-stat-agi"></div><div id="s-a-stat-agi-val"></div><div id="s-a-stat-agi-key"></div>
-            <div id="s-a-stat-int"></div><div id="s-a-stat-int-val"></div><div id="s-a-stat-int-key"></div>
-          </div>
-        </div>
-        <div id="side-b">
-          <img id="b-sub-preview" src="" alt="">
-          <img id="b-main-preview" src="" alt="">
-          <div id="s-b-hair-chip"></div><div id="s-b-eye-chip"></div><div id="s-b-etc-chip"></div>
-          <div id="s-b-tags"></div><div id="s-b-tag-keywords"></div>
-          <div id="s-b-gender"></div><div id="s-b-age"></div><div id="s-b-job"></div>
-          <div id="s-b-animal"></div><div id="s-b-body"></div>
-          <div id="s-b-appear-title"></div><div id="s-b-appear-main"></div>
-          <div id="s-b-appear-list"></div><div id="s-b-appear-badge"></div>
-          <div id="s-b-core-block">
-            <div id="s-b-core-title"></div><div id="s-b-core-main"></div><div id="s-b-core-list"></div>
-          </div>
-          <div id="s-b-stat-block">
-            <div id="s-b-stat-str"></div><div id="s-b-stat-str-val"></div><div id="s-b-stat-str-key"></div>
-            <div id="s-b-stat-agi"></div><div id="s-b-stat-agi-val"></div><div id="s-b-stat-agi-key"></div>
-            <div id="s-b-stat-int"></div><div id="s-b-stat-int-val"></div><div id="s-b-stat-int-key"></div>
-          </div>
-        </div>
-        <div id="s-pair-title"></div><div id="s-pair-body"></div>
-        <div id="center-imgs-unified">
-          <div class="unified-main-img-wrap" id="pair-main-wrap">
-            <img src="" alt="">
-          </div>
-        </div>
-        <div id="center-imgs-split">
-          <div id="a-main-wrap"><img id="a-main-preview-split" src="" alt=""></div>
-          <div id="b-main-wrap"><img id="b-main-preview-split" src="" alt=""></div>
         </div>
       </div>
 
-      <!-- ══ 영수증 시트 레이아웃 ══ -->
-      <div class="rc-inner">
+      <!-- ── SVG 장식 레이어 ── -->
+      <svg id="tc-svg-deco" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;" viewBox="0 0 840 540" fill="none" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="header-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop id="header-grad-top" offset="0%" stop-color="#1E1C1A"/>
+            <stop id="header-grad-bot" offset="100%" stop-color="#2e2b28"/>
+          </linearGradient>
+        </defs>
+        <!-- 헤더 배너 -->
+        <path id="tc-header-path" d="M16,-1 Q-1,-1 -1,16 L-1,61 L315,61 L345,85 L841,85 L841,16 Q841,-1 824,-1 Z" fill="url(#header-grad)"/>
+        <!-- 사선 경계선 -->
+        <line x1="315" y1="60" x2="345" y2="84" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+        <!-- 세로 구분선 (헤더 아래) -->
+        <line x1="258" y1="84" x2="258" y2="538" stroke="#F0EDEA" stroke-width="1"/>
+        <!-- 우측 장식 점 -->
+        <circle cx="820" cy="220" r="3" fill="#1E1C1A" opacity="0.5"/>
+        <circle cx="820" cy="234" r="3" fill="#1E1C1A" opacity="0.3"/>
+        <circle cx="820" cy="248" r="3" fill="#1E1C1A" opacity="0.15"/>
+        <!-- 하단 가로선 -->
+        <line x1="258" y1="524" x2="480" y2="524" stroke="#E0DBD5" stroke-width="0.75"/>
+        <!-- 버전 텍스트 -->
+        <text x="822" y="536" font-family="'Barlow Condensed',sans-serif" font-size="7" fill="#1E1C1A" opacity="0.15" text-anchor="end" letter-spacing="1">TC1.001</text>
+        <!-- 헤더 몬스터볼 인디케이터 (6개, 포켓몬 등록 시 투명도 상승) -->
+        <g id="tc-header-balls">
+          <g id="tc-hball-5" transform="translate(702,54) rotate(-20,9,9)" opacity="0.15"><path d="M2.2,46 A48,48 0 0,1 97.8,46 L71.6,46 A22,22 0 0,0 28.4,46 Z" fill="rgba(255,255,255,1)" transform="scale(0.18)"/><path d="M2.2,54 A48,48 0 0,0 97.8,54 L71.6,54 A22,22 0 0,1 28.4,54 Z" fill="rgba(255,255,255,1)" transform="scale(0.18)"/><circle cx="9" cy="9" r="1.8" fill="rgba(255,255,255,1)"/></g>
+          <g id="tc-hball-4" transform="translate(722,54) rotate(-20,9,9)" opacity="0.15"><path d="M2.2,46 A48,48 0 0,1 97.8,46 L71.6,46 A22,22 0 0,0 28.4,46 Z" fill="rgba(255,255,255,1)" transform="scale(0.18)"/><path d="M2.2,54 A48,48 0 0,0 97.8,54 L71.6,54 A22,22 0 0,1 28.4,54 Z" fill="rgba(255,255,255,1)" transform="scale(0.18)"/><circle cx="9" cy="9" r="1.8" fill="rgba(255,255,255,1)"/></g>
+          <g id="tc-hball-3" transform="translate(742,54) rotate(-20,9,9)" opacity="0.15"><path d="M2.2,46 A48,48 0 0,1 97.8,46 L71.6,46 A22,22 0 0,0 28.4,46 Z" fill="rgba(255,255,255,1)" transform="scale(0.18)"/><path d="M2.2,54 A48,48 0 0,0 97.8,54 L71.6,54 A22,22 0 0,1 28.4,54 Z" fill="rgba(255,255,255,1)" transform="scale(0.18)"/><circle cx="9" cy="9" r="1.8" fill="rgba(255,255,255,1)"/></g>
+          <g id="tc-hball-2" transform="translate(762,54) rotate(-20,9,9)" opacity="0.15"><path d="M2.2,46 A48,48 0 0,1 97.8,46 L71.6,46 A22,22 0 0,0 28.4,46 Z" fill="rgba(255,255,255,1)" transform="scale(0.18)"/><path d="M2.2,54 A48,48 0 0,0 97.8,54 L71.6,54 A22,22 0 0,1 28.4,54 Z" fill="rgba(255,255,255,1)" transform="scale(0.18)"/><circle cx="9" cy="9" r="1.8" fill="rgba(255,255,255,1)"/></g>
+          <g id="tc-hball-1" transform="translate(782,54) rotate(-20,9,9)" opacity="0.15"><path d="M2.2,46 A48,48 0 0,1 97.8,46 L71.6,46 A22,22 0 0,0 28.4,46 Z" fill="rgba(255,255,255,1)" transform="scale(0.18)"/><path d="M2.2,54 A48,48 0 0,0 97.8,54 L71.6,54 A22,22 0 0,1 28.4,54 Z" fill="rgba(255,255,255,1)" transform="scale(0.18)"/><circle cx="9" cy="9" r="1.8" fill="rgba(255,255,255,1)"/></g>
+          <g id="tc-hball-0" transform="translate(802,54) rotate(-20,9,9)" opacity="0.15"><path d="M2.2,46 A48,48 0 0,1 97.8,46 L71.6,46 A22,22 0 0,0 28.4,46 Z" fill="rgba(255,255,255,1)" transform="scale(0.18)"/><path d="M2.2,54 A48,48 0 0,0 97.8,54 L71.6,54 A22,22 0 0,1 28.4,54 Z" fill="rgba(255,255,255,1)" transform="scale(0.18)"/><circle cx="9" cy="9" r="1.8" fill="rgba(255,255,255,1)"/></g>
+        </g>
+        <!-- 포켓볼 아이콘 (트레이너명 앞) -->
+        <g transform="translate(28,18) scale(0.24)">
+          <path d="M2.2,46 A48,48 0 0,1 97.8,46 L71.6,46 A22,22 0 0,0 28.4,46 Z" fill="rgba(255,255,255,0.45)"/>
+          <path d="M2.2,54 A48,48 0 0,0 97.8,54 L71.6,54 A22,22 0 0,1 28.4,54 Z" fill="rgba(255,255,255,0.45)"/>
+          <circle cx="50" cy="50" r="10" fill="rgba(255,255,255,0.45)"/>
+        </g>
+      </svg>
 
-        <!-- 상단 별 장식 -->
-        <div class="rc-stars">
-          <svg width="11" height="11" viewBox="0 0 10 10"><path d="M5 0 L5.4 4.6 L10 5 L5.4 5.4 L5 10 L4.6 5.4 L0 5 L4.6 4.6 Z" fill="currentColor"/></svg>
-          <svg width="8"  height="8"  viewBox="0 0 10 10"><path d="M5 0 L5.4 4.6 L10 5 L5.4 5.4 L5 10 L4.6 5.4 L0 5 L4.6 4.6 Z" fill="currentColor"/></svg>
-          <svg width="11" height="11" viewBox="0 0 10 10"><path d="M5 0 L5.4 4.6 L10 5 L5.4 5.4 L5 10 L4.6 5.4 L0 5 L4.6 4.6 Z" fill="currentColor"/></svg>
-        </div>
-
-        <!-- 타이틀 -->
-        <div class="rc-title">
-          <div class="rc-title-main">RECEIPT</div>
-          <div class="rc-title-sub" id="s-rc-subtitle">✦ I HAVE A KINDA COOL DAY ✦</div>
-        </div>
-
-        <div class="rc-dash"></div>
-
-        <!-- 캐릭터 정보 -->
-        <div class="rc-info">
-          <div class="rc-info-left" id="s-rc-info-left">
-            <div>Char A &nbsp;&nbsp;&nbsp;&nbsp;: <span id="s-rc-char-a"></span></div>
-            <div>Char B &nbsp;&nbsp;&nbsp;&nbsp;: <span id="s-rc-char-b"></span></div>
-            <div>Transaction :</div>
+      <!-- ── 헤더 텍스트 레이어 ── -->
+      <div class="tc-header" style="position:absolute;top:0;left:0;right:0;z-index:2;pointer-events:none;">
+        <div class="tc-header-left">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:28px;flex-shrink:0;"></div><!-- 포켓볼 공간 -->
+            <div style="display:flex;flex-direction:column;gap:2px;">
+              <div class="tc-header-name" id="tc-trainer-name">트레이너</div>
+              <div class="tc-header-sub" id="tc-trainer-sub">TRAINER · REGION</div>
+            </div>
           </div>
-          <div class="rc-info-right">
-            <div id="s-rc-check-meet">1st Meet <span class="rc-checkbox"></span></div>
-            <div id="s-rc-check-coupon">Using Coupon <span class="rc-checkbox"></span></div>
-            <div id="s-rc-currency" style="font-size:11px;color:var(--rc-body-color,#1a1410);letter-spacing:0.03em;display:inline-block;position:relative;">
-              <span id="s-rc-cur-krw">KRW</span> / <span id="s-rc-cur-usd">USD</span> / <span id="s-rc-cur-etc">ETC</span>
+        </div>
+        <div class="tc-header-id" id="tc-trainer-id">ID No. 00001</div>
+      </div>
+
+      <!-- ── 바디 ── -->
+      <div class="tc-body" style="z-index:2;">
+
+        <!-- 왼쪽: 트레이너 이미지 + 프로필 -->
+        <div class="tc-left">
+          <!-- 트레이너 메인 이미지 (APP FRAME 이미지 시스템 연동) -->
+          <div class="tc-trainer-img-wrap" id="tc-img-wrap">
+            <img id="a-main-preview" src="" alt="" style="display:none;">
+            <div class="tc-img-placeholder" id="a-main-ph"></div>
+          </div>
+
+          <!-- 프로필 -->
+          <div class="tc-profile-grid">
+            <div class="tc-profile-item">
+              <div class="tc-profile-key">JOB</div>
+              <div class="tc-profile-val" id="tc-job">트레이너</div>
+            </div>
+            <div class="tc-profile-item">
+              <div class="tc-profile-key">ORIGIN</div>
+              <div class="tc-profile-val" id="tc-origin">출신지</div>
+            </div>
+          </div>
+
+          <!-- 태그 -->
+          <div class="tc-tag-row" id="tc-tags"></div>
+
+          <!-- 한줄 소개 -->
+          <div class="tc-bio" id="tc-bio"></div>
+        </div>
+
+        <!-- 세로 구분선 -->
+        <div class="tc-divider"></div>
+
+        <!-- 오른쪽: 포켓몬 엔트리 -->
+        <div class="tc-right">
+          <div class="tc-section-header">
+            <div class="tc-section-num">P</div>
+            <div class="tc-section-title" id="tc-entry-title">ENTRY</div>
+          </div>
+          <div class="tc-pokemon-grid">
+            <div class="tc-pokemon-row" id="tc-pokemon-row-1">
+              <!-- 슬롯 1~3 (JS로 렌더) -->
+            </div>
+            <div class="tc-pokemon-row" id="tc-pokemon-row-2">
+              <!-- 슬롯 4~6 (JS로 렌더) -->
             </div>
           </div>
         </div>
 
-        <!-- 테이블 헤더 -->
-        <div class="rc-table-header">
-          <span>No.</span>
-          <span>Item</span>
-          <span style="text-align:center;">Qty</span>
-          <span style="text-align:right;">Total</span>
-        </div>
-
-        <!-- 이미지 영역 -->
-        <div class="rc-img-wrap unified-main-img-wrap" id="rc-img-area">
-          <img id="pair-main-preview" src="" alt="" style="display:none; position:absolute; transform-origin:center center; max-width:none;">
-          <span class="rc-img-placeholder" id="pair-main-ph"></span>
-        </div>
-
-        <div class="rc-dash" style="margin-top:0;"></div>
-
-        <!-- 품목 목록 -->
-        <div id="s-rc-items"></div>
-
-        <!-- Discount / TOTAL -->
-        <div class="rc-discount">Discount &nbsp;: &nbsp;<span id="s-rc-discount"></span></div>
-        <div class="rc-total">TOTAL &nbsp;: &nbsp;<span id="s-rc-total"></span></div>
-
-        <div class="rc-dash"></div>
-
-        <!-- Date -->
-        <div class="rc-date" id="s-rc-date">Date : &nbsp;&nbsp;/ &nbsp;&nbsp;/</div>
-
-        <!-- Thank you -->
-        <div class="rc-thankyou">
-          <div class="rc-thankyou-main">
-            <svg width="8" height="8" viewBox="0 0 10 10"><path d="M5 0 L5.4 4.6 L10 5 L5.4 5.4 L5 10 L4.6 5.4 L0 5 L4.6 4.6 Z" fill="currentColor"/></svg>
-            <span id="s-rc-thankyou">Thank you for shipping !</span>
-            <svg width="8" height="8" viewBox="0 0 10 10"><path d="M5 0 L5.4 4.6 L10 5 L5.4 5.4 L5 10 L4.6 5.4 L0 5 L4.6 4.6 Z" fill="currentColor"/></svg>
-          </div>
-        </div>
-
-        <!-- 바코드 -->
-        <div class="rc-barcode">
-          <svg width="280" height="44" viewBox="0 0 280 44">
-            <rect x="0" y="0" width="3" height="44" fill="#1a1410"/><rect x="6" y="0" width="2" height="44" fill="#1a1410"/><rect x="11" y="0" width="4" height="44" fill="#1a1410"/><rect x="18" y="0" width="2" height="44" fill="#1a1410"/><rect x="23" y="0" width="3" height="44" fill="#1a1410"/><rect x="29" y="0" width="4" height="44" fill="#1a1410"/><rect x="36" y="0" width="2" height="44" fill="#1a1410"/><rect x="41" y="0" width="3" height="44" fill="#1a1410"/><rect x="47" y="0" width="4" height="44" fill="#1a1410"/><rect x="54" y="0" width="2" height="44" fill="#1a1410"/><rect x="59" y="0" width="3" height="44" fill="#1a1410"/><rect x="65" y="0" width="5" height="44" fill="#1a1410"/><rect x="73" y="0" width="2" height="44" fill="#1a1410"/><rect x="78" y="0" width="4" height="44" fill="#1a1410"/><rect x="85" y="0" width="2" height="44" fill="#1a1410"/><rect x="90" y="0" width="3" height="44" fill="#1a1410"/><rect x="96" y="0" width="5" height="44" fill="#1a1410"/><rect x="104" y="0" width="2" height="44" fill="#1a1410"/><rect x="109" y="0" width="4" height="44" fill="#1a1410"/><rect x="116" y="0" width="2" height="44" fill="#1a1410"/><rect x="121" y="0" width="3" height="44" fill="#1a1410"/><rect x="127" y="0" width="5" height="44" fill="#1a1410"/><rect x="135" y="0" width="2" height="44" fill="#1a1410"/><rect x="140" y="0" width="4" height="44" fill="#1a1410"/><rect x="147" y="0" width="2" height="44" fill="#1a1410"/><rect x="152" y="0" width="3" height="44" fill="#1a1410"/><rect x="158" y="0" width="5" height="44" fill="#1a1410"/><rect x="166" y="0" width="2" height="44" fill="#1a1410"/><rect x="171" y="0" width="4" height="44" fill="#1a1410"/><rect x="178" y="0" width="2" height="44" fill="#1a1410"/><rect x="183" y="0" width="3" height="44" fill="#1a1410"/><rect x="189" y="0" width="5" height="44" fill="#1a1410"/><rect x="197" y="0" width="2" height="44" fill="#1a1410"/><rect x="202" y="0" width="4" height="44" fill="#1a1410"/><rect x="209" y="0" width="2" height="44" fill="#1a1410"/><rect x="214" y="0" width="3" height="44" fill="#1a1410"/><rect x="220" y="0" width="5" height="44" fill="#1a1410"/><rect x="228" y="0" width="2" height="44" fill="#1a1410"/><rect x="233" y="0" width="4" height="44" fill="#1a1410"/><rect x="240" y="0" width="2" height="44" fill="#1a1410"/><rect x="245" y="0" width="3" height="44" fill="#1a1410"/><rect x="251" y="0" width="5" height="44" fill="#1a1410"/><rect x="259" y="0" width="2" height="44" fill="#1a1410"/><rect x="264" y="0" width="4" height="44" fill="#1a1410"/><rect x="271" y="0" width="2" height="44" fill="#1a1410"/><rect x="276" y="0" width="3" height="44" fill="#1a1410"/>
-          </svg>
-        </div>
-
-        <!-- 하단 별 장식 -->
-        <div class="rc-stars" style="margin-top:12px; margin-bottom:0;">
-          <svg width="11" height="11" viewBox="0 0 10 10"><path d="M5 0 L5.4 4.6 L10 5 L5.4 5.4 L5 10 L4.6 5.4 L0 5 L4.6 4.6 Z" fill="currentColor"/></svg>
-          <svg width="8"  height="8"  viewBox="0 0 10 10"><path d="M5 0 L5.4 4.6 L10 5 L5.4 5.4 L5 10 L4.6 5.4 L0 5 L4.6 4.6 Z" fill="currentColor"/></svg>
-          <svg width="11" height="11" viewBox="0 0 10 10"><path d="M5 0 L5.4 4.6 L10 5 L5.4 5.4 L5 10 L4.6 5.4 L0 5 L4.6 4.6 Z" fill="currentColor"/></svg>
-        </div>
-
-      </div><!-- /rc-inner -->
+      </div><!-- /tc-body -->
 
     </div><!-- /sheet -->
     </div><!-- /capture-wrap -->
@@ -2332,6 +2636,8 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
     <!-- 워터마크 — 시트 카드 아래, 스크롤 시 보임 / PNG 캡처 제외 -->
     <div style="width:100%; padding: 24px 0 20px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
       <span style="font-size:11px; color:#B8B2AB; letter-spacing:0.06em; text-align:center; line-height:1.8; font-family:'Noto Sans KR',sans-serif;">
+        This is a non-commercial fan-made project. Pokémon and all related content are © Nintendo / Game Freak / Creatures Inc.<br>
+        Pokémon data is used in accordance with PokeAPI's Fair Use policy and cached locally.<br>
         이 사이트는 Claude AI를 활용하여 제작되었습니다. 자유롭게 변형·사용해주세요.<br>
         입력한 데이터는 사용자 기기(브라우저)에만 저장됩니다. 수집·학습에 사용되지 않습니다.
       </span>
@@ -2557,7 +2863,7 @@ document.addEventListener('click', e => {
 function v(id) { return document.getElementById(id); }
 
 // ── 섹션 전환
-const sectionIds = ['name','item','footer','color','image','sticker'];
+const sectionIds = ['name','pokemon','color','image','sticker'];
 function switchSection(name) {
   // 스티커 편집 모드 중 다른 섹션으로 이동하면 자동 취소
   if (stickerEditMode && name !== 'sticker') toggleStickerEdit();
@@ -2574,95 +2880,90 @@ function switchSection(name) {
 
 // ══════════════════════════════════════════
 // SHEET ZONE: JS — 시트 관련 함수 수정 여기
-// update(), renderTags(), renderList(),
-// updateColor(), updateChipColor() 등
+// update() 등
 // ══════════════════════════════════════════
 
-// 품목 데이터
-let rcItems = [];
+// ── 타입 프리셋 데이터 ──
+// 각 타입별: { header, entry, imgBg, canvas }
+const TYPE_PRESETS = {
+  '노말':   { header: '#7A7671', entry: '#F5F3F0', imgBg: '#EDEAE6', canvas: '#F5F3F0' },
+  '불꽃':   { header: '#c0431a', entry: '#fde8df', imgBg: '#fde8df', canvas: '#fff8f5' },
+  '물':     { header: '#5984c0', entry: '#eaf3fb', imgBg: '#eaf3fb', canvas: '#a2c6fb' },
+  '풀':     { header: '#81b361', entry: '#eaf6ee', imgBg: '#eaf6ee', canvas: '#5e8952' },
+  '전기':   { header: '#e4b12f', entry: '#fff7e0', imgBg: '#fff7e0', canvas: '#f5d96b' },
+  '얼음':   { header: '#89cbd7', entry: '#edf7f6', imgBg: '#edf7f6', canvas: '#f1f7f9' },
+  '격투':   { header: '#dda23c', entry: '#f9f4eb', imgBg: '#f9f4eb', canvas: '#f2f1ee' },
+  '독':     { header: '#795181', entry: '#f1eff6', imgBg: '#f1eff6', canvas: '#a18abc' },
+  '땅':     { header: '#86725b', entry: '#fbf6e9', imgBg: '#fbf6e9', canvas: '#a29276' },
+  '비행':   { header: '#b5c7e3', entry: '#f5f8ff', imgBg: '#f5f8ff', canvas: '#f5f9ff' },
+  '에스퍼': { header: '#d68084', entry: '#fbf4f4', imgBg: '#fbf4f4', canvas: '#edbfc2' },
+  '벌레':   { header: '#9aa163', entry: '#f8faf5', imgBg: '#f8faf5', canvas: '#e1e4af' },
+  '바위':   { header: '#cabea0', entry: '#faf8f0', imgBg: '#edeae0', canvas: '#faf8f0' },
+  '고스트': { header: '#655d7e', entry: '#f5f4f5', imgBg: '#f5f4f5', canvas: '#a3a0ac' },
+  '드래곤': { header: '#6060a9', entry: '#f0f0fa', imgBg: '#f0f0fa', canvas: '#a0a0da' },
+  '악':     { header: '#3a2f2c', entry: '#f2f0ee', imgBg: '#f2f0ee', canvas: '#706966' },
+  '강철':   { header: '#7d89a1', entry: '#f0f3f8', imgBg: '#f0f3f8', canvas: '#b0bfd8' },
+  '페어리': { header: '#eea0bd', entry: '#faf9fa', imgBg: '#faf9fa', canvas: '#fbd0e1' },
+};
 
-function rcAddItem() {
-  const idx = rcItems.length;
-  rcItems.push({ name: '', qty: '1', total: '' });
-  rcRenderItemList();
-  update();
-}
-
-function rcRemoveItem(idx) {
-  rcItems.splice(idx, 1);
-  rcRenderItemList();
-  update();
-}
-
-function rcRenderItemList() {
-  const container = v('rc-item-list');
-  if (!container) return;
-  container.innerHTML = '';
-  rcItems.forEach((item, idx) => {
-    const row = document.createElement('div');
-    row.style.cssText = 'display:grid;grid-template-columns:1fr 48px 72px 24px;gap:4px;margin-bottom:6px;align-items:center;';
-    row.innerHTML = `
-      <input class="field-input" type="text" placeholder="품목명" value="${item.name}"
-        style="padding:5px 8px;font-size:11px;" oninput="rcItems[${idx}].name=this.value;update()">
-      <input class="field-input" type="text" placeholder="수량" value="${item.qty}"
-        style="padding:5px 8px;font-size:11px;text-align:center;" maxlength="4" oninput="rcItems[${idx}].qty=this.value;update()">
-      <input class="field-input" type="text" placeholder="금액" value="${item.total}"
-        style="padding:5px 8px;font-size:11px;text-align:right;" oninput="rcItems[${idx}].total=this.value;update()">
-      <button style="background:transparent;border:none;color:var(--label-color);cursor:pointer;font-size:14px;padding:0;line-height:1;" onclick="rcRemoveItem(${idx})">✕</button>
-    `;
-    container.appendChild(row);
-  });
-}
-const badgeTextColor = { a: 'white', b: 'white' };
-
-function setBadgeTextColor(ch, mode) {
-  badgeTextColor[ch] = mode;
-  // 버튼 active 상태 갱신
-  v(ch + '-badge-white').classList.toggle('active', mode === 'white');
-  v(ch + '-badge-dark').classList.toggle('active', mode === 'dark');
-  // 시트 배지 글자색 즉시 반영
-  const color = mode === 'white' ? '#FFFFFF' : '#1E1C1A';
-  v('s-' + ch + '-badge').style.color = color;
-}
-
-function updateColor(ch) {
-  const color = v(ch + '-color').value;
-  v(ch + '-color-swatch').style.background = color;
-  applyAccentColor(ch, color);
-}
-
-function applyAccentColor(ch, color) {
-  const s = ch === 'a' ? 'a' : 'b';
-  const clampedColor = clampColorBrightness(color, BRIGHTNESS_MAX);
-  // 배지: 배경 = 포인트컬러 그대로, 글자 = 수동 설정값
-  const badge = v('s-' + s + '-badge');
-  badge.style.background = color;
-  badge.style.color = badgeTextColor[s] === 'dark' ? '#1E1C1A' : '#FFFFFF';
-  // 태그: 클리핑된 색 기준으로 배경+글자 적용
-  v('s-' + s + '-tags').querySelectorAll('.profile-tag').forEach(t => {
-    t.style.background = hexToDesaturatedRgba(clampedColor, 0.55, 0.18);
-    t.style.color = clampedColor;
-  });
-  // 태그 키워드색
-  v('s-' + s + '-tag-keywords').style.color = clampedColor;
-  // 스탯 바: 클리핑된 색 적용
-  v('side-' + s).querySelectorAll('.stat-bar-fill').forEach(bar => {
-    bar.style.background = clampedColor;
-  });
-  // 섹션 리스트 › 색상
-  v('side-' + s).querySelectorAll('.section-list li').forEach(li => {
-    li.style.setProperty('--section-accent', clampedColor);
+// 타입 프리셋 버튼 그리드 렌더링
+const TYPE_ICON_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/small/';
+const TYPE_ICON_ID = {
+  '노말':1, '불꽃':10, '물':11, '풀':12, '전기':13, '얼음':15,
+  '격투':2, '독':4, '땅':5, '비행':3, '에스퍼':14, '벌레':7,
+  '바위':6, '고스트':8, '드래곤':16, '악':17, '강철':9, '페어리':18,
+};
+function renderTypePresetGrid() {
+  const grid = v('type-preset-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  Object.keys(TYPE_PRESETS).forEach(type => {
+    const preset = TYPE_PRESETS[type];
+    const btn = document.createElement('button');
+    btn.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 4px;border-radius:7px;border:1.5px solid rgba(0,0,0,0.08);background:' + preset.entry + ';color:' + preset.header + ';font-size:10px;font-weight:700;font-family:\'Noto Sans KR\',sans-serif;cursor:pointer;transition:opacity 0.15s;text-align:center;letter-spacing:0.04em;width:100%;';
+    const iconId = TYPE_ICON_ID[type];
+    if (iconId) {
+      const img = document.createElement('img');
+      img.src = TYPE_ICON_BASE + iconId + '.png';
+      img.alt = type;
+      img.style.cssText = 'height:14px;image-rendering:pixelated;flex-shrink:0;';
+      img.onerror = () => { img.style.display = 'none'; };
+      btn.appendChild(img);
+    }
+    btn.appendChild(document.createTextNode(type));
+    btn.addEventListener('mouseenter', () => { btn.style.opacity = '0.75'; });
+    btn.addEventListener('mouseleave', () => { btn.style.opacity = '1'; });
+    btn.onclick = () => applyTypePreset(type);
+    grid.appendChild(btn);
   });
 }
 
-function updateChipColor(ch, type) {
-  const color = v(ch + '-' + type + '-color')?.value;
-  if (!color) return;
-  const swatch = v(ch + '-' + type + '-swatch');
-  if (swatch) swatch.style.background = color;
-  const chip = v('s-' + ch + '-' + type + '-chip');
-  if (chip) chip.style.background = color;
+// 타입 프리셋 적용
+function applyTypePreset(type) {
+  const preset = TYPE_PRESETS[type];
+  if (!preset) return;
+  const hEl = v('header-color');
+  const eEl = v('entry-bg-color');
+  const iEl = v('img-bg-color');
+  const aEl = v('app-bg-color');
+  if (hEl) { hEl.value = preset.header; updateHeaderColor(); }
+  if (eEl) { eEl.value = preset.entry;  updateEntryBgColor(); }
+  if (iEl) { iEl.value = preset.imgBg;  updateImgBgColor(); }
+  if (aEl) { aEl.value = preset.canvas; updateAppBgColor(); }
 }
+
+// 색상 기본값으로 되돌리기
+function resetColorPreset() {
+  const hEl = v('header-color');
+  const eEl = v('entry-bg-color');
+  const iEl = v('img-bg-color');
+  const aEl = v('app-bg-color');
+  if (hEl) { hEl.value = '#1E1C1A'; updateHeaderColor(); }
+  if (eEl) { eEl.value = '#fafaf9'; updateEntryBgColor(); }
+  if (iEl) { iEl.value = '#fafaf9'; updateImgBgColor(); }
+  if (aEl) { aEl.value = '#FFFFFF'; updateAppBgColor(); }
+}
+
 
 // 태그 배경용: 채도 + 투명도 동시 낮춤
 // satRatio: 채도 유지 비율 (0~1), alpha: 불투명도
@@ -2716,59 +3017,13 @@ function clampColorBrightness(hex, maxLum) {
 
 const BRIGHTNESS_MAX = 0.85; // 밝기 임계점 — 이 값 이상은 클리핑
 
-function renderTags(containerId, tagStr, color) {
-  const el = v(containerId);
-  if (!el) return;
-  const clampedColor = clampColorBrightness(color, BRIGHTNESS_MAX);
-  const tags = tagStr.split(',').map(t => t.trim()).filter(Boolean);
-
-  // 변경 없으면 DOM 조작 건너뜀 — IME 포커스 리셋 방지
-  const prev = Array.from(el.querySelectorAll('.profile-tag')).map(s => s.textContent);
-  const same = prev.length === tags.length && tags.every((t, i) => t === prev[i]);
-  if (!same) {
-    el.innerHTML = '';
-    tags.forEach(tag => {
-      const span = document.createElement('span');
-      span.className = 'profile-tag';
-      span.textContent = tag;
-      span.style.background = hexToDesaturatedRgba(clampedColor, 0.55, 0.18);
-      span.style.color = clampedColor;
-      el.appendChild(span);
-    });
-  } else {
-    // 태그 내용은 같지만 색상만 바뀐 경우
-    el.querySelectorAll('.profile-tag').forEach(span => {
-      span.style.background = hexToDesaturatedRgba(clampedColor, 0.55, 0.18);
-      span.style.color = clampedColor;
-    });
-  }
-  el.style.display = tags.length ? 'flex' : 'none';
-}
-
-function renderList(ulId, text) {
-  const ul = v(ulId);
-  if (!ul) return;
-  const items = text.split('\n').map(t => t.trim()).filter(Boolean);
-
-  // 변경 없으면 DOM 조작 건너뜀 — IME 포커스 리셋 방지
-  const prev = Array.from(ul.querySelectorAll('li')).map(li => li.textContent);
-  const same = prev.length === items.length && items.every((t, i) => t === prev[i]);
-  if (same) return;
-
-  ul.innerHTML = '';
-  items.forEach(item => {
-    const li = document.createElement('li');
-    li.textContent = item;
-    ul.appendChild(li);
-  });
-}
 
 // ── SHEET CONFIG — 새 시트 만들 때 여기서 섹션 on/off ──
 const SHEET_CONFIG = {
-  showStat:   false,  // 영수증에서 미사용
-  showCore:   false,  // 영수증에서 미사용
-  showPair:   false,  // 영수증에서 미사용
-  showCharB:  false,  // 영수증에서 미사용 (합본/분리 버튼 자동 숨김)
+  showStat:   false,  // 스탯 바 섹션 표시 여부
+  showCore:   false,  // 핵심 특징 섹션 표시 여부
+  showPair:   false,  // 페어 특징 섹션 표시 여부
+  showCharB:  false,  // 캐릭터 B 전체 표시 여부 (false = 1인용)
 };
 
 // ── JS가 참조하는 시트 필수 ID 목록 ──
@@ -2797,91 +3052,43 @@ let isComposing = false;
 function update() {
   if (isComposing) return;
 
-  // 부제 문구
-  const subtitleEl = v('s-rc-subtitle');
-  if (subtitleEl) subtitleEl.textContent = '✦ ' + (v('rc-subtitle-input').value || 'I HAVE A KINDA COOL DAY') + ' ✦';
+  // ── 트레이너 헤더 ──
+  const nameEl   = v('tc-name-input');
+  const subEl    = v('tc-sub-input');
+  const idEl     = v('tc-id-input');
+  const jobEl    = v('tc-job-input');
+  const originEl = v('tc-origin-input');
+  const tagsEl   = v('tc-tags-input');
+  const bioEl    = v('tc-bio-input');
+  const entryEl  = v('tc-entry-title-input');
 
-  // Char A / B 이름
-  const charAEl = v('s-rc-char-a');
-  if (charAEl) charAEl.textContent = v('rc-char-a-input').value || '';
-  const charBEl = v('s-rc-char-b');
-  if (charBEl) charBEl.textContent = v('rc-char-b-input').value || '';
+  if (nameEl)   { v('tc-trainer-name').textContent = nameEl.value || '트레이너'; }
+  if (subEl)    { v('tc-trainer-sub').textContent  = subEl.value  || 'TRAINER'; }
+  if (idEl)     { v('tc-trainer-id').textContent   = 'ID No. ' + (idEl.value || '00001'); }
+  if (jobEl)    { v('tc-job').textContent    = jobEl.value    || '트레이너'; }
+  if (originEl) { v('tc-origin').textContent = originEl.value || ''; }
+  if (entryEl)  { v('tc-entry-title').textContent = entryEl.value || 'ENTRY'; }
 
-  // 체크리스트1 항목명 + 체크 반영
-  const relationLabel = v('rc-relation-input').value || '1st Meet';
-  const relationChecked = v('rc-check-relation').checked;
-  const meetEl = v('s-rc-check-meet');
-  if (meetEl) {
-    const cb = meetEl.querySelector('.rc-checkbox');
-    meetEl.firstChild.textContent = relationLabel + ' ';
-    if (cb) cb.classList.toggle('checked', relationChecked);
+  // ── 태그 렌더 ──
+  if (tagsEl) {
+    const tagsContainer = v('tc-tags');
+    if (tagsContainer) {
+      const tags = tagsEl.value.split(',').map(t => t.trim()).filter(Boolean);
+      tagsContainer.innerHTML = '';
+      tags.forEach(tag => {
+        const span = document.createElement('span');
+        span.className = 'tc-tag';
+        span.textContent = tag;
+        tagsContainer.appendChild(span);
+      });
+    }
   }
 
-  // 체크리스트2 항목명 + 체크 반영
-  const couponLabel = v('rc-coupon-input').value || 'Using Coupon';
-  const couponChecked = v('rc-check-coupon').checked;
-  const couponEl = v('s-rc-check-coupon');
-  if (couponEl) {
-    const cb = couponEl.querySelector('.rc-checkbox');
-    couponEl.firstChild.textContent = couponLabel + ' ';
-    if (cb) cb.classList.toggle('checked', couponChecked);
-  }
+  // ── 한줄 소개 ──
+  if (bioEl) { v('tc-bio').textContent = bioEl.value || ''; }
 
-  // 통화 ETC 텍스트 반영
-  const etcVal = v('rc-etc-input').value || 'ETC';
-  const etcSpan = v('s-rc-cur-etc');
-  if (etcSpan) etcSpan.textContent = etcVal;
-
-  // 선택된 통화에 동그라미 표시
-  const selected = document.querySelector('input[name="rc-currency-radio"]:checked');
-  ['s-rc-cur-krw','s-rc-cur-usd','s-rc-cur-etc'].forEach(id => {
-    const el = v(id);
-    if (el) el.classList.remove('rc-cur-selected');
-  });
-  if (selected) {
-    const targetId = { KRW: 's-rc-cur-krw', USD: 's-rc-cur-usd', ETC: 's-rc-cur-etc' }[selected.value];
-    const targetSpan = v(targetId);
-    if (targetSpan) targetSpan.classList.add('rc-cur-selected');
-  }
-
-  // 메인 이미지 높이 재계산
+  // 메인 이미지 높이 재계산 (마스터 APP FRAME 함수)
   matchMainImgHeight();
-
-  // 품목 시트 반영
-  const itemsEl = v('s-rc-items');
-  if (itemsEl) {
-    itemsEl.innerHTML = '';
-    rcItems.forEach((item, idx) => {
-      const row = document.createElement('div');
-      row.className = 'rc-item-row';
-      row.innerHTML = `
-        <span class="rc-item-num">${idx + 1}</span>
-        <span>${item.name || ''}</span>
-        <span class="rc-item-qty">${item.qty || ''}</span>
-        <span class="rc-item-total">${item.total || ''}</span>
-      `;
-      itemsEl.appendChild(row);
-    });
-  }
-
-  // Discount / TOTAL 반영
-  const discountEl = v('s-rc-discount');
-  if (discountEl) discountEl.textContent = v('rc-discount-input').value || '';
-  const totalEl = v('s-rc-total');
-  if (totalEl) totalEl.textContent = v('rc-total-input').value || '';
-
-  // Thank you 문구 반영
-  const thankyouEl = v('s-rc-thankyou');
-  if (thankyouEl) thankyouEl.textContent = v('rc-thankyou-input').value || '';
-
-  // Date 반영
-  const dateEl = v('s-rc-date');
-  if (dateEl) {
-    const y = v('rc-date-y').value || '    ';
-    const m = v('rc-date-m').value || '  ';
-    const d = v('rc-date-d').value || '  ';
-    dateEl.textContent = 'Date : ' + y + ' / ' + m + ' / ' + d;
-  }
 }
 
 function deleteImg(key) {
@@ -2927,7 +3134,6 @@ function deleteImg(key) {
   // 삭제 버튼 숨김
   const delBtn = v(delBtnId);
   if (delBtn) delBtn.classList.remove('visible');
-
 }
 
 function triggerUpload(inputId) {
@@ -2956,11 +3162,7 @@ function bindWrapClick(previewId) {
     if (e.target.closest('.img-edit-toolbar')) return;
     if (!imgStore[previewId]) {
       // 이미지 없음 → 업로드 창
-      let inputId = previewToInput[previewId];
-      // pair-main-preview는 모드에 따라 다른 input 참조
-      if (previewId === 'pair-main-preview' && currentImgMode === 'unified') {
-        inputId = 'pair-main-input-u';
-      }
+      const inputId = previewToInput[previewId];
       if (inputId) v(inputId).click();
     } else {
       // 이미지 있음 → 편집 모드 토글
@@ -2970,11 +3172,12 @@ function bindWrapClick(previewId) {
   });
 }
 
+const reader = new FileReader();
+
 function loadImg(input, boxId, previewId) {
   const file = input.files[0];
   if (!file) return;
   markDirty();
-  const reader = new FileReader();
   reader.onload = e => {
     const src = e.target.result;
     imgStore[previewId] = src;
@@ -3025,7 +3228,6 @@ function loadImg(input, boxId, previewId) {
     const ph = v(previewId.replace('-preview', '-ph'));
     if (ph) ph.style.display = 'none';
 
-
     // 삭제 버튼 표시 (기본 모드 + 통합 모드 둘 다)
     const delKey = previewId.replace('-preview', '');
     const delBtn = v(delKey + '-del');
@@ -3036,150 +3238,110 @@ function loadImg(input, boxId, previewId) {
   reader.readAsDataURL(file);
 }
 
-// ── 폰트 토글 (Special Elite ↔ Lekton) ──
-let currentFont = 'special-elite'; // 'special-elite' | 'lekton'
+// ── 폰트 토글 (Noto Sans KR ↔ Pretendard) ──
+let currentFont = 'noto'; // 'noto' | 'pretendard'
+let pretendardLoaded = false;
 
 function toggleFont() {
-  if (currentFont === 'special-elite') {
-    applyFontFamily("'Lekton', monospace");
-    currentFont = 'lekton';
-    v('font-toggle-label').textContent = 'LK';
+  if (currentFont === 'noto') {
+    // Pretendard로 전환
+    if (!pretendardLoaded) {
+      const link = document.createElement('link');
+      link.id = 'pretendard-link';
+      link.rel = 'stylesheet';
+      link.href = 'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css';
+      document.head.appendChild(link);
+      pretendardLoaded = true;
+    }
+    applyFontFamily("'Pretendard', sans-serif");
+    currentFont = 'pretendard';
+    v('font-toggle-label').textContent = 'Pret.';
     v('font-toggle-btn').style.color = 'rgba(255,255,255,0.9)';
   } else {
-    applyFontFamily("'Special Elite', monospace");
-    currentFont = 'special-elite';
-    v('font-toggle-label').textContent = 'SE';
+    // Noto로 복원
+    applyFontFamily("'Noto Sans KR', sans-serif");
+    currentFont = 'noto';
+    v('font-toggle-label').textContent = 'Noto';
     v('font-toggle-btn').style.color = '';
   }
 }
 
 function applyFontFamily(fontValue) {
   // #sheet 내부 요소만 교체 — 사이드바/편집 패널은 건드리지 않음
-  // Cinzel(배지·장식용) 사용 요소는 건너뜀
+  // Cinzel, Barlow Condensed 사용 요소는 건너뜀 (트레이너카드 전용 폰트)
   const sheet = v('sheet');
   if (!sheet) return;
   sheet.querySelectorAll('*').forEach(el => {
     const ff = getComputedStyle(el).fontFamily;
     if (ff.includes('Cinzel')) return;
+    if (ff.includes('Barlow')) return;
     el.style.fontFamily = fontValue;
   });
 }
 
 function updateHeaderColor() {
-  const input = v('header-color');
-  if (!input) return;
-  const color = input.value;
+  const color = v('header-color').value;
+  if (!color) return;
   const swatch = v('header-color-swatch');
   if (swatch) swatch.style.background = color;
-  const header = v('sheet').querySelector('.sheet-header');
-  if (header) header.style.background = color;
-}
-
-function updateSheetBgColor() {
-  const input = v('sheet-bg-color');
-  if (!input) return; // 헤더 패널에서 제거됨
-  const color = input.value;
-  const swatch = v('sheet-bg-color-swatch');
-  if (swatch) swatch.style.background = color;
-  v('sheet').style.background = color;
-  v('sheet').querySelectorAll('.side-card, .pair-block').forEach(el => {
-    el.style.background = color;
-  });
+  // 트레이너카드: SVG 헤더 linearGradient stop 색상 업데이트
+  const r = parseInt(color.slice(1,3),16);
+  const g = parseInt(color.slice(3,5),16);
+  const b = parseInt(color.slice(5,7),16);
+  const mix = 0.12; // 흰색 혼합 비율
+  const br = Math.round(r + (255 - r) * mix);
+  const bg = Math.round(g + (255 - g) * mix);
+  const bb = Math.round(b + (255 - b) * mix);
+  const brightColor = '#' + [br,bg,bb].map(v => v.toString(16).padStart(2,'0')).join('');
+  const stopTop = document.getElementById('header-grad-top');
+  const stopBot = document.getElementById('header-grad-bot');
+  if (stopTop) stopTop.setAttribute('stop-color', color);
+  if (stopBot) stopBot.setAttribute('stop-color', brightColor);
+  // ACE 리본 색 동기화
+  updateAceRibbonColor();
+  // 마스터 sheet-header 호환 (존재하면 함께 변경)
+  const sheetHeader = v('sheet')?.querySelector('.sheet-header');
+  if (sheetHeader && sheetHeader.style.display !== 'none') {
+    sheetHeader.style.background = color;
+  }
 }
 
 function updateImgBgColor() {
   const input = v('img-bg-color');
   if (!input) return;
   const color = input.value;
-  v('img-bg-color-swatch').style.background = color;
-  // CSS 변수로 시트 전체 이미지란 일괄 변경
-  v('sheet').style.setProperty('--img-bg', color);
+  const swatch = v('img-bg-color-swatch');
+  if (swatch) swatch.style.background = color;
+  // 트레이너 메인 이미지란만 변경 (포켓몬 슬롯은 별도 컨트롤)
+  const imgWrap = v('tc-img-wrap');
+  if (imgWrap) imgWrap.style.background = color;
 }
 
-function updateRcTitleColor() {
-  const input = v('rc-title-color');
+function updateEntryBgColor() {
+  const input = v('entry-bg-color');
   if (!input) return;
   const color = input.value;
-  v('rc-title-color-swatch').style.background = color;
-  document.documentElement.style.setProperty('--rc-title-color', color);
+  const swatch = v('entry-bg-color-swatch');
+  if (swatch) swatch.style.background = color;
+  // 포켓몬 슬롯 배경색 일괄 변경
+  document.querySelectorAll('.tc-pokemon-slot').forEach(el => {
+    el.style.backgroundColor = color;
+  });
+  // CSS 변수도 함께 업데이트 (신규 렌더 슬롯에도 적용)
+  const sheet = v('sheet');
+  if (sheet) sheet.style.setProperty('--entry-bg', color);
 }
 
-function updateRcBodyColor() {
-  const input = v('rc-body-color');
+function updateAppBgColor() {
+  const input = v('app-bg-color');
   if (!input) return;
   const color = input.value;
-  v('rc-body-color-swatch').style.background = color;
-  document.documentElement.style.setProperty('--rc-body-color', color);
-}
-
-function updateRcSheetBg() {
-  const input = v('rc-sheet-bg');
-  if (!input) return;
-  const color = input.value;
-  v('rc-sheet-bg-swatch').style.background = color;
-  document.documentElement.style.setProperty('--rc-sheet-bg', color);
-}
-
-function updateRcAppBg() {
-  const input = v('rc-app-bg');
-  if (!input) return;
-  const color = input.value;
-  v('rc-app-bg-swatch').style.background = color;
+  const swatch = v('app-bg-color-swatch');
+  if (swatch) swatch.style.background = color;
   document.documentElement.style.setProperty('--app-bg', color);
 }
 
-function updateRcSubColor() {
-  const input = v('rc-sub-color');
-  if (!input) return;
-  const color = input.value;
-  v('rc-sub-color-swatch').style.background = color;
-  document.documentElement.style.setProperty('--rc-sub-color', color);
-}
 
-function updateRcDecoColor() {
-  const input = v('rc-deco-color');
-  if (!input) return;
-  const color = input.value;
-  v('rc-deco-color-swatch').style.background = color;
-  document.documentElement.style.setProperty('--rc-deco-color', color);
-}
-
-function updateRcBarcodeColor() {
-  const input = v('rc-barcode-color');
-  if (!input) return;
-  const color = input.value;
-  v('rc-barcode-color-swatch').style.background = color;
-  document.documentElement.style.setProperty('--rc-barcode-color', color);
-}
-
-function updatePairColor() {
-  const nameColorEl  = v('pair-name-color');
-  const catchColorEl = v('pair-catch-color');
-  if (!nameColorEl || !catchColorEl) return;
-  const nameColor  = nameColorEl.value;
-  const catchColor = catchColorEl.value;
-  v('pair-name-color-swatch').style.background  = nameColor;
-  v('pair-catch-color-swatch').style.background = catchColor;
-  v('s-pair-name').style.color        = nameColor;
-  v('s-pair-catchphrase').style.color = catchColor;
-}
-
-function updateChipLabel(ch, type, val) {
-  const chipId = 's-' + ch + '-' + type + '-chip';
-  const el = v(chipId);
-  if (el) el.textContent = val || type.toUpperCase();
-}
-
-function updateStatName(ch, stat, val) {
-  // IME 우회 버그 대응 — 4글자 초과 시 잘라냄
-  if (val && [...val].length > 8) {
-    val = [...val].slice(0, 8).join('');
-    const input = v(ch + '-stat-' + stat + '-name');
-    if (input) input.value = val;
-  }
-  const key = v('s-' + ch + '-stat-' + stat + '-key');
-  if (key) key.textContent = val || stat.toUpperCase();
-}
 
 let panelOpen = true;
 function togglePanel() {
@@ -3193,19 +3355,6 @@ function togglePanel() {
     : '<path d="M3 1L8 6L3 11" stroke="#9B9189" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>';
 }
 
-function updateStat(ch, stat, rawVal) {
-  const val = Math.min(100, Math.max(0, parseInt(rawVal) || 0));
-  // 슬라이더와 숫자 입력 양방향 동기화
-  const rangeEl = v(ch + '-stat-' + stat);
-  const numEl = v(ch + '-stat-' + stat + '-num');
-  if (rangeEl) rangeEl.value = val;
-  if (numEl) numEl.value = val;
-  // 프리뷰 시트 반영
-  const barEl = v('s-' + ch + '-stat-' + stat);
-  const valEl = v('s-' + ch + '-stat-' + stat + '-val');
-  if (barEl) barEl.style.width = val + '%';
-  if (valEl) valEl.textContent = val;
-}
 
 async function saveAsPNG() {
   const btn = document.querySelector('.save-btn');
@@ -3239,6 +3388,25 @@ async function saveAsPNG() {
       : ['a-sub-preview', 'b-sub-preview', 'a-main-preview', 'b-main-preview'];
     const composited = {};
     const CAPTURE_SCALE = 4;
+
+    // 2-1. 포켓몬 스프라이트 → base64 변환 (저장 시점에만 fetch, CORS 우회)
+    const spriteBase64 = {}; // { slotIndex: dataUrl }
+    await Promise.all(pokemonSlots.map(async (slot, i) => {
+      if (!slot.sprite) return;
+      try {
+        const res = await fetch(slot.sprite);
+        if (!res.ok) return;
+        const blob = await res.blob();
+        spriteBase64[i] = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch(e) {
+        // fetch 실패 시 해당 슬롯은 스프라이트 없이 진행
+      }
+    }));
 
     await Promise.all(imgIds.map(async (id) => {
       const src = imgStore[id];
@@ -3285,11 +3453,35 @@ async function saveAsPNG() {
 
     // 3. html2canvas 실행 — sheet만 캡처 (그림자 없이)
     const sheetEl = v('sheet');
+
+    // 슬롯 및 스프라이트 위치를 onclone(숨기기) 전에 미리 측정
+    // getBoundingClientRect 대신 offsetLeft/offsetTop 누적으로 스크롤 영향 제거
+    function getOffsetFrom(el, ancestor) {
+      let ox = 0, oy = 0;
+      while (el && el !== ancestor) {
+        ox += el.offsetLeft;
+        oy += el.offsetTop;
+        el = el.offsetParent;
+      }
+      return { x: ox, y: oy };
+    }
+    const slotEls = Array.from(document.querySelectorAll('.tc-pokemon-slot'));
+    const slotRects = slotEls.map(slot => {
+      const o = getOffsetFrom(slot, sheetEl);
+      return { x: o.x, y: o.y, w: slot.offsetWidth, h: slot.offsetHeight };
+    });
+    const spriteRects = slotEls.map(slot => {
+      const img = slot.querySelector('.tc-slot-sprite');
+      if (!img) return null;
+      const o = getOffsetFrom(img, sheetEl);
+      return { x: o.x, y: o.y, w: img.offsetWidth, h: img.offsetHeight };
+    });
+
     const canvas = await html2canvas(sheetEl, {
       scale: 4,
       useCORS: true,
       allowTaint: true,
-      backgroundColor: '#FFFFFF',
+      backgroundColor: null,
       logging: false,
       scrollX: 0,
       scrollY: 0,
@@ -3303,22 +3495,25 @@ async function saveAsPNG() {
         clonedDoc.querySelectorAll('.profile-tag').forEach(el => {
           el.style.lineHeight = '15px';
         });
+        clonedDoc.querySelectorAll('.tc-type-badge').forEach(el => {
+          el.style.lineHeight = '1';
+          el.style.paddingBottom = '2px';
+        });
 
-        // 통화 동그라미 — onclone에서 border 직접 주입
-        const selectedRadioPng = document.querySelector('input[name="rc-currency-radio"]:checked');
-        if (selectedRadioPng) {
-          const targetIdMap = { KRW: 's-rc-cur-krw', USD: 's-rc-cur-usd', ETC: 's-rc-cur-etc' };
-          const clonedSpan = clonedDoc.getElementById(targetIdMap[selectedRadioPng.value]);
-          if (clonedSpan) {
-            const bodyColor = getComputedStyle(document.documentElement).getPropertyValue('--rc-body-color').trim() || '#1a1410';
-            clonedSpan.style.border = `1.2px solid ${bodyColor}`;
-            clonedSpan.style.borderRadius = '50%';
-            clonedSpan.style.padding = '0px 4px';
-          }
-        }
+        // 몬스터볼 SVG 숨기기 — Canvas API 후처리로 별도 그림
+        clonedDoc.querySelectorAll('.tc-pokeball-deco').forEach(el => {
+          el.style.display = 'none';
+        });
+
+        // 스프라이트 img 숨기기 — visibility:hidden으로 공간 유지하며 숨김
+        // (display:none 사용 시 flex 재배치로 이름/타입 위치가 틀어짐)
+        clonedDoc.querySelectorAll('.tc-slot-sprite').forEach(img => {
+          img.style.visibility = 'hidden';
+        });
 
         // 스티커 핸들/편집 UI 제거
         compositeStickersToClone(clonedDoc, CAPTURE_SCALE);
+
 
         // 합성된 이미지를 inset absolute img로 주입
         // → border-radius 가장자리 줄 없이 wrap overflow:hidden이 정확히 클리핑
@@ -3350,14 +3545,14 @@ async function saveAsPNG() {
     // 4. 캡처된 카드 위에 그림자를 Canvas API로 직접 합성
     const SCALE = 4;
     const PAD   = 48 * SCALE;
+    const R     = 20 * SCALE;
 
     const W = canvas.width  + PAD * 2;
     const H = canvas.height + PAD * 2;
 
     // 현재 커스텀 컬러 읽기
-    const rootStyle   = getComputedStyle(document.documentElement);
-    const appBgColor  = rootStyle.getPropertyValue('--app-bg').trim()  || '#FFFFFF';
-    const sheetBgColor = rootStyle.getPropertyValue('--rc-sheet-bg').trim() || '#FFFFFF';
+    const rootStyle  = getComputedStyle(document.documentElement);
+    const appBgColor = rootStyle.getPropertyValue('--app-bg').trim() || '#FFFFFF';
 
     const finalCanvas = document.createElement('canvas');
     finalCanvas.width  = W;
@@ -3368,19 +3563,101 @@ async function saveAsPNG() {
     fctx.fillStyle = appBgColor;
     fctx.fillRect(0, 0, W, H);
 
-    // 그림자 레이어 (직사각형 — 라운딩 없음)
+    // 그림자 레이어 (카드 모양 라운드 rect를 shadowBlur로 그림)
     fctx.save();
     fctx.shadowColor   = 'rgba(44,40,37,0.13)';
     fctx.shadowBlur    = 32 * SCALE;
     fctx.shadowOffsetX = 0;
     fctx.shadowOffsetY = 6 * SCALE;
-    fctx.fillStyle = sheetBgColor;
+    fctx.fillStyle = '#FFFFFF';
     const x = PAD, y = PAD, w = canvas.width, h = canvas.height;
-    fctx.fillRect(x, y, w, h);
+    fctx.beginPath();
+    fctx.moveTo(x + R, y);
+    fctx.lineTo(x + w - R, y);
+    fctx.arcTo(x + w, y, x + w, y + R, R);
+    fctx.lineTo(x + w, y + h - R);
+    fctx.arcTo(x + w, y + h, x + w - R, y + h, R);
+    fctx.lineTo(x + R, y + h);
+    fctx.arcTo(x, y + h, x, y + h - R, R);
+    fctx.lineTo(x, y + R);
+    fctx.arcTo(x, y, x + R, y, R);
+    fctx.closePath();
+    fctx.fill();
     fctx.restore();
 
-    // 카드 이미지 올리기 — 직사각형 그대로 배치
+    // 카드 이미지 올리기 — 라운드 rect 클리핑 적용
+    fctx.save();
+    fctx.beginPath();
+    fctx.moveTo(x + R, y);
+    fctx.lineTo(x + w - R, y);
+    fctx.arcTo(x + w, y, x + w, y + R, R);
+    fctx.lineTo(x + w, y + h - R);
+    fctx.arcTo(x + w, y + h, x + w - R, y + h, R);
+    fctx.lineTo(x + R, y + h);
+    fctx.arcTo(x, y + h, x, y + h - R, R);
+    fctx.lineTo(x, y + R);
+    fctx.arcTo(x, y, x + R, y, R);
+    fctx.closePath();
+    fctx.clip();
     fctx.drawImage(canvas, PAD, PAD);
+
+    // 몬스터볼 + 스프라이트 Canvas 후처리
+
+    const S = SCALE;
+    fctx.save();
+
+    // 1) 몬스터볼 먼저
+    fctx.globalAlpha = 0.06;
+    fctx.fillStyle = '#1E1C1A';
+    slotRects.forEach((slot, i) => {
+      if (!pokemonSlots[i] || !pokemonSlots[i].id) return; // 빈 슬롯은 건너뜀
+      const sx = PAD + slot.x * S;
+      const sy = PAD + slot.y * S;
+      const sw = slot.w * S;
+      const sh = slot.h * S;
+      const size = Math.min(sw, sh) * 0.7;
+      const cx = sx + sw / 2;
+      const cy = sy + sh * 0.4;
+      const OR = size / 2;
+      const IR = OR * (22 / 48);
+      const gap = OR * (4 / 48);
+      fctx.beginPath();
+      fctx.arc(cx, cy - gap/2, OR, Math.PI, 0, false);
+      fctx.arc(cx, cy - gap/2, IR, 0, Math.PI, true);
+      fctx.closePath();
+      fctx.fill();
+      fctx.beginPath();
+      fctx.arc(cx, cy + gap/2, OR, 0, Math.PI, false);
+      fctx.arc(cx, cy + gap/2, IR, Math.PI, 0, true);
+      fctx.closePath();
+      fctx.fill();
+      fctx.beginPath();
+      fctx.arc(cx, cy, OR * (10 / 48), 0, Math.PI * 2);
+      fctx.fill();
+    });
+
+    // 2) 스프라이트를 몬스터볼 위에 합성 (실제 img 위치 기준)
+    fctx.globalAlpha = 1;
+    await Promise.all(slotRects.map(async (slot, i) => {
+      const b64 = spriteBase64[i];
+      if (!b64) return;
+      const sr = spriteRects[i];
+      if (!sr) return;
+      const img = await new Promise(res => {
+        const tmp = new Image();
+        tmp.onload = () => res(tmp);
+        tmp.onerror = () => res(null);
+        tmp.src = b64;
+      });
+      if (!img) return;
+      const sx = PAD + sr.x * S;
+      const sy = PAD + sr.y * S;
+      const sw = sr.w * S;
+      const sh = sr.h * S;
+      fctx.drawImage(img, sx, sy, sw, sh);
+    }));
+
+    fctx.restore();
 
     // 5. 최대 폭 2400px로 리샘플링 — 고해상도로 그린 뒤 줄여서 선명도 확보
     const MAX_W = 3500;
@@ -3465,39 +3742,17 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   update();
-  // 동그라미 위치는 DOM 렌더 후 재계산 필요
-  requestAnimationFrame(() => update());
-  // 초기 컬러칩 색상 반영
-  ['a','b'].forEach(ch => {
-    ['hair','eye','etc'].forEach(type => updateChipColor(ch, type));
-  });
-  // 페어 컬러 초기화
-  updatePairColor();
+  // 포켓몬 슬롯 초기 렌더
+  renderAllPokemonSlots();
+  // 타입 프리셋 그리드 렌더
+  renderTypePresetGrid();
+  // 포켓몬 한글 매핑 초기화 (캐시 확인 → 없으면 fetch)
+  initPokeMap();
   // 헤더색 초기화
   updateHeaderColor();
-  updateSheetBgColor();
   updateImgBgColor();
-  // 칩 라벨 초기화 (hair/eye/etc 모두)
-  ['a','b'].forEach(ch => {
-    ['hair','eye','etc'].forEach(type => {
-      const labelEl = v(ch + '-' + type + '-label');
-      if (labelEl) updateChipLabel(ch, type, labelEl.value);
-    });
-  });
-  // 초기 스탯 이름 반영
-  ['a','b'].forEach(ch => {
-    ['str','agi','int'].forEach(stat => {
-      const nameEl = v(ch + '-stat-' + stat + '-name');
-      if (nameEl) updateStatName(ch, stat, nameEl.value);
-    });
-  });
-  // 초기 스탯 값 반영
-  ['a','b'].forEach(ch => {
-    ['str','agi','int'].forEach(stat => {
-      const rangeEl = v(ch + '-stat-' + stat);
-      if (rangeEl) updateStat(ch, stat, rangeEl.value);
-    });
-  });
+  updateEntryBgColor();
+  updateAppBgColor();
   // 프리뷰 wrap에 클릭 이벤트 초기 바인딩 (이미지 없어도 업로드 가능)
   Object.keys(previewToInput).forEach(pid => bindWrapClick(pid));
   // 한글 IME 조합 중 update() 차단 — 한/영 전환 버그 방지
@@ -3610,6 +3865,7 @@ window.addEventListener('DOMContentLoaded', () => {
         y: Math.round(dropY - initSize / 2),
         size: initSize,
         rotate: 0,
+        locked: false,
       };
       stickers.push(sticker);
       renderSticker(sticker);
@@ -3618,52 +3874,6 @@ window.addEventListener('DOMContentLoaded', () => {
     };
     tmpImg.src = item.src;
   });
-
-  // rc-img-area가 드롭 이벤트를 가로채지 않도록 sheet로 위임
-  const rcImgArea = document.getElementById('rc-img-area');
-  if (rcImgArea) {
-    rcImgArea.addEventListener('dragover', e => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'copy';
-      sheetEl.classList.add('sticker-drop-over');
-    });
-    rcImgArea.addEventListener('dragleave', e => {
-      if (!sheetEl.contains(e.relatedTarget)) {
-        sheetEl.classList.remove('sticker-drop-over');
-      }
-    });
-    rcImgArea.addEventListener('drop', e => {
-      e.preventDefault();
-      e.stopPropagation();
-      sheetEl.classList.remove('sticker-drop-over');
-      const libId = parseInt(e.dataTransfer.getData('text/plain'), 10);
-      if (!libId) return;
-      const item = stickerLibrary.find(i => i.libId === libId);
-      if (!item) return;
-      const rect = sheetEl.getBoundingClientRect();
-      const dropX = e.clientX - rect.left;
-      const dropY = e.clientY - rect.top;
-      const tmpImg = new Image();
-      tmpImg.onload = () => {
-        const defaultSize = Math.round(sheetEl.offsetWidth * 0.25);
-        const initSize = Math.max(80, Math.min(defaultSize, tmpImg.naturalWidth || defaultSize));
-        const sticker = {
-          id: ++stickerIdCounter,
-          type: 'img',
-          content: item.src,
-          x: Math.round(dropX - initSize / 2),
-          y: Math.round(dropY - initSize / 2),
-          size: initSize,
-          rotate: 0,
-        };
-        stickers.push(sticker);
-        renderSticker(sticker);
-        if (!stickerEditMode) toggleStickerEdit();
-        selectSticker(sticker.id);
-      };
-      tmpImg.src = item.src;
-    });
-  }
 
   // 스탯 이름 입력 최대 8글자 제한
   document.querySelectorAll('.stat-name-input').forEach(el => {
@@ -3759,118 +3969,57 @@ function applyImgMode() {
 // 저장/불러오기 슬롯 시스템
 // ══════════════════════════════════════════
 const SLOT_COUNT = 5;
-const STORAGE_KEY_SPLIT   = 'receipt_slots';
-const STORAGE_KEY_UNIFIED = 'receipt_slots';
+const STORAGE_KEY_SPLIT   = 'trainercard_slots_split';
+const STORAGE_KEY_UNIFIED = 'trainercard_slots_unified';
 
 function getStorageKey() {
   return currentImgMode === 'unified' ? STORAGE_KEY_UNIFIED : STORAGE_KEY_SPLIT;
 }
 
-// 수집 대상 필드 ID 목록 (영수증 메이커 전용)
+// 수집 대상 필드 ID 목록
 function collectData() {
-  const textFields = [
-    'rc-subtitle-input',
-    'rc-char-a-input', 'rc-char-b-input',
-    'rc-relation-input', 'rc-coupon-input',
-    'rc-etc-input',
-    'rc-discount-input', 'rc-total-input',
-    'rc-thankyou-input',
-    'rc-date-y', 'rc-date-m', 'rc-date-d',
+  // ── SHEET ZONE: 트레이너 카드 저장 필드 ──
+  const fields = [
+    'tc-name-input','tc-sub-input','tc-id-input',
+    'tc-job-input','tc-origin-input','tc-tags-input','tc-bio-input',
+    'tc-entry-title-input',
+    'header-color','img-bg-color','entry-bg-color','app-bg-color',
   ];
   const data = {};
-  textFields.forEach(id => {
+  fields.forEach(id => {
     const el = v(id);
     if (el) data[id] = el.value;
   });
-  // 체크박스
-  const checkRelation = v('rc-check-relation');
-  if (checkRelation) data['rc-check-relation'] = checkRelation.checked;
-  const checkCoupon = v('rc-check-coupon');
-  if (checkCoupon) data['rc-check-coupon'] = checkCoupon.checked;
-  // 라디오 (통화 선택)
-  const selectedRadio = document.querySelector('input[name="rc-currency-radio"]:checked');
-  data['rc-currency-radio'] = selectedRadio ? selectedRadio.value : 'USD';
-  // 품목 목록
-  data['__rcItems'] = JSON.parse(JSON.stringify(rcItems));
-  // 영수증 커스텀 컬러
-  const rcTitleInput = v('rc-title-color');
-  if (rcTitleInput) data['rc-title-color'] = rcTitleInput.value;
-  const rcBodyInput = v('rc-body-color');
-  if (rcBodyInput) data['rc-body-color'] = rcBodyInput.value;
-  const rcSheetBgInput = v('rc-sheet-bg');
-  if (rcSheetBgInput) data['rc-sheet-bg'] = rcSheetBgInput.value;
-  const rcAppBgInput = v('rc-app-bg');
-  if (rcAppBgInput) data['rc-app-bg'] = rcAppBgInput.value;
-  const rcSubColorInput = v('rc-sub-color');
-  if (rcSubColorInput) data['rc-sub-color'] = rcSubColorInput.value;
-  const rcDecoColorInput = v('rc-deco-color');
-  if (rcDecoColorInput) data['rc-deco-color'] = rcDecoColorInput.value;
-  const rcBarcodeColorInput = v('rc-barcode-color');
-  if (rcBarcodeColorInput) data['rc-barcode-color'] = rcBarcodeColorInput.value;
+  // 포켓몬 슬롯 데이터 (JS 상태에서 직렬화)
+  data['__pokemon_slots'] = JSON.stringify(pokemonSlots);
+  data['__sprite_mode']   = spriteMode;
   return data;
 }
 
 function applyData(data) {
-  // 텍스트 필드 복원
-  const textFields = [
-    'rc-subtitle-input',
-    'rc-char-a-input', 'rc-char-b-input',
-    'rc-relation-input', 'rc-coupon-input',
-    'rc-etc-input',
-    'rc-discount-input', 'rc-total-input',
-    'rc-thankyou-input',
-    'rc-date-y', 'rc-date-m', 'rc-date-d',
-  ];
-  textFields.forEach(id => {
+  Object.entries(data).forEach(([id, val]) => {
+    if (id.startsWith('__')) return;
     const el = v(id);
-    if (el && data[id] !== undefined) el.value = data[id];
+    if (el) el.value = val;
   });
-  // 체크박스 복원
-  const checkRelation = v('rc-check-relation');
-  if (checkRelation && data['rc-check-relation'] !== undefined) checkRelation.checked = data['rc-check-relation'];
-  const checkCoupon = v('rc-check-coupon');
-  if (checkCoupon && data['rc-check-coupon'] !== undefined) checkCoupon.checked = data['rc-check-coupon'];
-  // 라디오 복원
-  if (data['rc-currency-radio']) {
-    const radio = document.querySelector(`input[name="rc-currency-radio"][value="${data['rc-currency-radio']}"]`);
-    if (radio) radio.checked = true;
+  // 포켓몬 슬롯 복원
+  if (data['__pokemon_slots']) {
+    try {
+      const saved = JSON.parse(data['__pokemon_slots']);
+      if (Array.isArray(saved)) {
+        pokemonSlots = saved;
+        renderAllPokemonSlots();
+      }
+    } catch(e) {}
   }
-  // 품목 목록 복원
-  if (Array.isArray(data['__rcItems'])) {
-    rcItems = data['__rcItems'];
-    rcRenderItemList();
-  }
-  // 영수증 커스텀 컬러 복원
-  if (data['rc-title-color']) {
-    const el = v('rc-title-color');
-    if (el) { el.value = data['rc-title-color']; updateRcTitleColor(); }
-  }
-  if (data['rc-body-color']) {
-    const el = v('rc-body-color');
-    if (el) { el.value = data['rc-body-color']; updateRcBodyColor(); }
-  }
-  if (data['rc-sheet-bg']) {
-    const el = v('rc-sheet-bg');
-    if (el) { el.value = data['rc-sheet-bg']; updateRcSheetBg(); }
-  }
-  if (data['rc-app-bg']) {
-    const el = v('rc-app-bg');
-    if (el) { el.value = data['rc-app-bg']; updateRcAppBg(); }
-  }
-  if (data['rc-sub-color']) {
-    const el = v('rc-sub-color');
-    if (el) { el.value = data['rc-sub-color']; updateRcSubColor(); }
-  }
-  if (data['rc-deco-color']) {
-    const el = v('rc-deco-color');
-    if (el) { el.value = data['rc-deco-color']; updateRcDecoColor(); }
-  }
-  if (data['rc-barcode-color']) {
-    const el = v('rc-barcode-color');
-    if (el) { el.value = data['rc-barcode-color']; updateRcBarcodeColor(); }
-  }
-  // 시트 전체 갱신
+  // 스프라이트 모드 복원
+  if (data['__sprite_mode']) setSpriteMode(data['__sprite_mode']);
+  // UI 갱신
   update();
+  updateHeaderColor();
+  updateImgBgColor();
+  updateEntryBgColor();
+  updateAppBgColor();
 }
 
 function loadSlots() {
@@ -3993,7 +4142,7 @@ function resetSlotAll() {
   try {
     localStorage.removeItem(STORAGE_KEY_SPLIT);
     localStorage.removeItem(STORAGE_KEY_UNIFIED);
-    localStorage.removeItem('dss_receipt_tour_seen');
+    localStorage.removeItem('dss_trainer_tour_seen');
   } catch(e) {}
   closeSlotModal();
   location.reload();
@@ -4064,40 +4213,34 @@ function flashSaved() {
 function resetAll() {
   if (!confirm('모든 입력값을 초기값으로 되돌립니다.\n이 작업은 되돌릴 수 없어요. 계속할까요?')) return;
 
-  // 텍스트 필드 초기값 (영수증 메이커 전용)
+  // ── SHEET ZONE: 트레이너 카드 초기값 ──
   const defaults = {
-    'rc-subtitle-input': 'I HAVE A KINDA COOL DAY',
-    'rc-char-a-input': '',
-    'rc-char-b-input': '',
-    'rc-relation-input': '1st Meet',
-    'rc-coupon-input': 'Using Coupon',
-    'rc-etc-input': 'ETC',
-    'rc-discount-input': '',
-    'rc-total-input': '',
-    'rc-thankyou-input': 'Thank you for shipping !',
-    'rc-date-y': '', 'rc-date-m': '', 'rc-date-d': '',
+    'tc-name-input': '트레이너명',
+    'tc-sub-input': 'TRAINER NAME',
+    'tc-id-input': '00001',
+    'tc-job-input': '직업',
+    'tc-origin-input': '신오지방',
+    'tc-tags-input': '태그1, 태그2, 태그3',
+    'tc-bio-input': '간단한 캐릭터 소개',
+    'tc-entry-title-input': 'ENTRY',
+    'header-color': '#1E1C1A',
+    'img-bg-color': '#fafaf9',
+    'entry-bg-color': '#fafaf9',
+    'app-bg-color': '#FFFFFF',
   };
+
   Object.entries(defaults).forEach(([id, val]) => {
     const el = v(id);
     if (el) el.value = val;
   });
 
-  // 체크박스 초기화
-  const checkRelation = v('rc-check-relation');
-  if (checkRelation) checkRelation.checked = false;
-  const checkCoupon = v('rc-check-coupon');
-  if (checkCoupon) checkCoupon.checked = false;
+  // 포켓몬 슬롯 초기화
+  pokemonSlots = Array.from({length: 6}, () => ({ id: null, name: '', types: [], sprite: '', ace: false }));
+  setSpriteMode('illust');
+  renderAllPokemonSlots();
 
-  // 라디오 초기화 (USD 기본)
-  const radioUsd = document.querySelector('input[name="rc-currency-radio"][value="USD"]');
-  if (radioUsd) radioUsd.checked = true;
-
-  // 품목 초기화
-  rcItems = [];
-  rcRenderItemList();
-
-  // 이미지 전체 삭제
-  ['a-sub', 'b-sub', 'a-main', 'b-main', 'pair-main'].forEach(key => deleteImg(key));
+  // 이미지 삭제
+  ['a-main'].forEach(key => deleteImg(key));
 
   // 스티커 + 라이브러리 전체 초기화
   stickers.forEach(s => { const el = document.getElementById('sticker-' + s.id); if (el) el.remove(); });
@@ -4113,33 +4256,453 @@ function resetAll() {
     stopBarGrad();
   }
 
+  // UI 갱신
+  update();
+  updateHeaderColor();
+  updateImgBgColor();
+  updateEntryBgColor();
+  updateAppBgColor();
   // 폰트 초기화
-  if (currentFont !== 'special-elite') {
-    applyFontFamily("'Special Elite', monospace");
-    currentFont = 'special-elite';
-    v('font-toggle-label').textContent = 'SE';
+  if (currentFont !== 'noto') {
+    applyFontFamily("'Noto Sans KR', sans-serif");
+    currentFont = 'noto';
+    v('font-toggle-label').textContent = 'Noto';
     v('font-toggle-btn').style.color = '';
   }
-
-  // 영수증 커스텀 컬러 초기화
-  const rcTitleEl = v('rc-title-color');
-  if (rcTitleEl) { rcTitleEl.value = '#1a1410'; updateRcTitleColor(); }
-  const rcBodyEl = v('rc-body-color');
-  if (rcBodyEl) { rcBodyEl.value = '#1a1410'; updateRcBodyColor(); }
-  const rcSheetBgEl = v('rc-sheet-bg');
-  if (rcSheetBgEl) { rcSheetBgEl.value = '#FFFFFF'; updateRcSheetBg(); }
-  const rcAppBgEl = v('rc-app-bg');
-  if (rcAppBgEl) { rcAppBgEl.value = '#FFFFFF'; updateRcAppBg(); }
-  const rcSubColorEl = v('rc-sub-color');
-  if (rcSubColorEl) { rcSubColorEl.value = '#6b5f50'; updateRcSubColor(); }
-  const rcDecoColorEl = v('rc-deco-color');
-  if (rcDecoColorEl) { rcDecoColorEl.value = '#1a1410'; updateRcDecoColor(); }
-  const rcBarcodeColorEl = v('rc-barcode-color');
-  if (rcBarcodeColorEl) { rcBarcodeColorEl.value = '#1a1410'; updateRcBarcodeColor(); }
-
-  // 시트 전체 갱신
-  update();
   isDirty = false;
+}
+
+
+// ══════════════════════════════════════════
+// SHEET ZONE: JS — 포켓몬 엔트리 시스템
+// PokeAPI 연동 + 한글 매핑 테이블 + 슬롯 렌더
+// ══════════════════════════════════════════
+
+// ── 포켓몬 타입 한글 매핑 ──
+const POKE_TYPE_KO = {
+  normal:'노말', fire:'불꽃', water:'물', electric:'전기', grass:'풀',
+  ice:'얼음', fighting:'격투', poison:'독', ground:'땅', flying:'비행',
+  psychic:'에스퍼', bug:'벌레', rock:'바위', ghost:'고스트', dragon:'드래곤',
+  dark:'악', steel:'강철', fairy:'페어리',
+};
+
+// ── 한글 이름 → 포켓몬 번호 매핑 (런타임 캐싱) ──
+// GitHub raw CSV에서 1회 fetch 후 localStorage 캐시
+// local_language_id=3 이 한국어
+const POKE_KO_CACHE_KEY = 'tc_poke_ko_map_v1';
+const POKE_KO_CSV_URL   = 'https://cdn.jsdelivr.net/gh/PokeAPI/pokeapi@master/data/v2/csv/pokemon_species_names.csv';
+
+// 런타임에 채워지는 매핑 객체 { "이상해씨": 1, ... }
+let POKE_NAME_TO_ID = {};
+let pokeMapReady = false;  // 로딩 완료 여부
+
+// ── 리전폼 매핑 테이블 (한글명 → { id, slug, region }) ──
+// ID·슬러그: PokeAPI CSV(pokemon.csv) 실측값 / 한글명: 공식 한국어 도감 기준
+const POKE_REGION_FORMS = {
+  // 알로라폼 (7세대) — 10100~10115
+  '라이츄 〔알로라〕':       { id: 10100, slug: 'raichu-alola',              region: '알로라' },
+  '모래두지 〔알로라〕':     { id: 10101, slug: 'sandshrew-alola',           region: '알로라' },
+  '고지 〔알로라〕':         { id: 10102, slug: 'sandslash-alola',           region: '알로라' },
+  '식스테일 〔알로라〕':     { id: 10103, slug: 'vulpix-alola',              region: '알로라' },
+  '나인테일 〔알로라〕':     { id: 10104, slug: 'ninetales-alola',           region: '알로라' },
+  '디그다 〔알로라〕':       { id: 10105, slug: 'diglett-alola',             region: '알로라' },
+  '닥트리오 〔알로라〕':     { id: 10106, slug: 'dugtrio-alola',             region: '알로라' },
+  '나옹 〔알로라〕':         { id: 10107, slug: 'meowth-alola',              region: '알로라' },
+  '페르시온 〔알로라〕':     { id: 10108, slug: 'persian-alola',             region: '알로라' },
+  '꼬마돌 〔알로라〕':       { id: 10109, slug: 'geodude-alola',             region: '알로라' },
+  '데구리 〔알로라〕':       { id: 10110, slug: 'graveler-alola',            region: '알로라' },
+  '딱구리 〔알로라〕':       { id: 10111, slug: 'golem-alola',               region: '알로라' },
+  '질퍽이 〔알로라〕':       { id: 10112, slug: 'grimer-alola',              region: '알로라' },
+  '질뻐기 〔알로라〕':       { id: 10113, slug: 'muk-alola',                 region: '알로라' },
+  '나시 〔알로라〕':         { id: 10114, slug: 'exeggutor-alola',           region: '알로라' },
+  '텅구리 〔알로라〕':       { id: 10115, slug: 'marowak-alola',             region: '알로라' },
+  // 가라르폼 (8세대) — 10161~10180
+  '나옹 〔가라르〕':         { id: 10161, slug: 'meowth-galar',              region: '가라르' },
+  '포니타 〔가라르〕':       { id: 10162, slug: 'ponyta-galar',              region: '가라르' },
+  '날쌩마 〔가라르〕':       { id: 10163, slug: 'rapidash-galar',            region: '가라르' },
+  '야돈 〔가라르〕':         { id: 10164, slug: 'slowpoke-galar',            region: '가라르' },
+  '야도란 〔가라르〕':       { id: 10165, slug: 'slowbro-galar',             region: '가라르' },
+  '파오리 〔가라르〕':       { id: 10166, slug: 'farfetchd-galar',           region: '가라르' },
+  '또도가스 〔가라르〕':     { id: 10167, slug: 'weezing-galar',             region: '가라르' },
+  '마임맨 〔가라르〕':       { id: 10168, slug: 'mr-mime-galar',             region: '가라르' },
+  '프리져 〔가라르〕':       { id: 10169, slug: 'articuno-galar',            region: '가라르' },
+  '썬더 〔가라르〕':         { id: 10170, slug: 'zapdos-galar',              region: '가라르' },
+  '파이어 〔가라르〕':       { id: 10171, slug: 'moltres-galar',             region: '가라르' },
+  '야도킹 〔가라르〕':       { id: 10172, slug: 'slowking-galar',            region: '가라르' },
+  '코산호 〔가라르〕':       { id: 10173, slug: 'corsola-galar',             region: '가라르' },
+  '지그제구리 〔가라르〕':   { id: 10174, slug: 'zigzagoon-galar',           region: '가라르' },
+  '직구리 〔가라르〕':       { id: 10175, slug: 'linoone-galar',             region: '가라르' },
+  '달막화 〔가라르〕':       { id: 10176, slug: 'darumaka-galar',            region: '가라르' },
+  '불비달마 〔가라르〕':     { id: 10177, slug: 'darmanitan-galar-standard', region: '가라르' },
+  '데스마스 〔가라르〕':     { id: 10179, slug: 'yamask-galar',              region: '가라르' },
+  '메더 〔가라르〕':         { id: 10180, slug: 'stunfisk-galar',            region: '가라르' },
+  // 히스이폼 (4세대 레알세) — 10229~10244
+  '가디 〔히스이〕':         { id: 10229, slug: 'growlithe-hisui',           region: '히스이' },
+  '윈디 〔히스이〕':         { id: 10230, slug: 'arcanine-hisui',            region: '히스이' },
+  '찌리리공 〔히스이〕':     { id: 10231, slug: 'voltorb-hisui',             region: '히스이' },
+  '붐볼 〔히스이〕':         { id: 10232, slug: 'electrode-hisui',           region: '히스이' },
+  '블레이범 〔히스이〕':     { id: 10233, slug: 'typhlosion-hisui',          region: '히스이' },
+  '침바루 〔히스이〕':       { id: 10234, slug: 'qwilfish-hisui',            region: '히스이' },
+  '포푸니 〔히스이〕':       { id: 10235, slug: 'sneasel-hisui',             region: '히스이' },
+  '대검귀 〔히스이〕':       { id: 10236, slug: 'samurott-hisui',            region: '히스이' },
+  '드레디어 〔히스이〕':     { id: 10237, slug: 'lilligant-hisui',           region: '히스이' },
+  '조로아 〔히스이〕':       { id: 10238, slug: 'zorua-hisui',               region: '히스이' },
+  '조로아크 〔히스이〕':     { id: 10239, slug: 'zoroark-hisui',             region: '히스이' },
+  '워글 〔히스이〕':         { id: 10240, slug: 'braviary-hisui',            region: '히스이' },
+  '미끄네일 〔히스이〕':     { id: 10241, slug: 'sliggoo-hisui',             region: '히스이' },
+  '미끄래곤 〔히스이〕':     { id: 10242, slug: 'goodra-hisui',              region: '히스이' },
+  '크레베이스 〔히스이〕':   { id: 10243, slug: 'avalugg-hisui',             region: '히스이' },
+  '모크나이퍼 〔히스이〕':   { id: 10244, slug: 'decidueye-hisui',           region: '히스이' },
+  // 팔데아폼 (9세대) — 10250~10253
+  '켄타로스 〔팔데아〕':     { id: 10250, slug: 'tauros-paldea-combat-breed', region: '팔데아' },
+  '켄타로스 〔팔데아·불꽃〕':{ id: 10251, slug: 'tauros-paldea-blaze-breed',  region: '팔데아' },
+  '켄타로스 〔팔데아·물〕':  { id: 10252, slug: 'tauros-paldea-aqua-breed',   region: '팔데아' },
+  '우파 〔팔데아〕':         { id: 10253, slug: 'wooper-paldea',              region: '팔데아' },
+};
+
+// ── CSV 파싱: local_language_id=3(한국어) 행만 추출 ──
+function parsePokeKoCSV(csvText) {
+  const map = {};
+  const lines = csvText.split('\n');
+  // 헤더: pokemon_species_id,local_language_id,name,genus
+  for (let i = 1; i < lines.length; i++) {
+    const row = lines[i].split(',');
+    if (row.length < 3) continue;
+    const speciesId  = parseInt(row[0], 10);
+    const langId     = parseInt(row[1], 10);
+    const name       = row[2].trim();
+    if (langId === 3 && name && speciesId > 0) {
+      map[name] = speciesId;
+    }
+  }
+  return map;
+}
+
+// ── 초기화: 캐시 확인 → 없으면 fetch ──
+async function initPokeMap() {
+  // 1. localStorage 캐시 확인
+  try {
+    const cached = localStorage.getItem(POKE_KO_CACHE_KEY);
+    if (cached) {
+      POKE_NAME_TO_ID = JSON.parse(cached);
+      pokeMapReady = true;
+      console.log(`[PokeMap] 캐시 로드 완료: ${Object.keys(POKE_NAME_TO_ID).length}마리`);
+      renderPanelSlots(); // 검색창 활성화
+      return;
+    }
+  } catch(e) {}
+
+  // 2. 캐시 없음 → CSV fetch
+  updatePokeLoadingUI('loading');
+  try {
+    const res = await fetch(POKE_KO_CSV_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const csvText = await res.text();
+    POKE_NAME_TO_ID = parsePokeKoCSV(csvText);
+
+    // 3. localStorage에 저장
+    try {
+      localStorage.setItem(POKE_KO_CACHE_KEY, JSON.stringify(POKE_NAME_TO_ID));
+    } catch(e) {}
+
+    pokeMapReady = true;
+    console.log(`[PokeMap] fetch 완료: ${Object.keys(POKE_NAME_TO_ID).length}마리`);
+    updatePokeLoadingUI('done');
+    renderPanelSlots(); // 검색창 활성화
+
+  } catch(e) {
+    console.warn('[PokeMap] fetch 실패:', e);
+    updatePokeLoadingUI('error');
+  }
+}
+
+// ── 포켓몬 패널 로딩 상태 UI ──
+function updatePokeLoadingUI(state) {
+  const banner = document.getElementById('poke-load-banner');
+  if (!banner) return;
+  if (state === 'loading') {
+    banner.textContent = '포켓몬 데이터를 불러오는 중...';
+    banner.style.cssText = 'font-size:10px;color:var(--label-color);padding:0 0 10px;font-family:"Noto Sans KR",sans-serif;';
+    banner.style.display = 'block';
+  } else if (state === 'done') {
+    banner.style.display = 'none';
+  } else if (state === 'error') {
+    banner.innerHTML = '⚠ 데이터 로드 실패. <button onclick="initPokeMap()" style="background:none;border:none;color:#7C6FCF;cursor:pointer;font-size:10px;text-decoration:underline;font-family:\'Noto Sans KR\',sans-serif;">재시도</button>';
+    banner.style.cssText = 'font-size:10px;color:#C0392B;padding:0 0 10px;font-family:"Noto Sans KR",sans-serif;display:block;';
+  }
+}
+
+
+// ── 포켓몬 슬롯 상태 (6개) ──
+let pokemonSlots = Array.from({length: 6}, () => ({
+  id: null, name: '', types: [], sprite: '', ace: false,
+}));
+
+// ── 스프라이트 모드 ('illust' | 'dot') ──
+let spriteMode = 'illust';
+
+function getSpriteUrl(id) {
+  if (spriteMode === 'dot') {
+    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+  }
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+}
+
+function setSpriteMode(mode) {
+  spriteMode = mode;
+
+  // 버튼 active 클래스 토글 (인라인 스타일 사용 안 함)
+  const illustBtn = document.getElementById('sprite-mode-illust');
+  const dotBtn    = document.getElementById('sprite-mode-dot');
+  if (illustBtn && dotBtn) {
+    illustBtn.classList.toggle('active', mode === 'illust');
+    dotBtn.classList.toggle('active',    mode === 'dot');
+  }
+
+  // 이미 등록된 슬롯 스프라이트 URL 전체 갱신
+  pokemonSlots.forEach(slot => {
+    if (slot.id) slot.sprite = getSpriteUrl(slot.id);
+  });
+
+  // 도트 모드: image-rendering pixelated, 일러스트: auto
+  const spriteCSS = document.getElementById('tc-sprite-rendering');
+  if (spriteCSS) {
+    spriteCSS.textContent = mode === 'dot'
+      ? '.tc-slot-sprite { image-rendering: pixelated; }'
+      : '.tc-slot-sprite { image-rendering: auto; }';
+  }
+
+  renderAllPokemonSlots();
+  markDirty();
+}
+
+// ── ACE 지정 (1마리만 허용) ──
+function setAce(idx, val) {
+  // 기존 ACE 해제 후 새로 지정
+  pokemonSlots.forEach((s, i) => { s.ace = (val && i === idx); });
+  renderAllPokemonSlots();
+  markDirty();
+}
+
+// ── ACE 리본 색 갱신 (헤더색 변경 시 호출) ──
+function updateAceRibbonColor() {
+  const color = document.getElementById('header-color')?.value || '#1E1C1A';
+  document.querySelectorAll('.tc-ace-ribbon polygon').forEach(el => {
+    el.setAttribute('fill', color);
+  });
+}
+
+// ── 슬롯 전체 렌더 (시트 + 편집패널) ──
+function renderAllPokemonSlots() {
+  renderSheetSlots();
+  renderPanelSlots();
+  updateHeaderBallIndicators();
+}
+
+// ── 헤더 몬스터볼 인디케이터 업데이트 ──
+function updateHeaderBallIndicators() {
+  const filled = pokemonSlots.filter(s => s.id !== null).length;
+  for (let i = 0; i < 6; i++) {
+    const el = document.getElementById('tc-hball-' + i);
+    if (!el) continue;
+    // i=0이 맨 오른쪽, 왼쪽부터 채우려면 (5-i) < filled 일 때 불투명
+    el.setAttribute('opacity', (5 - i) < filled ? '0.55' : '0.15');
+  }
+}
+
+// ── 시트에 포켓몬 슬롯 렌더 ──
+function renderSheetSlots() {
+  const row1 = document.getElementById('tc-pokemon-row-1');
+  const row2 = document.getElementById('tc-pokemon-row-2');
+  if (!row1 || !row2) return;
+
+  [row1, row2].forEach((row, ri) => {
+    row.innerHTML = '';
+    for (let ci = 0; ci < 3; ci++) {
+      const idx = ri * 3 + ci;
+      const slot = pokemonSlots[idx];
+      const div = document.createElement('div');
+      div.className = 'tc-pokemon-slot';
+      const headerColor = (document.getElementById('header-color')?.value) || '#1E1C1A';
+      div.innerHTML = `<div class="tc-slot-num">${String(idx+1).padStart(2,'0')}</div>` +
+        `<svg class="tc-pokeball-deco" style="position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);width:70%;height:70%;pointer-events:none;opacity:0.06;" viewBox="0 0 100 100">
+          <path d="M2.2,46 A48,48 0 0,1 97.8,46 L71.6,46 A22,22 0 0,0 28.4,46 Z" fill="#1E1C1A"/>
+          <path d="M2.2,54 A48,48 0 0,0 97.8,54 L71.6,54 A22,22 0 0,1 28.4,54 Z" fill="#1E1C1A"/>
+          <circle cx="50" cy="50" r="10" fill="#1E1C1A"/>
+        </svg>` +
+        (slot.ace ? `<svg class="tc-ace-ribbon" viewBox="0 0 38 38" style="position:absolute;top:0;left:0;width:38px;height:38px;pointer-events:none;overflow:visible;">
+          <polygon points="0,0 38,0 0,38" fill="${headerColor}"/>
+          <text x="13" y="13" font-family="'Barlow Condensed',sans-serif" font-size="8" font-weight="700" fill="rgba(255,255,255,0.9)" text-anchor="middle" dominant-baseline="central" transform="rotate(-45,13,13)" letter-spacing="0.5">ACE</text>
+        </svg>` : '') +
+        (slot.sprite
+          ? `<img class="tc-slot-sprite" src="${slot.sprite}" alt="${slot.name}">`
+          : '') +
+        (slot.name
+          ? `<div class="tc-slot-name">${slot.name}</div>` : '') +
+        (slot.types.length
+          ? `<div class="tc-slot-types">${slot.types.map(t=>`<span class="tc-type-badge tc-type-${t}">${t}</span>`).join('')}</div>`
+          : '');
+      row.appendChild(div);
+    }
+  });
+}
+
+// ── 편집 패널 슬롯 렌더 ──
+function renderPanelSlots() {
+  const container = document.getElementById('pokemon-slots-panel');
+  if (!container) return;
+  container.innerHTML = '';
+
+  for (let i = 0; i < 6; i++) {
+    const slot = pokemonSlots[i];
+    const wrap = document.createElement('div');
+    wrap.className = 'field-row poke-search-wrap';
+    wrap.dataset.slotIdx = i;
+
+    const label = document.createElement('label');
+    label.className = 'field-label';
+    label.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:4px;';
+    label.innerHTML = `<span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:3px;background:#1E1C1A;color:#fff;font-size:8px;font-family:'Barlow Condensed',sans-serif;font-weight:700;">${String(i+1).padStart(2,'0')}</span>` +
+      (slot.name
+        ? `<span style="color:var(--text);">${slot.name}</span>` +
+          slot.types.map(t=>`<span class="tc-type-badge tc-type-${t}" style="font-size:7px;">${t}</span>`).join('')
+        : `<span style="color:var(--label-color);">비어있음</span>`);
+
+    const inputWrap = document.createElement('div');
+    inputWrap.style.position = 'relative';
+
+    const input = document.createElement('input');
+    input.className = 'field-input';
+    input.type = 'text';
+    input.placeholder = pokeMapReady ? '한글 이름으로 검색...' : '데이터 로딩 중...';
+    input.value = slot.name;
+    input.autocomplete = 'off';
+    input.style.paddingRight = slot.name ? '60px' : '10px';
+
+    // 삭제 버튼
+    const clearBtn = document.createElement('button');
+    clearBtn.textContent = '✕ 삭제';
+    clearBtn.style.cssText = 'position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;font-size:9px;color:var(--label-color);cursor:pointer;font-family:"Noto Sans KR",sans-serif;display:' + (slot.name ? 'block' : 'none');
+    clearBtn.onclick = () => {
+      pokemonSlots[i] = { id: null, name: '', types: [], sprite: '', ace: false };
+      renderAllPokemonSlots();
+      markDirty();
+    };
+
+    // ACE 체크박스
+    const aceRow = document.createElement('div');
+    aceRow.style.cssText = 'display:' + (slot.name ? 'flex' : 'none') + ';align-items:center;justify-content:flex-end;gap:5px;margin-top:4px;';
+    const aceLabel = document.createElement('label');
+    aceLabel.htmlFor = 'ace-chk-' + i;
+    aceLabel.textContent = 'ACE';
+    aceLabel.style.cssText = 'font-size:9px;font-weight:700;font-family:"Barlow Condensed",sans-serif;letter-spacing:0.08em;color:var(--label-color);cursor:pointer;';
+    const aceBox = document.createElement('span');
+    aceBox.id = 'ace-chk-' + i;
+    aceBox.dataset.checked = slot.ace ? '1' : '0';
+    aceBox.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:12px;height:12px;border:1.5px solid var(--label-color);border-radius:2px;cursor:pointer;font-size:9px;color:var(--text);flex-shrink:0;';
+    if (slot.ace) aceBox.textContent = '✓';
+    const toggleAce = () => {
+      const isChecked = aceBox.dataset.checked === '1';
+      setAce(i, !isChecked);
+    };
+    aceBox.onclick = toggleAce;
+    aceLabel.onclick = toggleAce;
+
+    const dropdown = document.createElement('div');
+    dropdown.className = 'poke-dropdown';
+
+    // 검색 입력 이벤트
+    input.addEventListener('input', () => {
+      const q = input.value.trim();
+      if (!q) { dropdown.classList.remove('open'); dropdown.innerHTML = ''; return; }
+      const results = searchPokemon(q);
+      if (!results.length) { dropdown.classList.remove('open'); return; }
+      dropdown.innerHTML = '';
+      results.slice(0, 8).forEach(({id, name, slug}) => {
+        const item = document.createElement('div');
+        item.className = 'poke-dropdown-item';
+        const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+        const regionMatch = name.match(/〔(.+?)〕/);
+        const regionBadge = regionMatch
+          ? `<span style="margin-left:auto;font-size:7px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.05em;color:#7C6FCF;white-space:nowrap;">${regionMatch[1]}</span>`
+          : '';
+        item.innerHTML = `<img src="${spriteUrl}" alt=""><span class="poke-dropdown-num">#${String(id).padStart(3,'0')}</span><span>${name}</span>${regionBadge}`;
+        item.addEventListener('mousedown', e => {
+          e.preventDefault();
+          selectPokemon(i, id, name, slug);
+          dropdown.classList.remove('open');
+          input.blur();
+        });
+        dropdown.appendChild(item);
+      });
+      dropdown.classList.add('open');
+    });
+
+    input.addEventListener('blur', () => {
+      setTimeout(() => dropdown.classList.remove('open'), 150);
+    });
+
+    inputWrap.appendChild(input);
+    inputWrap.appendChild(clearBtn);
+    inputWrap.appendChild(dropdown);
+    aceRow.appendChild(aceLabel);
+    aceRow.appendChild(aceBox);
+    wrap.appendChild(label);
+    wrap.appendChild(inputWrap);
+    wrap.appendChild(aceRow);
+    container.appendChild(wrap);
+  }
+}
+
+// ── 한글 이름 검색 ──
+function searchPokemon(query) {
+  if (!pokeMapReady) return [];
+  const q = query.toLowerCase();
+  const results = [];
+  // 한글 이름 부분 일치 (일반 포켓몬)
+  for (const [name, id] of Object.entries(POKE_NAME_TO_ID)) {
+    if (name.includes(q)) results.push({ id, name, slug: null });
+  }
+  // 리전폼 부분 일치
+  for (const [name, form] of Object.entries(POKE_REGION_FORMS)) {
+    if (name.includes(q)) results.push({ id: form.id, name, slug: form.slug });
+  }
+  // 번호 검색 (#006 또는 6)
+  const numQ = q.replace(/^#/, '');
+  if (/^\d+$/.test(numQ)) {
+    const numId = parseInt(numQ);
+    if (!results.find(r => r.id === numId)) {
+      results.unshift({ id: numId, name: `#${String(numId).padStart(3,'0')}`, slug: null });
+    }
+  }
+  // 중복 제거 + id순 정렬
+  const seen = new Set();
+  return results.filter(r => {
+    if (seen.has(r.id)) return false;
+    seen.add(r.id); return true;
+  }).sort((a,b) => a.id - b.id).slice(0, 8);
+}
+
+// ── 포켓몬 선택 → PokeAPI로 타입·스프라이트 fetch ──
+async function selectPokemon(slotIdx, pokeId, koName, slug = null) {
+  // 슬러그가 있으면(리전폼) 슬러그로, 없으면 id로 API 호출
+  const apiKey = slug || pokeId;
+  const sprite = getSpriteUrl(pokeId);
+  pokemonSlots[slotIdx] = { id: pokeId, name: koName, types: [], sprite, slug };
+  renderAllPokemonSlots();
+
+  // 타입은 API fetch
+  try {
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiKey}`);
+    const data = await res.json();
+    const types = data.types.map(t => POKE_TYPE_KO[t.type.name] || t.type.name);
+    pokemonSlots[slotIdx].types = types;
+    renderAllPokemonSlots();
+  } catch(e) {
+    console.warn('PokeAPI fetch 실패:', e);
+  }
+
+  markDirty();
 }
 
 // ══════════════════════════════════════════
@@ -4159,7 +4722,6 @@ const stickerEditBar = () => document.getElementById('sticker-edit-bar');
 // ── 편집 모드 토글 ──
 // 안내 칩 — 테두리 그라디언트 없음 (CSS 배경으로 처리)
 let barRafId = null;
-function startBarGrad() {}
 function stopBarGrad() { if (barRafId) { cancelAnimationFrame(barRafId); barRafId = null; } }
 
 function toggleStickerEdit() {
@@ -4175,7 +4737,6 @@ function toggleStickerEdit() {
     const header = document.querySelector('#sheet .sheet-header');
     if (header) bar.style.top = (header.offsetHeight + 8) + 'px';
     bar.classList.add('visible');
-    startBarGrad();
   } else {
     btn.textContent = '✦ 스티커 편집 모드 켜기';
     btn.classList.remove('active');
@@ -4266,6 +4827,7 @@ function placeSticker(src) {
       y: Math.round(sh * 0.05 + Math.random() * sh * 0.4),
       size: Math.max(80, initSize),
       rotate: 0,
+      locked: false,
     };
     stickers.push(sticker);
     renderSticker(sticker);
@@ -4316,6 +4878,7 @@ function addTextSticker() {
     y: Math.round(sh * 0.1  + Math.random() * sh * 0.4),
     size: size,
     rotate: 0,
+    locked: false,
   };
   stickers.push(sticker);
   renderSticker(sticker);
@@ -4361,6 +4924,7 @@ function placeTextSticker(item) {
     y: Math.round(sh * 0.1  + Math.random() * sh * 0.4),
     size: item.size,
     rotate: 0,
+    locked: false,
   };
   stickers.push(sticker);
   renderSticker(sticker);
@@ -4616,6 +5180,7 @@ function bindResizeHandle(handle, sticker) {
   handle.addEventListener('mousedown', e => {
     e.stopPropagation();
     e.preventDefault();
+    if (sticker.locked) return;
 
     if (sticker.type === 'text') {
       // 텍스트: 4단계 연속 토글
@@ -4676,6 +5241,7 @@ function bindRotateHandle(handle, sticker) {
   handle.addEventListener('mousedown', e => {
     e.stopPropagation();
     e.preventDefault();
+    if (sticker.locked) return;
     const el = document.getElementById('sticker-' + sticker.id);
     const rect = el.getBoundingClientRect();
     const cx = rect.left + rect.width  / 2;
@@ -4842,37 +5408,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ── 잠금 토글 ──
-function toggleStickerLock() {
-  if (selectedStickerIds.length !== 1) return;
-  const s = stickers.find(s => s.id === selectedStickerIds[0]);
-  if (!s) return;
-  s.locked = !s.locked;
-  renderSticker(s);
-  _refreshStickerSelection();
-}
-
-// ── 앞뒤 순서 변경 ──
-function bringToFront(id) {
-  const idx = stickers.findIndex(s => s.id === id);
-  if (idx === -1) return;
-  const [item] = stickers.splice(idx, 1);
-  stickers.push(item);
-  const layer = stickerLayer();
-  const el = document.getElementById('sticker-' + id);
-  if (el && layer) layer.appendChild(el);
-}
-function sendToBack(id) {
-  const idx = stickers.findIndex(s => s.id === id);
-  if (idx === -1) return;
-  const [item] = stickers.splice(idx, 1);
-  stickers.unshift(item);
-  const layer = stickerLayer();
-  const el = document.getElementById('sticker-' + id);
-  const firstSticker = layer.querySelector('.sticker-item');
-  if (el && layer && firstSticker) layer.insertBefore(el, firstSticker);
-}
-
 // ── 정렬 ──
 function alignStickers(type) {
   const selected = stickers.filter(s => selectedStickerIds.includes(s.id));
@@ -4945,6 +5480,37 @@ function alignStickers(type) {
     const el = document.getElementById('sticker-' + s.id);
     if (el) { el.style.left = s.x + 'px'; el.style.top = s.y + 'px'; }
   });
+}
+
+// ── 잠금 토글 ──
+function toggleStickerLock() {
+  if (selectedStickerIds.length !== 1) return;
+  const s = stickers.find(s => s.id === selectedStickerIds[0]);
+  if (!s) return;
+  s.locked = !s.locked;
+  renderSticker(s);
+  _refreshStickerSelection();
+}
+
+// ── 앞뒤 순서 변경 ──
+function bringToFront(id) {
+  const idx = stickers.findIndex(s => s.id === id);
+  if (idx === -1) return;
+  const [item] = stickers.splice(idx, 1);
+  stickers.push(item);
+  const layer = stickerLayer();
+  const el = document.getElementById('sticker-' + id);
+  if (el && layer) layer.appendChild(el);
+}
+function sendToBack(id) {
+  const idx = stickers.findIndex(s => s.id === id);
+  if (idx === -1) return;
+  const [item] = stickers.splice(idx, 1);
+  stickers.unshift(item);
+  const layer = stickerLayer();
+  const el = document.getElementById('sticker-' + id);
+  const firstSticker = layer.querySelector('.sticker-item');
+  if (el && layer && firstSticker) layer.insertBefore(el, firstSticker);
 }
 
 // ── 스티커 삭제 ──
@@ -5032,22 +5598,29 @@ const TOUR_STEPS = [
     panelSection: null,
   },
   {
-    title: '이미지 추가',
-    desc: '프리뷰의 이미지 영역을 클릭하면 업로드 창이 열립니다.\n편집 패널에서도 업로드할 수 있습니다.',
-    target: '#rc-img-area',
-    placement: 'left',
+    title: '캐릭터 정보',
+    desc: '이름, 직업, 출신지, 태그, 간단한 소개를\n작성할 수 있습니다.',
+    target: '.edit-panel',
+    placement: 'preview-right',
+    panelSection: 'name',
+  },
+  {
+    title: '포켓몬 엔트리',
+    desc: '포켓몬 이름을 검색하면 자동완성이 표시됩니다.\n선택 시 이미지와 타입이 자동으로 시트에 추가됩니다.',
+    target: '.edit-panel',
+    placement: 'preview-right',
+    panelSection: 'pokemon',
+  },
+  {
+    title: '트레이너 이미지',
+    desc: '프리뷰의 이미지 영역을 클릭하면 업로드 창이 열립니다.\편집 패널에서도 업로드할 수 있습니다.',
+    target: '#tc-img-wrap',
+    placement: 'right',
     panelSection: 'image',
   },
   {
-    title: '스티커',
-    desc: '시트 위에 자유롭게 스티커를 붙일 수 있습니다.\n자세한 내용은 사이드바 내 항목을 참고해주세요.',
-    target: '.edit-panel',
-    placement: 'preview-right',
-    panelSection: 'sticker',
-  },
-  {
     title: '부가 기능',
-    desc: '사이드바 하단에 추가 기능이 있습니다.\n\n· ⊞ 메인 이미지 분리↔합본 전환\n· 가A 폰트 전환\n· ↓↑ 저장/불러오기 슬롯\n· ↺ 작업 초기화',
+    desc: '사이드바 하단에 추가 기능이 있습니다.\n\n· 가A  폰트 전환\n· ↓↑  저장/불러오기 슬롯\n· ↺   작업 초기화',
     target: '.side-nav-bottom',
     placement: 'right',
     panelSection: null,
@@ -5240,7 +5813,7 @@ function tourClose() {
   document.getElementById('tour-highlight').classList.add('hidden');
   document.getElementById('tour-done-card').classList.add('hidden');
 
-  try { localStorage.setItem('dss_receipt_tour_seen', '1'); } catch(e) {}
+  try { localStorage.setItem('dss_trainer_tour_seen', '1'); } catch(e) {}
 }
 
 // ── 헤더에 허브 버튼 + ? 버튼 삽입 + 첫 방문 자동 실행 ──
@@ -5265,7 +5838,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   try {
-    if (!localStorage.getItem('dss_receipt_tour_seen')) {
+    if (!localStorage.getItem('dss_trainer_tour_seen')) {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           setTimeout(tourStart, 200);
@@ -5282,7 +5855,6 @@ window.addEventListener('resize', () => {
   }
 });
 
-// ══════════════════════════════════════════
 // ── 원래 함수 ──
 function matchMainImgHeight() {
   // ⚠️ 새 시트 제작 시 주의
@@ -5347,7 +5919,7 @@ function matchMainImgHeight() {
   <button class="tour-close-btn" onclick="tourClose()" title="닫기">✕</button>
   <div class="tour-done-icon">✦</div>
   <div class="tour-done-title">PC · 크롬 사용 권장</div>
-  <div class="tour-done-desc" style="margin-bottom:20px;">이제 시트를 자유롭게 편집할 수 있습니다.<br>· <strong style="color:#2C2825;">?</strong> 버튼으로 도움말을 다시 볼 수 있습니다.<br>· <strong style="color:#2C2825;">🪨</strong> 버튼으로 다른 시트를 볼 수 있습니다.<br><br>⚠ 입력 중 영문이 한글로 변경되지 않을 경우. 브라우저 외부 영역을 클릭하거나 한글을 복사/붙여넣기하면 해결됩니다.</div>
+  <div class="tour-done-desc" style="margin-bottom:20px;">이제 카드를 자유롭게 편집할 수 있습니다.<br>· <strong style="color:#2C2825;">?</strong> 버튼으로 도움말을 다시 볼 수 있습니다.<br>· <strong style="color:#2C2825;">🪨</strong> 버튼으로 다른 시트를 볼 수 있습니다.<br>⚠ 입력 중 영문이 한글로 변경되지 않을 경우, 브라우저 외부 영역을 클릭하거나 한글을 복사/붙여넣기하면 해결됩니다.</div>
   <button class="tour-done-btn" onclick="tourClose()">시작하기</button>
 </div>
 
