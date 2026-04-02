@@ -826,6 +826,13 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   border-bottom: 1px solid var(--sheet-border);
   background: var(--sheet-bg);
 }
+.tl-header.black {
+  background: #1E1C1A;
+  border-bottom-color: #1E1C1A;
+}
+.tl-header.black .tl-char-name-ko { color: #F5F3F0; }
+.tl-header.black .tl-char-name-en { color: rgba(255,255,255,0.42); }
+.tl-header.black .tl-title { color: #FFFFFF; }
 .tl-char-label {
   display: flex;
   align-items: center;
@@ -915,7 +922,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 
 /* ── 이벤트 슬롯 (고정 높이) ── */
 .tl-slot {
-  height: 80px;
+  height: 100px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -946,14 +953,14 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   line-height: 1.55;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   white-space: pre-wrap;
   word-break: break-all;
 }
 .tl-slot-desc.right { text-align: right; }
 .tl-slot-empty {
-  height: 80px;
+  height: 100px;
   flex-shrink: 0;
 }
 
@@ -967,7 +974,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 
 /* ── 노드 슬롯: 선을 내부에 포함 ── */
 .tl-node-slot {
-  height: 80px;
+  height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1925,6 +1932,21 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
         </div>
         <div class="section-panel-body">
 
+          <!-- 헤더 스타일 -->
+          <div class="field-row" style="margin-top:0;">
+            <label class="field-label">헤더 스타일</label>
+            <div style="display:flex;gap:6px;">
+              <button id="header-style-white" onclick="setHeaderStyle('white')"
+                style="flex:1;padding:6px 0;border-radius:6px;border:1.5px solid var(--text);background:#fff;color:var(--text);font-size:11px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:opacity 0.15s;">
+                WHITE
+              </button>
+              <button id="header-style-black" onclick="setHeaderStyle('black')"
+                style="flex:1;padding:6px 0;border-radius:6px;border:1.5px solid var(--panel-border);background:var(--input-bg);color:var(--label-color);font-size:11px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:opacity 0.15s;">
+                BLACK
+              </button>
+            </div>
+          </div>
+
           <!-- 캐릭터 A -->
           <div class="char-label"><span class="char-label-badge">A</span>캐릭터 A</div>
           <div class="field-row">
@@ -2561,8 +2583,8 @@ function tlRenderEventList() {
       <div class="tl-drag-handle" title="드래그해서 순서 변경"
         style="cursor:grab;color:var(--label-color);font-size:13px;padding:0 2px;flex-shrink:0;line-height:1;user-select:none;">≡</div>
       <input class="field-input" type="text" placeholder="연도"
-        value="${ev.year || ''}" maxlength="8"
-        style="width:64px;flex-shrink:0;padding:4px 8px;font-size:11px;"
+        value="${ev.year || ''}"
+        style="width:80px;flex-shrink:0;padding:4px 8px;font-size:11px;"
         oninput="tlEvents[${idx}].year=this.value;tlRenderSheet();update();">
       <select class="field-input"
         style="flex:1;padding:4px 8px;font-size:11px;cursor:pointer;"
@@ -2581,8 +2603,8 @@ function tlRenderEventList() {
       const titleRow = document.createElement('div');
       titleRow.style.cssText = 'margin-bottom:6px;';
       titleRow.innerHTML = `
-        <input class="field-input" type="text" placeholder="이벤트 제목 (최대 20자)"
-          value="${ev.title || ''}" maxlength="20"
+        <input class="field-input" type="text" placeholder="이벤트 제목"
+          value="${ev.title || ''}"
           style="width:100%;padding:4px 8px;font-size:11px;"
           oninput="tlEvents[${idx}].title=this.value;tlRenderSheet();update();">
       `;
@@ -2590,9 +2612,9 @@ function tlRenderEventList() {
 
       const descRow = document.createElement('div');
       descRow.innerHTML = `
-        <textarea class="field-input" placeholder="내용 (2줄·최대 44자)"
-          maxlength="44"
-          style="width:100%;padding:4px 8px;font-size:11px;resize:none;line-height:1.5;height:48px;"
+        <textarea class="field-input" placeholder="내용 (최대 120자)"
+          maxlength="120"
+          style="width:100%;padding:4px 8px;font-size:11px;resize:none;line-height:1.5;height:60px;"
           oninput="tlEvents[${idx}].desc=this.value;tlRenderSheet();update();">${ev.desc || ''}</textarea>
       `;
       wrap.appendChild(descRow);
@@ -2612,8 +2634,8 @@ function tlRenderEventList() {
       const aTitleRow = document.createElement('div');
       aTitleRow.style.cssText = 'margin-bottom:4px;';
       aTitleRow.innerHTML = `
-        <input class="field-input" type="text" placeholder="제목 (최대 20자)"
-          value="${ev.titleA || ''}" maxlength="20"
+        <input class="field-input" type="text" placeholder="제목"
+          value="${ev.titleA || ''}"
           style="width:100%;padding:4px 8px;font-size:11px;"
           oninput="tlEvents[${idx}].titleA=this.value;tlRenderSheet();update();">
       `;
@@ -2622,9 +2644,9 @@ function tlRenderEventList() {
       const aDescRow = document.createElement('div');
       aDescRow.style.cssText = 'margin-bottom:8px;';
       aDescRow.innerHTML = `
-        <textarea class="field-input" placeholder="내용 (2줄·최대 44자)"
-          maxlength="44"
-          style="width:100%;padding:4px 8px;font-size:11px;resize:none;line-height:1.5;height:48px;"
+        <textarea class="field-input" placeholder="내용 (최대 120자)"
+          maxlength="120"
+          style="width:100%;padding:4px 8px;font-size:11px;resize:none;line-height:1.5;height:60px;"
           oninput="tlEvents[${idx}].descA=this.value;tlRenderSheet();update();">${ev.descA || ''}</textarea>
       `;
       wrap.appendChild(aDescRow);
@@ -2638,8 +2660,8 @@ function tlRenderEventList() {
       const bTitleRow = document.createElement('div');
       bTitleRow.style.cssText = 'margin-bottom:4px;';
       bTitleRow.innerHTML = `
-        <input class="field-input" type="text" placeholder="제목 (최대 20자)"
-          value="${ev.titleB || ''}" maxlength="20"
+        <input class="field-input" type="text" placeholder="제목"
+          value="${ev.titleB || ''}"
           style="width:100%;padding:4px 8px;font-size:11px;"
           oninput="tlEvents[${idx}].titleB=this.value;tlRenderSheet();update();">
       `;
@@ -2647,9 +2669,9 @@ function tlRenderEventList() {
 
       const bDescRow = document.createElement('div');
       bDescRow.innerHTML = `
-        <textarea class="field-input" placeholder="내용 (2줄·최대 44자)"
-          maxlength="44"
-          style="width:100%;padding:4px 8px;font-size:11px;resize:none;line-height:1.5;height:48px;"
+        <textarea class="field-input" placeholder="내용 (최대 120자)"
+          maxlength="120"
+          style="width:100%;padding:4px 8px;font-size:11px;resize:none;line-height:1.5;height:60px;"
           oninput="tlEvents[${idx}].descB=this.value;tlRenderSheet();update();">${ev.descB || ''}</textarea>
       `;
       wrap.appendChild(bDescRow);
@@ -2766,6 +2788,35 @@ function tlRemoveEvent(idx) {
   tlEvents.splice(idx, 1);
   tlRenderEventList();
   tlRenderSheet();
+  markDirty();
+}
+
+// ── 헤더 스타일 전환 ──
+let tlHeaderStyle = 'white';
+function setHeaderStyle(style) {
+  tlHeaderStyle = style;
+  const header = document.querySelector('.tl-header');
+  if (!header) return;
+  header.classList.toggle('black', style === 'black');
+  const wBtn = v('header-style-white');
+  const bBtn = v('header-style-black');
+  if (wBtn && bBtn) {
+    if (style === 'white') {
+      wBtn.style.background = '#fff';
+      wBtn.style.color = 'var(--text)';
+      wBtn.style.borderColor = 'var(--text)';
+      bBtn.style.background = 'var(--input-bg)';
+      bBtn.style.color = 'var(--label-color)';
+      bBtn.style.borderColor = 'var(--panel-border)';
+    } else {
+      wBtn.style.background = 'var(--input-bg)';
+      wBtn.style.color = 'var(--label-color)';
+      wBtn.style.borderColor = 'var(--panel-border)';
+      bBtn.style.background = '#1E1C1A';
+      bBtn.style.color = '#fff';
+      bBtn.style.borderColor = '#1E1C1A';
+    }
+  }
   markDirty();
 }
 
@@ -3863,6 +3914,8 @@ function collectData() {
   });
   // 타임라인 이벤트 배열 직렬화
   data['__tlEvents'] = JSON.stringify(tlEvents);
+  // 헤더 스타일
+  data['__tlHeaderStyle'] = tlHeaderStyle;
   return data;
 }
 
@@ -3878,6 +3931,8 @@ function applyData(data) {
       tlEvents = JSON.parse(data['__tlEvents']);
     }
   } catch { tlEvents = []; }
+  // 헤더 스타일 복원
+  if (data['__tlHeaderStyle']) setHeaderStyle(data['__tlHeaderStyle']);
   tlRenderEventList();
   // 모든 UI 갱신
   update();
