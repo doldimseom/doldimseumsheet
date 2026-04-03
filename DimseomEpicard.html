@@ -803,7 +803,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 /* ── 에피카드 시트 색상 변수 ── */
 :root {
   --epi-bg: #FFFFFF;
-  --epi-grid-bg: #F4F4F3;
+  --epi-grid-bg: #FFFFFF;
   --epi-ink: #1C1A17;
   --epi-ink2: #4A4540;
   --epi-ink3: #8A8278;
@@ -2052,25 +2052,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
           </div>
           <div class="field-row">
             <label class="field-label">캐치프레이즈</label>
-            <input class="field-input" type="text" id="pair-catch" value="우리가 겪은 이야기들" maxlength="40" oninput="update()">
-          </div>
-
-          <div class="field-row">
-            <label class="field-label">헤더 색상</label>
-            <div class="color-row" style="margin-bottom:0;">
-              <div class="color-swatch-btn" id="header-color-swatch" style="background:#1E1C1A;">
-                <input type="color" id="header-color" value="#1E1C1A" oninput="updateHeaderColor()">
-              </div>
-            </div>
-          </div>
-          <div class="field-row">
-            <label class="field-label">하단 그라디언트</label>
-            <div style="display:flex;gap:6px;">
-              <button id="overlay-dark-btn" onclick="setOverlayMode('dark')"
-                style="flex:1;padding:6px 0;border-radius:6px;border:1px solid var(--panel-border);background:var(--text);color:#fff;font-size:10px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;letter-spacing:0.04em;">어둡게</button>
-              <button id="overlay-light-btn" onclick="setOverlayMode('light')"
-                style="flex:1;padding:6px 0;border-radius:6px;border:1px solid var(--panel-border);background:transparent;color:var(--text);font-size:10px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;letter-spacing:0.04em;">밝게</button>
-            </div>
+            <input class="field-input" type="text" id="pair-catch" value="페어 캐치프레이즈" maxlength="40" oninput="update()">
           </div>
 
           <!-- 헤더 이미지 -->
@@ -2085,6 +2067,34 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="#C8C2BB" stroke-width="1.5" stroke-linecap="round"/></svg>
               <span>클릭하여 업로드</span>
               <input type="file" id="pair-main-input" accept="image/*" onchange="loadImg(this,'pair-main-box','pair-main-preview')">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <label class="field-label">헤더 색상</label>
+            <div class="color-row" style="margin-bottom:0;">
+              <div class="color-swatch-btn" id="header-color-swatch" style="background:#1E1C1A;">
+                <input type="color" id="header-color" value="#1E1C1A" oninput="updateHeaderColor()">
+              </div>
+              <div class="color-label-info"><strong>헤더 배경</strong>헤더에 적용할 배경색</div>
+            </div>
+          </div>
+          <div class="field-row">
+            <label class="field-label">하단 그라디언트</label>
+            <div style="display:flex;gap:6px;">
+              <button id="overlay-dark-btn" onclick="setOverlayMode('dark')"
+                style="flex:1;padding:6px 0;border-radius:6px;border:1px solid var(--panel-border);background:var(--text);color:#fff;font-size:10px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;letter-spacing:0.04em;">어둡게</button>
+              <button id="overlay-light-btn" onclick="setOverlayMode('light')"
+                style="flex:1;padding:6px 0;border-radius:6px;border:1px solid var(--panel-border);background:transparent;color:var(--text);font-size:10px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;letter-spacing:0.04em;">밝게</button>
+            </div>
+          </div>
+          <div class="field-row">
+            <label class="field-label">캔버스 배경색</label>
+            <div class="color-row" style="margin-bottom:0;">
+              <div class="color-swatch-btn" id="app-bg-color-swatch" style="background:#FFFFFF;">
+                <input type="color" id="app-bg-color" value="#FFFFFF" oninput="updateAppBgColor()">
+              </div>
+              <div class="color-label-info"><strong>캔버스</strong>바깥 배경색</div>
             </div>
           </div>
 
@@ -2111,12 +2121,22 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
           <div style="font-size:10px;color:var(--label-color);margin-bottom:6px;line-height:1.6;">
             프리뷰 또는 패널에서 해당하는 카드를 클릭하면 편집할 수 있습니다.
           </div>
+          <div class="field-row" style="margin-bottom:8px;">
+            <label class="field-label">전체 카드 배경색</label>
+            <div class="color-row" style="margin-bottom:0;">
+              <div class="color-swatch-btn" id="epi-all-bg-swatch" style="background:#2A2825;">
+                <input type="color" id="epi-all-bg-color" value="#2A2825" oninput="epiSetAllBgColor()">
+              </div>
+              <div class="color-label-info"><strong>전체 카드 배경</strong>선택한 색상이 모든 카드에 적용됩니다</div>
+            </div>
+          </div>
           <div id="epi-list" style="display:flex;flex-direction:column;gap:2px;"></div>
-          <div style="margin-top:6px;border-top:0.5px solid var(--panel-border);padding-top:8px;">
+          <div style="margin-top:6px;border-top:0.5px solid var(--panel-border);padding-top:8px;display:flex;flex-direction:column;gap:6px;">
             <button class="field-input" id="epi-add-btn"
               style="cursor:pointer;text-align:center;color:var(--label-color);"
               onclick="epiAddCard()">＋ 에피소드 추가 (<span id="epi-count">0</span>/9)
             </button>
+            <button class="sticker-clear-btn" onclick="epiClearAllCards()">✕ 에피소드 전체 삭제</button>
           </div>
         </div>
 
@@ -2321,7 +2341,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   <!-- 프리뷰 -->
   <div class="preview-area" id="preview-area">
   <div style="display:flex; flex-direction:column; align-items:center; min-width:fit-content;">
-    <div id="capture-wrap" style="padding:32px 24px; background:#FFFFFF; display:inline-block;">
+    <div id="capture-wrap" style="padding:32px 24px; background:var(--app-bg); display:inline-block;">
     <div id="sheet" style="box-shadow: 0 4px 24px rgba(44,40,37,0.10), 0 1px 4px rgba(44,40,37,0.06); border-radius:20px;">
 
       <!-- 스티커 레이어 -->
@@ -2353,7 +2373,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
         <div class="header-content">
           <div>
             <div class="sh-pair-name" id="s-pair-name">PAIR NAME</div>
-            <div class="sh-catch" id="s-pair-catch">우리가 겪은 이야기들</div>
+            <div class="sh-catch" id="s-pair-catch">페어 캐치프레이즈</div>
           </div>
           <div class="sh-right">
             <div class="sh-count" id="s-epi-count">0 episodes</div>
@@ -2925,6 +2945,9 @@ async function saveAsPNG() {
   btn.disabled = true;
 
   try {
+    // 현재 캔버스 배경색 읽기
+    const appBgColor = getComputedStyle(document.documentElement).getPropertyValue('--app-bg').trim() || '#FFFFFF';
+
     // 1. 폰트 완전 로딩 대기
     await document.fonts.ready;
 
@@ -3002,7 +3025,7 @@ async function saveAsPNG() {
       scale: 4,
       useCORS: true,
       allowTaint: true,
-      backgroundColor: '#FFFFFF',
+      backgroundColor: appBgColor,
       logging: false,
       scrollX: 0,
       scrollY: 0,
@@ -3072,8 +3095,8 @@ async function saveAsPNG() {
     finalCanvas.height = H;
     const fctx = finalCanvas.getContext('2d');
 
-    // 배경 흰색
-    fctx.fillStyle = '#FFFFFF';
+    // 배경 — 캔버스 배경색 적용
+    fctx.fillStyle = appBgColor;
     fctx.fillRect(0, 0, W, H);
 
     // 그림자 레이어 (카드 모양 라운드 rect를 shadowBlur로 그림)
@@ -3157,6 +3180,7 @@ window.addEventListener('DOMContentLoaded', () => {
   // 헤더 필드 초기 반영
   update();
   updateHeaderColor();
+  updateAppBgColor();
   updateColor('a');
   updateColor('b');
 
@@ -3317,7 +3341,7 @@ function getStorageKey() {
 // 수집 대상 필드 ID 목록
 function collectData() {
   const fields = [
-    'pair-name', 'pair-catch', 'header-color',
+    'pair-name', 'pair-catch', 'header-color', 'app-bg-color',
   ];
   const data = {};
   fields.forEach(id => {
@@ -3363,6 +3387,8 @@ function applyData(data) {
   epiRenderAllCards();
   if (data['__overlayMode']) setOverlayMode(data['__overlayMode']);
   update();
+  updateHeaderColor();
+  updateAppBgColor();
   updateColor('a');
   updateColor('b');
   if (data['__imgStore']) {
@@ -3523,29 +3549,6 @@ function renderSlotList() {
     list.appendChild(item);
   }
 
-  // 하단 안내 문구 + 슬롯 초기화 버튼
-  const notice = document.createElement('div');
-  notice.style.cssText = 'padding: 12px 4px 4px; border-top: 1px solid var(--panel-border); margin-top: 8px;';
-  notice.innerHTML = `
-    <p style="font-size:10px; font-weight:700; color:#7C6FCF; font-family:'Noto Sans KR',sans-serif; margin-bottom:5px;">
-      ⚠ 이미지 및 스티커를 제외한 편집 내용만 저장됩니다.
-    </p>
-    <p style="font-size:10px; color:#9B9189; font-family:'Noto Sans KR',sans-serif; line-height:1.7; margin-bottom:10px;">
-      슬롯명은 직접 클릭해서 수정할 수 있습니다.<br>
-      삭제된 내용은 복구되지 않습니다.
-    </p>
-    <button onclick="resetSlotAll()" style="
-      width:100%; padding:7px 0;
-      background:transparent; border:1px solid var(--panel-border);
-      border-radius:var(--radius-sm); cursor:pointer;
-      font-size:10px; font-weight:600; color:#9B9189;
-      font-family:'Noto Sans KR',sans-serif; letter-spacing:0.04em;
-      transition: border-color 0.15s, color 0.15s;"
-    onmouseover="this.style.borderColor='#BBB6B0';this.style.color='#2C2825';"
-    onmouseout="this.style.borderColor='var(--panel-border)';this.style.color='#9B9189';"
-    >슬롯 초기화</button>
-  `;
-  list.appendChild(notice);
 }
 
 function resetSlotAll() {
@@ -3751,14 +3754,16 @@ function resetAll() {
   // 텍스트 필드 초기값
   const defaults = {
     'pair-name': 'PAIR NAME',
-    'pair-catch': '우리가 겪은 이야기들',
+    'pair-catch': '페어 캐치프레이즈',
     'header-color': '#1E1C1A',
+    'app-bg-color': '#FFFFFF',
   };
   Object.entries(defaults).forEach(([id, val]) => {
     const el = v(id);
     if (el) el.value = val;
   });
   updateHeaderColor();
+  updateAppBgColor();
   setOverlayMode('dark');
 
   // 에피카드 전체 초기화
@@ -5035,14 +5040,16 @@ function epiRenderList() {
     item.onmouseenter = () => { if (epiSelectedId !== card.id) item.style.background = 'var(--input-bg)'; };
     item.onmouseleave = () => { if (epiSelectedId !== card.id) item.style.background = 'transparent'; };
     item.onclick = () => epiSelectCard(card.id);
+    const bgColor = card.bgColor || '#2A2825';
     item.innerHTML = `
-      <span style="font-size:9px;font-weight:700;letter-spacing:0.08em;color:var(--label-color);flex-shrink:0;min-width:20px;">EP${idx + 1}</span>
-      <span style="font-size:11px;color:var(--text);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${card.title || '제목 없음'}</span>
+      <span class="epi-list-chip" style="width:10px;height:10px;border-radius:3px;background:${bgColor};flex-shrink:0;display:inline-block;border:1px solid rgba(0,0,0,0.12);"></span>
+      <span class="epi-list-ep" style="font-size:9px;font-weight:700;letter-spacing:0.08em;color:var(--label-color);flex-shrink:0;min-width:20px;">EP${idx + 1}</span>
+      <span class="epi-list-title" style="font-size:11px;color:var(--text);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${card.title || '제목 없음'}</span>
     `;
     if (epiSelectedId === card.id) {
       item.style.background = 'var(--input-bg)';
-      item.querySelector('span:last-child').style.color = 'var(--text)';
-      item.querySelector('span:first-child').style.color = '#9481f3';
+      item.querySelector('.epi-list-title').style.color = 'var(--text)';
+      item.querySelector('.epi-list-ep').style.color = '#9481f3';
     }
     listEl.appendChild(item);
   });
@@ -5130,6 +5137,16 @@ function updateHeaderColor() {
   if (header) header.style.background = color;
 }
 
+// ── 캔버스 배경색 갱신 ──
+function updateAppBgColor() {
+  const input = v('app-bg-color');
+  if (!input) return;
+  const color = input.value;
+  const swatch = v('app-bg-color-swatch');
+  if (swatch) swatch.style.background = color;
+  document.documentElement.style.setProperty('--app-bg', color);
+}
+
 // ── 카드 배경 밝은 색 계산 (헤더와 동일 방식) ──
 function epiCalcBrightColor(hex) {
   const r = parseInt(hex.slice(1,3), 16);
@@ -5159,6 +5176,40 @@ function epiUpdateBgColor() {
   const stopBot = v(gradId + '-bot');
   if (stopTop) stopTop.setAttribute('stop-color', color);
   if (stopBot) stopBot.setAttribute('stop-color', epiCalcBrightColor(color));
+  markDirty();
+}
+
+// ── 전체 카드 배경색 일괄 변경 ──
+function epiSetAllBgColor() {
+  const color = v('epi-all-bg-color')?.value;
+  if (!color) return;
+  const swatch = v('epi-all-bg-swatch');
+  if (swatch) swatch.style.background = color;
+  epiCards.forEach(card => {
+    card.bgColor = color;
+    const gradId = 'epi-grad-' + card.id;
+    const stopTop = v(gradId + '-top');
+    const stopBot = v(gradId + '-bot');
+    if (stopTop) stopTop.setAttribute('stop-color', color);
+    if (stopBot) stopBot.setAttribute('stop-color', epiCalcBrightColor(color));
+  });
+  epiRenderList();
+  markDirty();
+}
+
+// ── 에피소드 전체 삭제 ──
+function epiClearAllCards() {
+  if (epiCards.length === 0) { alert('삭제할 에피소드가 없습니다.'); return; }
+  if (!confirm('에피소드를 모두 삭제할까요?')) return;
+  epiCards.forEach(card => {
+    delete imgStore[card.imgId];
+    delete imgTransform[card.imgId];
+  });
+  epiCards = [];
+  epiCardIdCounter = 0;
+  epiSelectedId = null;
+  epiRenderAllCards();
+  epiSwitchTab('list');
   markDirty();
 }
 

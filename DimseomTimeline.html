@@ -1850,7 +1850,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
         <path d="M7 1L2 6L7 11" stroke="#9B9189" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
-    <div class="app-title">CHARACTER SHEET MAKER</div>
+    <div class="app-title">TIMELINE MAKER</div>
   </div>
   <div id="app-header-right" style="display:flex; align-items:center; gap:8px;">
     <button class="save-btn" onclick="saveAsPNG()">
@@ -1948,6 +1948,15 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
               </button>
             </div>
           </div>
+          <div class="field-row">
+            <label class="field-label">캔버스 배경색</label>
+            <div class="color-row" style="margin-bottom:0;">
+              <div class="color-swatch-btn" id="app-bg-color-swatch" style="background:#FFFFFF;">
+                <input type="color" id="app-bg-color" value="#FFFFFF" oninput="updateAppBgColor()">
+              </div>
+              <div class="color-label-info"><strong>캔버스</strong>바깥 배경색</div>
+            </div>
+          </div>
 
           <!-- 캐릭터 A -->
           <div class="char-label"><span class="char-label-badge">A</span>캐릭터 A</div>
@@ -1998,13 +2007,22 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
         </div>
         <div class="section-panel-body">
           <div class="img-field-header">
-            <label class="field-label" style="margin-bottom:0;">합본 이미지</label>
+            <label class="field-label" style="margin-bottom:0;">헤더 이미지</label>
             <button class="img-delete-btn" id="pair-main-del" onclick="deleteImg('pair-main')">✕ 삭제</button>
           </div>
           <div class="img-upload-box" id="pair-main-box" onclick="triggerUpload('pair-main-input')">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="#C8C2BB" stroke-width="1.5" stroke-linecap="round"/></svg>
             <span>클릭하여 업로드</span>
             <input type="file" id="pair-main-input" accept="image/*" onchange="loadImg(this,'pair-main-box','pair-main-preview')">
+          </div>
+          <div class="field-row" style="margin-top:10px;">
+            <label class="field-label">이미지란 배경색</label>
+            <div class="color-row" style="margin-bottom:0;">
+              <div class="color-swatch-btn" id="img-bg-color-swatch" style="background:#F2F1EF;">
+                <input type="color" id="img-bg-color" value="#F2F1EF" oninput="updateImgBgColor()">
+              </div>
+              <div class="color-label-info"><strong>이미지란 배경</strong>전체 이미지란 배경색</div>
+            </div>
           </div>
         </div>
       </div>
@@ -2178,7 +2196,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   <!-- 프리뷰 -->
   <div class="preview-area" id="preview-area">
   <div style="display:flex; flex-direction:column; align-items:center; min-width:fit-content;">
-    <div id="capture-wrap" style="padding:32px 24px; background:#FFFFFF; display:inline-block;">
+    <div id="capture-wrap" style="padding:32px 24px; background:var(--app-bg); display:inline-block;">
     <div id="sheet" style="box-shadow: 0 4px 24px rgba(44,40,37,0.10), 0 1px 4px rgba(44,40,37,0.06); border-radius:20px;">
 
       <!-- 스티커 레이어 -->
@@ -3385,6 +3403,16 @@ function updateHeaderColor() {
   if (header) header.style.background = color;
 }
 
+// ── 캔버스 배경색 갱신 ──
+function updateAppBgColor() {
+  const input = v('app-bg-color');
+  if (!input) return;
+  const color = input.value;
+  const swatch = v('app-bg-color-swatch');
+  if (swatch) swatch.style.background = color;
+  document.documentElement.style.setProperty('--app-bg', color);
+}
+
 function updateSheetBgColor() {
   const input = v('sheet-bg-color');
   if (!input) return; // 헤더 패널에서 제거됨
@@ -3472,6 +3500,9 @@ async function saveAsPNG() {
   btn.disabled = true;
 
   try {
+    // 현재 캔버스 배경색 읽기
+    const appBgColor = getComputedStyle(document.documentElement).getPropertyValue('--app-bg').trim() || '#FFFFFF';
+
     // 1. 폰트 완전 로딩 대기
     await document.fonts.ready;
 
@@ -3547,7 +3578,7 @@ async function saveAsPNG() {
       scale: 4,
       useCORS: true,
       allowTaint: true,
-      backgroundColor: '#FFFFFF',
+      backgroundColor: appBgColor,
       logging: false,
       scrollX: 0,
       scrollY: 0,
@@ -3605,8 +3636,8 @@ async function saveAsPNG() {
     finalCanvas.height = H;
     const fctx = finalCanvas.getContext('2d');
 
-    // 배경 흰색
-    fctx.fillStyle = '#FFFFFF';
+    // 배경 — 캔버스 배경색 적용
+    fctx.fillStyle = appBgColor;
     fctx.fillRect(0, 0, W, H);
 
     // 그림자 레이어 (카드 모양 라운드 rect를 shadowBlur로 그림)
@@ -3732,6 +3763,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
   update();
   ['a','b'].forEach(ch => updateColor(ch));
+  updateImgBgColor();
+  updateAppBgColor();
   // 프리뷰 wrap에 클릭 이벤트 초기 바인딩 (이미지 없어도 업로드 가능)
   Object.keys(previewToInput).forEach(pid => bindWrapClick(pid));
   // 한글 IME 조합 중 update() 차단 — 한/영 전환 버그 방지
@@ -3954,7 +3987,7 @@ function getStorageKey() {
 function collectData() {
   const fields = [
     'a-name-ko','a-name-en','b-name-ko','b-name-en',
-    'a-color','b-color',
+    'a-color','b-color','app-bg-color','img-bg-color',
   ];
   const data = {};
   fields.forEach(id => {
@@ -3990,6 +4023,8 @@ function applyData(data) {
   // 모든 UI 갱신
   update();
   ['a','b'].forEach(ch => updateColor(ch));
+  updateImgBgColor();
+  updateAppBgColor();
   if (data['__imgStore']) {
     const previewBoxMap = {
       'a-sub-preview': 'a-sub-box',
@@ -4159,29 +4194,6 @@ function renderSlotList() {
     list.appendChild(item);
   }
 
-  // 하단 안내 문구 + 슬롯 초기화 버튼
-  const notice = document.createElement('div');
-  notice.style.cssText = 'padding: 12px 4px 4px; border-top: 1px solid var(--panel-border); margin-top: 8px;';
-  notice.innerHTML = `
-    <p style="font-size:10px; font-weight:700; color:#7C6FCF; font-family:'Noto Sans KR',sans-serif; margin-bottom:5px;">
-      ⚠ 이미지 및 스티커를 제외한 편집 내용만 저장됩니다.
-    </p>
-    <p style="font-size:10px; color:#9B9189; font-family:'Noto Sans KR',sans-serif; line-height:1.7; margin-bottom:10px;">
-      슬롯명은 직접 클릭해서 수정할 수 있습니다.<br>
-      삭제된 내용은 복구되지 않습니다.
-    </p>
-    <button onclick="resetSlotAll()" style="
-      width:100%; padding:7px 0;
-      background:transparent; border:1px solid var(--panel-border);
-      border-radius:var(--radius-sm); cursor:pointer;
-      font-size:10px; font-weight:600; color:#9B9189;
-      font-family:'Noto Sans KR',sans-serif; letter-spacing:0.04em;
-      transition: border-color 0.15s, color 0.15s;"
-    onmouseover="this.style.borderColor='#BBB6B0';this.style.color='#2C2825';"
-    onmouseout="this.style.borderColor='var(--panel-border)';this.style.color='#9B9189';"
-    >슬롯 초기화</button>
-  `;
-  list.appendChild(notice);
 }
 
 function resetSlotAll() {
@@ -4395,11 +4407,15 @@ function resetAll() {
     'a-name-ko': '캐릭터 A 이름', 'a-name-en': 'Character A Name',
     'b-name-ko': '캐릭터 B 이름', 'b-name-en': 'Character B Name',
     'a-color': '#9481f3', 'b-color': '#cac307',
+    'img-bg-color': '#F2F1EF',
+    'app-bg-color': '#FFFFFF',
   };
   Object.entries(defaults).forEach(([id, val]) => {
     const el = v(id);
     if (el) el.value = val;
   });
+  updateImgBgColor();
+  updateAppBgColor();
 
   // 타임라인 이벤트 초기화
   tlEvents = [];
