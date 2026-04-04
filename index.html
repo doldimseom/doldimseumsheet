@@ -504,6 +504,48 @@ body {
 }
 .slot-notice span { color: var(--label-color); font-weight: 400; }
 
+/* 현재 작업 내보내기 */
+.slot-export-now {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 12px 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--panel-border);
+  background: var(--input-bg);
+}
+.slot-export-now-text { flex: 1; }
+.slot-export-now-label {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text);
+}
+.slot-export-now-desc {
+  font-size: 9px;
+  color: var(--label-color);
+  margin-top: 2px;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.slot-export-now-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--panel-border);
+  background: transparent;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--label-color);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.slot-export-now-btn:hover { background: var(--panel-bg); color: var(--text); border-color: #C8C4BE; }
+
 /* JSON 버튼 바 */
 .slot-json-bar {
   display: flex;
@@ -3050,7 +3092,19 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
     </div>
     <div class="slot-list" id="slot-list"></div>
     <div class="slot-notice">
-      ⚠ 이미지·스티커 제외 저장 <span>· JSON은 이미지 포함</span>
+      <span style="color:var(--label-color); font-weight:400;">슬롯</span> — 텍스트만 저장 · 임시 보관&nbsp;&nbsp;<span>·&nbsp;&nbsp;</span><span style="color:var(--label-color); font-weight:400;">JSON</span> — 이미지 포함 모든 정보 저장
+    </div>
+    <div class="slot-export-now">
+      <div class="slot-export-now-text">
+        <div class="slot-export-now-label">현재 작업 내보내기</div>
+        <div class="slot-export-now-desc">이미지 포함 · JSON 파일로 저장</div>
+      </div>
+      <button class="slot-export-now-btn" onclick="doExportNow()">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 10V13h10v-3"/><path d="M8 3v8M5 6l3-3 3 3"/>
+        </svg>
+        내보내기
+      </button>
     </div>
     <div class="slot-json-bar">
       <button class="slot-json-btn" onclick="openImportModal()">
@@ -3059,12 +3113,6 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
           <path d="M9 2v4h4"/><path d="M8 8v4M5 10l3 3 3-3"/>
         </svg>
         JSON 불러오기
-      </button>
-      <button class="slot-json-btn" onclick="doExportAll()">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 10V13h10v-3"/><path d="M8 3v8M5 6l3-3 3 3"/>
-        </svg>
-        전체 백업
       </button>
       <button class="slot-json-btn reset-btn" onclick="resetSlotAll()" title="슬롯 초기화">
         <span style="font-family:'Noto Sans KR',sans-serif; font-size:14px; line-height:1;">↺</span>
@@ -4399,10 +4447,8 @@ function collectData() {
   // 배지 글자색 상태 포함 (HTML 필드가 아닌 JS 상태)
   data['__badgeTextColor_a'] = badgeTextColor.a;
   data['__badgeTextColor_b'] = badgeTextColor.b;
-  // 이미지·스티커 포함 (JSON 내보내기 시 활용)
-  data['__imgStore']     = Object.assign({}, imgStore);
-  data['__imgTransform'] = Object.assign({}, imgTransform);
-  data['__stickers']     = stickers.map(s => Object.assign({}, s));
+  // 텍스트 스티커만 슬롯에 보존 (이미지 스티커·이미지 데이터는 JSON 내보내기 시에만 포함)
+  data['__stickers']     = stickers.filter(s => s.type === 'text').map(s => Object.assign({}, s));
   data['__imgMode']      = currentImgMode;
   return data;
 }
@@ -4626,12 +4672,6 @@ function renderSlotList() {
                 <path d="M3 6V3h10v3"/><path d="M8 5v8M5 10l3 3 3-3"/>
               </svg>
             </button>
-            <button class="slot-icon-btn" data-tip="JSON 내보내기" onmouseenter="showSlotTooltip(this)" onmouseleave="hideSlotTooltip()" onclick="doExportSlot(${i})">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#7A736B" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6z"/>
-                <path d="M9 2v4h4"/><path d="M8 8v4M6 10l2 2 2-2"/>
-              </svg>
-            </button>
             <div class="slot-icon-divider"></div>
             <button class="slot-icon-btn" data-tip="삭제" onmouseenter="showSlotTooltip(this)" onmouseleave="hideSlotTooltip()" onclick="deleteSlot(${i})">
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#C0392B" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -4713,6 +4753,21 @@ function deleteSlot(i) {
 
 function closeDeleteModal() {
   v('delete-backdrop').classList.remove('open');
+}
+
+// ── 현재 작업 내보내기 (이미지 포함) ──
+function doExportNow() {
+  const data = collectData();
+  data['__imgStore']     = Object.assign({}, imgStore);
+  data['__imgTransform'] = Object.assign({}, imgTransform);
+  data['__stickers']     = stickers.map(s => Object.assign({}, s));
+  const today = new Date();
+  const date = today.getFullYear().toString().slice(2) + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
+  const pairName = v('pair-name')?.value?.trim() || '작업중';
+  const fileName = date + '_' + SHEET_ID + '_' + pairName + '.json';
+  const payload = { sheet: SHEET_ID, exportedAt: new Date().toISOString(), slots: { 0: { name: pairName, data, savedAt: new Date().toISOString() } } };
+  triggerDownload(fileName, payload);
+  showToast(fileName + ' 저장됨');
 }
 
 // ── JSON 내보내기 (단건) ──
@@ -4828,8 +4883,6 @@ function onFileSelected(e) {
       if (keys.length === 1) {
         const srcIdx = parseInt(keys[0]);
         const slot = parsed.slots[keys[0]];
-        currentSlots[srcIdx] = slot;
-        saveSlots(currentSlots);
         applyData(slot.data);
         closeSlotModal();
         showToast('"' + (slot.name || '슬롯' + (srcIdx+1)) + '" 불러오기 완료');
@@ -4919,7 +4972,15 @@ function doImport() {
     const sel = selects[idx];
     if (!sel) return;
     const targetIdx = parseInt(sel.value);
-    slots[targetIdx] = importedData.slots[k];
+    // 이미지 데이터 제거 후 슬롯에 저장 (용량 초과 방지)
+    const slotToSave = Object.assign({}, importedData.slots[k]);
+    if (slotToSave.data) {
+      slotToSave.data = Object.assign({}, slotToSave.data);
+      delete slotToSave.data['__imgStore'];
+      delete slotToSave.data['__imgTransform'];
+      slotToSave.data['__stickers'] = (slotToSave.data['__stickers'] || []).filter(s => s.type === 'text');
+    }
+    slots[targetIdx] = slotToSave;
     lastSlot = importedData.slots[k];
   });
   saveSlots(slots);

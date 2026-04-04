@@ -384,6 +384,12 @@ body {
 #slot-tooltip { position: fixed; background: var(--text); color: #fff; font-size: 10px; font-weight: 600; font-family: 'Noto Sans KR', sans-serif; padding: 3px 7px; border-radius: 4px; white-space: nowrap; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.12s; }
 .slot-notice { padding: 7px 12px 5px; border-top: 1px solid var(--panel-border); font-size: 9px; font-weight: 700; color: #7C6FCF; font-family: 'Noto Sans KR', sans-serif; line-height: 1.5; }
 .slot-notice span { color: var(--label-color); font-weight: 400; }
+.slot-export-now { display:flex; align-items:center; gap:8px; margin:0 12px 6px; padding:8px 10px; border-radius:8px; border:1px solid var(--panel-border); background:var(--input-bg); }
+.slot-export-now-text { flex:1; }
+.slot-export-now-label { font-size:10px; font-weight:700; font-family:'Noto Sans KR',sans-serif; color:var(--text); }
+.slot-export-now-desc { font-size:9px; color:var(--label-color); margin-top:2px; font-family:'Noto Sans KR',sans-serif; }
+.slot-export-now-btn { display:flex; align-items:center; gap:4px; padding:5px 10px; border-radius:6px; border:1px solid var(--panel-border); background:transparent; font-size:10px; font-weight:700; font-family:'Noto Sans KR',sans-serif; color:var(--label-color); cursor:pointer; white-space:nowrap; transition:background 0.12s,color 0.12s,border-color 0.12s; }
+.slot-export-now-btn:hover { background:var(--panel-bg); color:var(--text); border-color:#C8C4BE; }
 .slot-json-bar { display: flex; gap: 5px; padding: 5px 12px 12px; flex-shrink: 0; }
 .slot-json-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 7px 0; border-radius: 7px; border: 1px solid var(--panel-border); background: transparent; font-size: 10px; font-weight: 700; font-family: 'Noto Sans KR', sans-serif; color: var(--label-color); cursor: pointer; transition: background 0.12s, color 0.12s, border-color 0.12s; }
 .slot-json-btn:hover { background: var(--input-bg); color: var(--text); border-color: #C8C4BE; }
@@ -2655,7 +2661,19 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
     </div>
     <div class="slot-list" id="slot-list"></div>
     <div class="slot-notice">
-      ⚠ 이미지·스티커 제외 저장 <span>· JSON은 이미지 포함</span>
+      <span style="color:var(--label-color);font-weight:400;">슬롯</span> — 텍스트만 저장 · 임시 보관&nbsp;&nbsp;<span>·&nbsp;&nbsp;</span><span style="color:var(--label-color);font-weight:400;">JSON</span> — 이미지 포함 완전 저장
+    </div>
+    <div class="slot-export-now">
+      <div class="slot-export-now-text">
+        <div class="slot-export-now-label">현재 작업 내보내기</div>
+        <div class="slot-export-now-desc">이미지 포함 · JSON 파일로 저장</div>
+      </div>
+      <button class="slot-export-now-btn" onclick="doExportNow()">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 10V13h10v-3"/><path d="M8 3v8M5 6l3-3 3 3"/>
+        </svg>
+        내보내기
+      </button>
     </div>
     <div class="slot-json-bar">
       <button class="slot-json-btn" onclick="openImportModal()">
@@ -2664,12 +2682,6 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
           <path d="M9 2v4h4"/><path d="M8 8v4M5 10l3 3 3-3"/>
         </svg>
         JSON 불러오기
-      </button>
-      <button class="slot-json-btn" onclick="doExportAll()">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 10V13h10v-3"/><path d="M8 3v8M5 6l3-3 3 3"/>
-        </svg>
-        전체 백업
       </button>
       <button class="slot-json-btn reset-btn" onclick="resetSlotAll()" title="슬롯 초기화">
         <span style="font-family:'Noto Sans KR',sans-serif; font-size:14px; line-height:1;">↺</span>
@@ -4041,9 +4053,8 @@ function collectData() {
   // 포켓몬 슬롯 데이터 (JS 상태에서 직렬화)
   data['__pokemon_slots'] = JSON.stringify(pokemonSlots);
   data['__sprite_mode']   = spriteMode;
-  data['__imgStore']     = Object.assign({}, imgStore);
-  data['__imgTransform'] = Object.assign({}, imgTransform);
-  data['__stickers']     = stickers.map(s => Object.assign({}, s));
+  // 텍스트 스티커만 슬롯에 보존 (이미지 스티커·이미지 데이터는 JSON 내보내기 시에만 포함)
+  data['__stickers']     = stickers.filter(s => s.type === 'text').map(s => Object.assign({}, s));
   data['__imgMode']      = currentImgMode;
   return data;
 }
@@ -4232,12 +4243,6 @@ function renderSlotList() {
                 <path d="M3 6V3h10v3"/><path d="M8 5v8M5 10l3 3 3-3"/>
               </svg>
             </button>
-            <button class="slot-icon-btn" data-tip="JSON 내보내기" onmouseenter="showSlotTooltip(this)" onmouseleave="hideSlotTooltip()" onclick="doExportSlot(${i})">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#7A736B" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6z"/>
-                <path d="M9 2v4h4"/><path d="M8 8v4M6 10l2 2 2-2"/>
-              </svg>
-            </button>
             <div class="slot-icon-divider"></div>
             <button class="slot-icon-btn" data-tip="삭제" onmouseenter="showSlotTooltip(this)" onmouseleave="hideSlotTooltip()" onclick="deleteSlot(${i})">
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#C0392B" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -4337,6 +4342,21 @@ function closeDeleteModal() {
 }
 
 // ── JSON 내보내기 (단건) ──
+// ── 현재 작업 내보내기 (이미지 포함) ──
+function doExportNow() {
+  const data = collectData();
+  data['__imgStore']     = Object.assign({}, imgStore);
+  data['__imgTransform'] = Object.assign({}, imgTransform);
+  data['__stickers']     = stickers.map(s => Object.assign({}, s));
+  const today = new Date();
+  const date = today.getFullYear().toString().slice(2) + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
+  const label = v('tc-name-input')?.value?.trim() || 'trainercard';
+  const fileName = date + '_' + SHEET_ID + '_' + label + '.json';
+  const payload = { sheet: SHEET_ID, exportedAt: new Date().toISOString(), slots: { 0: { name: label, data, savedAt: new Date().toISOString() } } };
+  triggerDownload(fileName, payload);
+  showToast(fileName + ' 저장됨');
+}
+
 function doExportSlot(i) {
   const slots = loadAllSlots();
   const slot = slots[i];
@@ -4427,8 +4447,6 @@ function onFileSelected(e) {
       if (keys.length === 1) {
         const srcIdx = parseInt(keys[0]);
         const slot = parsed.slots[keys[0]];
-        currentSlots[srcIdx] = slot;
-        saveSlots(currentSlots);
         applyData(slot.data);
         closeSlotModal();
         showToast('"' + (slot.name || '슬롯' + (srcIdx+1)) + '" 불러오기 완료');
@@ -4506,8 +4524,14 @@ function doImport() {
   let lastSlot = null;
   srcKeys.forEach((k, idx) => {
     const sel = selects[idx]; if (!sel) return;
-    const targetIdx = parseInt(sel.value);
-    slots[targetIdx] = importedData.slots[k];
+    const slotToSave = Object.assign({}, importedData.slots[k]);
+    if (slotToSave.data) {
+      slotToSave.data = Object.assign({}, slotToSave.data);
+      delete slotToSave.data['__imgStore'];
+      delete slotToSave.data['__imgTransform'];
+      slotToSave.data['__stickers'] = (slotToSave.data['__stickers'] || []).filter(s => s.type === 'text');
+    }
+    slots[parseInt(sel.value)] = slotToSave;
     lastSlot = importedData.slots[k];
   });
   saveSlots(slots);
