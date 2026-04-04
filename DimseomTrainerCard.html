@@ -3736,7 +3736,7 @@ async function saveAsPNG() {
 
     // 6. PNG 다운로드
     const link = document.createElement('a');
-    link.download = 'character-sheet.png';
+    link.download = 'trainercard.png';
     link.href = outCanvas.toDataURL('image/png');
     document.body.appendChild(link);
     link.click();
