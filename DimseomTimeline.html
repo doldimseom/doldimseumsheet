@@ -2968,12 +2968,15 @@ const badgeTextColor = { a: 'white', b: 'white' };
 
 function setBadgeTextColor(ch, mode) {
   badgeTextColor[ch] = mode;
-  // 버튼 active 상태 갱신
-  v(ch + '-badge-white').classList.toggle('active', mode === 'white');
-  v(ch + '-badge-dark').classList.toggle('active', mode === 'dark');
+  // 버튼 active 상태 갱신 (버튼이 없을 수 있으므로 null 가드)
+  const wBtn = v(ch + '-badge-white');
+  const dBtn = v(ch + '-badge-dark');
+  if (wBtn) wBtn.classList.toggle('active', mode === 'white');
+  if (dBtn) dBtn.classList.toggle('active', mode === 'dark');
   // 시트 배지 글자색 즉시 반영
   const color = mode === 'white' ? '#FFFFFF' : '#1E1C1A';
-  v('s-' + ch + '-badge').style.color = color;
+  const badge = v('s-' + ch + '-badge');
+  if (badge) badge.style.color = color;
 }
 
 function updateColor(ch) {
