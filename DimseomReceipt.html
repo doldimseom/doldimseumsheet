@@ -4273,9 +4273,25 @@ function applyData(data) {
     });
   }
   if (data['__stickers']) {
-    stickers = data['__stickers'].map(s => Object.assign({}, s));
-    stickers.forEach(s => renderSticker(s));
+    const imgContentMap = {};
+    stickers.forEach(s => { if (s.type === 'img' && s.content) imgContentMap[s.id] = s.content; });
+    stickers.forEach(s => { const el = document.getElementById('sticker-' + s.id); if (el) el.remove(); });
+    stickers = [];
+    const seenIds = {};
+    const deduped = [];
+    [...data['__stickers']].reverse().forEach(s => {
+      if (!seenIds[s.id]) { seenIds[s.id] = true; deduped.unshift(s); }
+    });
+    deduped.forEach(s => {
+      const restored = Object.assign({}, s);
+      if (restored.type === 'img' && imgContentMap[restored.id]) restored.content = imgContentMap[restored.id];
+      stickers.push(restored);
+      renderSticker(restored);
+    });
+    const maxId = stickers.reduce((m, s) => Math.max(m, s.id), 0);
+    stickerIdCounter = maxId;
   }
+  markDirty();
 }
 
 function loadSlots() {
@@ -5238,9 +5254,27 @@ function updateStickerHandles(el, sticker) {
 
 // ── 스티커 드래그 이벤트 ──
 function bindStickerEvents(el, sticker) {
-  let dragging = false;
   let startX, startY;
   let startPositions = []; // 다중선택 드래그 시 초기 위치 저장
+
+  function onMove(e) {
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    startPositions.forEach(({ id, x, y }) => {
+      const s = stickers.find(s => s.id === id);
+      if (!s) return;
+      if (s.locked) return;
+      s.x = x + dx;
+      s.y = y + dy;
+      const el = document.getElementById('sticker-' + id);
+      if (el) { el.style.left = s.x + 'px'; el.style.top = s.y + 'px'; }
+    });
+  }
+
+  function onUp() {
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+  }
 
   el.addEventListener('mousedown', e => {
     if (!stickerEditMode) return;
@@ -5258,7 +5292,6 @@ function bindStickerEvents(el, sticker) {
       }
     }
 
-    dragging = true;
     startX = e.clientX;
     startY = e.clientY;
     // 현재 선택된 모든 스티커의 초기 위치 저장 (잠금 제외)
@@ -5267,25 +5300,10 @@ function bindStickerEvents(el, sticker) {
       return (s && !s.locked) ? { id, x: s.x, y: s.y } : null;
     }).filter(Boolean);
 
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
     e.preventDefault();
   });
-
-  window.addEventListener('mousemove', e => {
-    if (!dragging) return;
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    startPositions.forEach(({ id, x, y }) => {
-      const s = stickers.find(s => s.id === id);
-      if (!s) return;
-      if (s.locked) return;
-      s.x = x + dx;
-      s.y = y + dy;
-      const el = document.getElementById('sticker-' + id);
-      if (el) { el.style.left = s.x + 'px'; el.style.top = s.y + 'px'; }
-    });
-  });
-
-  window.addEventListener('mouseup', () => { dragging = false; });
 }
 
 // ── 크기 조절 핸들 ──

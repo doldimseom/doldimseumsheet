@@ -3106,10 +3106,25 @@ function applyData(data) {
   }
   // 스티커 복원
   if (data['__stickers']) {
-    stickers.forEach(s => { const el = document.getElementById('sticker-'+s.id); if (el) el.remove(); });
-    stickers = data['__stickers'].map(s => Object.assign({}, s));
-    stickers.forEach(s => renderSticker(s));
+    const imgContentMap = {};
+    stickers.forEach(s => { if (s.type === 'img' && s.content) imgContentMap[s.id] = s.content; });
+    stickers.forEach(s => { const el = document.getElementById('sticker-' + s.id); if (el) el.remove(); });
+    stickers = [];
+    const seenIds = {};
+    const deduped = [];
+    [...data['__stickers']].reverse().forEach(s => {
+      if (!seenIds[s.id]) { seenIds[s.id] = true; deduped.unshift(s); }
+    });
+    deduped.forEach(s => {
+      const restored = Object.assign({}, s);
+      if (restored.type === 'img' && imgContentMap[restored.id]) restored.content = imgContentMap[restored.id];
+      stickers.push(restored);
+      renderSticker(restored);
+    });
+    const maxId = stickers.reduce((m, s) => Math.max(m, s.id), 0);
+    stickerIdCounter = maxId;
   }
+  markDirty();
 }
 
 function loadSlots() {
@@ -4063,7 +4078,24 @@ function renderSticker(sticker) {
 }
 
 function bindStickerEvents(el, sticker) {
-  let dragging = false, startX, startY, startPositions = [];
+  let startX, startY, startPositions = [];
+
+  function onMove(e) {
+    const dx = e.clientX - startX, dy = e.clientY - startY;
+    startPositions.forEach(({ id, x, y }) => {
+      const s = stickers.find(s => s.id === id); if (!s) return;
+      if (s.locked) return;
+      s.x = x + dx; s.y = y + dy;
+      const sEl = document.getElementById('sticker-' + id);
+      if (sEl) { sEl.style.left = s.x + 'px'; sEl.style.top = s.y + 'px'; }
+    });
+  }
+
+  function onUp() {
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+  }
+
   el.addEventListener('mousedown', e => {
     if (!stickerEditMode) return;
     if (sticker.locked) { selectSticker(sticker.id); return; }
@@ -4071,25 +4103,15 @@ function bindStickerEvents(el, sticker) {
     e.stopPropagation();
     if (e.shiftKey) { toggleStickerSelection(sticker.id); }
     else { if (!selectedStickerIds.includes(sticker.id)) selectSticker(sticker.id); }
-    dragging = true; startX = e.clientX; startY = e.clientY;
+    startX = e.clientX; startY = e.clientY;
     startPositions = selectedStickerIds.map(id => {
       const s = stickers.find(s => s.id === id);
       return (s && !s.locked) ? { id, x: s.x, y: s.y } : null;
     }).filter(Boolean);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
     e.preventDefault();
   });
-  window.addEventListener('mousemove', e => {
-    if (!dragging) return;
-    const dx = e.clientX-startX, dy = e.clientY-startY;
-    startPositions.forEach(({ id, x, y }) => {
-      const s = stickers.find(s => s.id === id); if(!s) return;
-      if(s.locked) return;
-      s.x=x+dx; s.y=y+dy;
-      const sEl = document.getElementById('sticker-'+id);
-      if (sEl) { sEl.style.left=s.x+'px'; sEl.style.top=s.y+'px'; }
-    });
-  });
-  window.addEventListener('mouseup', () => { dragging = false; });
 }
 
 function updateStickerHandles(el, sticker) {

@@ -1109,7 +1109,6 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  /* top은 JS에서 헤더 높이 기준으로 동적 설정 */
   padding: 0;
   pointer-events: none;
   z-index: 300;
@@ -1954,7 +1953,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
           </div>
           <div class="field-row">
             <label class="field-label">페어명</label>
-            <input class="field-input" type="text" id="tl-pair-name" placeholder="TIMELINE" maxlength="30" oninput="updateTlPairName()">
+            <input class="field-input" type="text" id="tl-pair-name" value="PAIR NAME" maxlength="30" oninput="updateTlPairName()">
           </div>
 
           <!-- 캐릭터 A -->
@@ -2218,7 +2217,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
           </div>
         </div>
         <div class="tl-title-area">
-          <div class="tl-title" id="s-tl-title">TIMELINE</div>
+          <div class="tl-title" id="s-tl-title">PAIR NAME</div>
         </div>
         <div class="tl-char-label right">
           <div class="tl-badge" id="s-b-badge"></div>
@@ -4091,13 +4090,36 @@ function applyData(data) {
     });
   }
   if (data['__stickers']) {
-    stickers = data['__stickers'].map(s => Object.assign({}, s));
-    stickers.forEach(s => renderSticker(s));
+    // 기존 이미지 스티커의 content(base64)를 id 기준으로 보존
+    const imgContentMap = {};
+    stickers.forEach(s => { if (s.type === 'img' && s.content) imgContentMap[s.id] = s.content; });
+    // 기존 스티커 DOM + 배열 전체 정리
+    stickers.forEach(s => { const el = document.getElementById('sticker-' + s.id); if (el) el.remove(); });
+    stickers = [];
+    // JSON 스티커 중복 id 제거 (나중에 등장하는 항목 우선 — 이미지가 텍스트보다 뒤에 오므로 이미지 우선)
+    const seenIds = {};
+    const deduped = [];
+    [...data['__stickers']].reverse().forEach(s => {
+      if (!seenIds[s.id]) { seenIds[s.id] = true; deduped.unshift(s); }
+    });
+    // 스티커 전체 복원 (이미지는 content 이어받기)
+    deduped.forEach(s => {
+      const restored = Object.assign({}, s);
+      if (restored.type === 'img' && imgContentMap[restored.id]) {
+        restored.content = imgContentMap[restored.id];
+      }
+      stickers.push(restored);
+      renderSticker(restored);
+    });
+    // stickerIdCounter를 복원된 최대 id로 갱신 (신규 추가 시 충돌 방지)
+    const maxId = stickers.reduce((m, s) => Math.max(m, s.id), 0);
+    stickerIdCounter = maxId;
   }
   if (data['__imgMode'] && data['__imgMode'] !== currentImgMode) {
     currentImgMode = data['__imgMode'];
     applyImgMode();
   }
+  markDirty();
 }
 
 function loadSlots() {
@@ -4439,6 +4461,8 @@ function resetAll() {
     'a-color': '#9481f3', 'b-color': '#cac307',
     'img-bg-color': '#F2F1EF',
     'app-bg-color': '#FFFFFF',
+    'tl-header-color': '#FFFFFF',
+    'tl-pair-name': 'PAIR NAME',
   };
   Object.entries(defaults).forEach(([id, val]) => {
     const el = v(id);
@@ -4446,6 +4470,8 @@ function resetAll() {
   });
   updateImgBgColor();
   updateAppBgColor();
+  updateTlHeaderColor();
+  updateTlPairName();
 
   // 타임라인 이벤트 초기화
   tlEvents = [];
@@ -4502,8 +4528,8 @@ function toggleStickerEdit() {
     btn.textContent = '✦ 스티커 편집 모드 끄기';
     btn.classList.add('active');
     layer.classList.add('editing');
-    const header = document.querySelector('#sheet .sheet-header');
-    if (header) bar.style.top = (header.offsetHeight + 8) + 'px';
+    const imgWrap = document.getElementById('pair-main-box-sheet');
+    if (imgWrap) bar.style.top = (imgWrap.offsetTop + imgWrap.offsetHeight + 8) + 'px';
     bar.classList.add('visible');
   } else {
     btn.textContent = '✦ 스티커 편집 모드 켜기';
@@ -4920,9 +4946,27 @@ function updateStickerHandles(el, sticker) {
 
 // ── 스티커 드래그 이벤트 ──
 function bindStickerEvents(el, sticker) {
-  let dragging = false;
   let startX, startY;
   let startPositions = []; // 다중선택 드래그 시 초기 위치 저장
+
+  function onMove(e) {
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    startPositions.forEach(({ id, x, y }) => {
+      const s = stickers.find(s => s.id === id);
+      if (!s) return;
+      if (s.locked) return;
+      s.x = x + dx;
+      s.y = y + dy;
+      const el = document.getElementById('sticker-' + id);
+      if (el) { el.style.left = s.x + 'px'; el.style.top = s.y + 'px'; }
+    });
+  }
+
+  function onUp() {
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+  }
 
   el.addEventListener('mousedown', e => {
     if (!stickerEditMode) return;
@@ -4940,7 +4984,6 @@ function bindStickerEvents(el, sticker) {
       }
     }
 
-    dragging = true;
     startX = e.clientX;
     startY = e.clientY;
     // 현재 선택된 모든 스티커의 초기 위치 저장 (잠금 제외)
@@ -4949,25 +4992,10 @@ function bindStickerEvents(el, sticker) {
       return (s && !s.locked) ? { id, x: s.x, y: s.y } : null;
     }).filter(Boolean);
 
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
     e.preventDefault();
   });
-
-  window.addEventListener('mousemove', e => {
-    if (!dragging) return;
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    startPositions.forEach(({ id, x, y }) => {
-      const s = stickers.find(s => s.id === id);
-      if (!s) return;
-      if (s.locked) return;
-      s.x = x + dx;
-      s.y = y + dy;
-      const el = document.getElementById('sticker-' + id);
-      if (el) { el.style.left = s.x + 'px'; el.style.top = s.y + 'px'; }
-    });
-  });
-
-  window.addEventListener('mouseup', () => { dragging = false; });
 }
 
 // ── 크기 조절 핸들 ──
