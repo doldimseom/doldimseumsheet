@@ -827,13 +827,6 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   border-bottom: 1px solid var(--sheet-border);
   background: var(--sheet-bg);
 }
-.tl-header.black {
-  background: #1E1C1A;
-  border-bottom-color: #1E1C1A;
-}
-.tl-header.black .tl-char-name-ko { color: #F5F3F0; }
-.tl-header.black .tl-char-name-en { color: rgba(255,255,255,0.42); }
-.tl-header.black .tl-title { color: #FFFFFF; }
 .tl-char-label {
   display: flex;
   align-items: center;
@@ -1009,7 +1002,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 }
 .tl-node.b-only {
   background: #FFFFFF;
-  border: 1.5px solid var(--tl-color-b, #cac307);
+  border: 2.5px solid var(--tl-color-b, #cac307);
   box-sizing: border-box;
 }
 .tl-node.shared {
@@ -1940,18 +1933,14 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
         </div>
         <div class="section-panel-body">
 
-          <!-- 헤더 스타일 -->
+          <!-- 헤더 배경색 -->
           <div class="field-row" style="margin-top:0;">
-            <label class="field-label">헤더 스타일</label>
-            <div style="display:flex;gap:6px;">
-              <button id="header-style-white" onclick="setHeaderStyle('white')"
-                style="flex:1;padding:6px 0;border-radius:6px;border:1.5px solid var(--text);background:#fff;color:var(--text);font-size:11px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:opacity 0.15s;">
-                WHITE
-              </button>
-              <button id="header-style-black" onclick="setHeaderStyle('black')"
-                style="flex:1;padding:6px 0;border-radius:6px;border:1.5px solid var(--panel-border);background:var(--input-bg);color:var(--label-color);font-size:11px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:opacity 0.15s;">
-                BLACK
-              </button>
+            <label class="field-label">헤더 배경색</label>
+            <div class="color-row" style="margin-bottom:0;">
+              <div class="color-swatch-btn" id="tl-header-color-swatch" style="background:#1E1C1A;">
+                <input type="color" id="tl-header-color" value="#1E1C1A" oninput="updateTlHeaderColor()">
+              </div>
+              <div class="color-label-info"><strong>헤더 배경</strong>블랙바 배경색</div>
             </div>
           </div>
           <div class="field-row">
@@ -1962,6 +1951,10 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
               </div>
               <div class="color-label-info"><strong>캔버스</strong>바깥 배경색</div>
             </div>
+          </div>
+          <div class="field-row">
+            <label class="field-label">페어명</label>
+            <input class="field-input" type="text" id="tl-pair-name" placeholder="TIMELINE" maxlength="30" oninput="updateTlPairName()">
           </div>
 
           <!-- 캐릭터 A -->
@@ -1981,10 +1974,6 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
                 <input type="color" id="a-color" value="#9481f3" oninput="updateColor('a');update()">
               </div>
               <div class="color-label-info"><strong>포인트 컬러</strong>배지·강조색</div>
-              <div class="badge-text-toggle" style="margin-left:auto;">
-                <button class="badge-text-btn white-btn active" id="a-badge-white" onclick="setBadgeTextColor('a','white')" title="배지 글자 흰색"></button>
-                <button class="badge-text-btn dark-btn" id="a-badge-dark" onclick="setBadgeTextColor('a','dark')" title="배지 글자 검정"></button>
-              </div>
             </div>
           </div>
           <div class="char-label" style="margin-top:12px;"><span class="char-label-badge">B</span>캐릭터 B</div>
@@ -2003,10 +1992,6 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
                 <input type="color" id="b-color" value="#cac307" oninput="updateColor('b');update()">
               </div>
               <div class="color-label-info"><strong>포인트 컬러</strong>배지·강조색</div>
-              <div class="badge-text-toggle" style="margin-left:auto;">
-                <button class="badge-text-btn white-btn active" id="b-badge-white" onclick="setBadgeTextColor('b','white')" title="배지 글자 흰색"></button>
-                <button class="badge-text-btn dark-btn" id="b-badge-dark" onclick="setBadgeTextColor('b','dark')" title="배지 글자 검정"></button>
-              </div>
             </div>
           </div>
 
@@ -2226,17 +2211,17 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
       <!-- 타임라인 헤더 -->
       <div class="tl-header">
         <div class="tl-char-label">
-          <div class="tl-badge" id="s-a-badge">A</div>
+          <div class="tl-badge" id="s-a-badge"></div>
           <div class="tl-char-names">
             <div class="tl-char-name-ko" id="s-a-name-ko"></div>
             <div class="tl-char-name-en" id="s-a-name-en"></div>
           </div>
         </div>
         <div class="tl-title-area">
-          <div class="tl-title">TIMELINE</div>
+          <div class="tl-title" id="s-tl-title">TIMELINE</div>
         </div>
         <div class="tl-char-label right">
-          <div class="tl-badge" id="s-b-badge">B</div>
+          <div class="tl-badge" id="s-b-badge"></div>
           <div class="tl-char-names right">
             <div class="tl-char-name-ko" id="s-b-name-ko"></div>
             <div class="tl-char-name-en" id="s-b-name-en"></div>
@@ -2270,7 +2255,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
           <div class="tl-legend-label" id="s-legend-a-label">캐릭터 A</div>
         </div>
         <div class="tl-legend-item">
-          <div class="tl-legend-dot" id="s-legend-b" style="background:transparent;border:1.5px solid #cac307;"></div>
+          <div class="tl-legend-dot" id="s-legend-b" style="background:transparent;border:2.5px solid #cac307;"></div>
           <div class="tl-legend-label" id="s-legend-b-label">캐릭터 B</div>
         </div>
         <div class="tl-legend-item">
@@ -2877,32 +2862,24 @@ function tlRemoveEvent(idx) {
   markDirty();
 }
 
-// ── 헤더 스타일 전환 ──
-let tlHeaderStyle = 'white';
-function setHeaderStyle(style) {
-  tlHeaderStyle = style;
+// ── 헤더 배경색 갱신 ──
+function updateTlHeaderColor() {
+  const input = v('tl-header-color');
+  if (!input) return;
+  const color = input.value;
+  const swatch = v('tl-header-color-swatch');
+  if (swatch) swatch.style.background = color;
   const header = document.querySelector('.tl-header');
-  if (!header) return;
-  header.classList.toggle('black', style === 'black');
-  const wBtn = v('header-style-white');
-  const bBtn = v('header-style-black');
-  if (wBtn && bBtn) {
-    if (style === 'white') {
-      wBtn.style.background = '#fff';
-      wBtn.style.color = 'var(--text)';
-      wBtn.style.borderColor = 'var(--text)';
-      bBtn.style.background = 'var(--input-bg)';
-      bBtn.style.color = 'var(--label-color)';
-      bBtn.style.borderColor = 'var(--panel-border)';
-    } else {
-      wBtn.style.background = 'var(--input-bg)';
-      wBtn.style.color = 'var(--label-color)';
-      wBtn.style.borderColor = 'var(--panel-border)';
-      bBtn.style.background = '#1E1C1A';
-      bBtn.style.color = '#fff';
-      bBtn.style.borderColor = '#1E1C1A';
-    }
-  }
+  if (header) header.style.background = color;
+  markDirty();
+}
+
+// ── 페어명 갱신 ──
+function updateTlPairName() {
+  const input = v('tl-pair-name');
+  const el = v('s-tl-title');
+  if (!el) return;
+  el.textContent = input ? input.value : '';
   markDirty();
 }
 
@@ -2962,7 +2939,7 @@ function tlRenderSheet() {
     } else if (ev.owner === 'b') {
       dot.classList.add('b-only');
       dot.style.background = '#FFFFFF';
-      dot.style.border = `1.5px solid ${bColor}`;
+      dot.style.border = `2.5px solid ${bColor}`;
     } else {
       dot.classList.add('shared');
       dot.innerHTML = `<svg viewBox="0 0 14 14" width="14" height="14" style="display:block;">
@@ -3194,8 +3171,8 @@ function update() {
   // ── 배지 컬러 (이니셜은 A/B 고정) ──
   const aBadge = v('s-a-badge');
   const bBadge = v('s-b-badge');
-  if (aBadge) { aBadge.style.background = aColor; aBadge.textContent = 'A'; }
-  if (bBadge) { bBadge.style.background = bColor; bBadge.textContent = 'B'; }
+  if (aBadge) { aBadge.style.background = aColor; }
+  if (bBadge) { bBadge.style.background = bColor; }
 
   // ── CSS 변수로 노드 컬러 적용 ──
   const sheet = v('sheet');
@@ -3208,7 +3185,7 @@ function update() {
   const legA = v('s-legend-a');
   const legB = v('s-legend-b');
   if (legA) legA.style.background = aColor;
-  if (legB) { legB.style.background = 'transparent'; legB.style.border = '1.5px solid ' + bColor; }
+  if (legB) { legB.style.background = 'transparent'; legB.style.border = '2.5px solid ' + bColor; }
   const legALabel = v('s-legend-a-label');
   const legBLabel = v('s-legend-b-label');
   if (legALabel) legALabel.textContent = (aNameEl ? aNameEl.value : '캐릭터 A');
@@ -4007,7 +3984,7 @@ function getStorageKey() {
 function collectData() {
   const fields = [
     'a-name-ko','a-name-en','b-name-ko','b-name-en',
-    'a-color','b-color','app-bg-color','img-bg-color',
+    'a-color','b-color','app-bg-color','img-bg-color','tl-header-color','tl-pair-name',
   ];
   const data = {};
   fields.forEach(id => {
@@ -4016,8 +3993,6 @@ function collectData() {
   });
   // 타임라인 이벤트 배열 직렬화
   data['__tlEvents'] = JSON.stringify(tlEvents);
-  // 헤더 스타일
-  data['__tlHeaderStyle'] = tlHeaderStyle;
   // 배지 글자색 상태
   data['__badgeTextColor_a'] = badgeTextColor.a;
   data['__badgeTextColor_b'] = badgeTextColor.b;
@@ -4039,12 +4014,12 @@ function applyData(data) {
       tlEvents = JSON.parse(data['__tlEvents']);
     }
   } catch { tlEvents = []; }
-  // 헤더 스타일 복원
-  if (data['__tlHeaderStyle']) setHeaderStyle(data['__tlHeaderStyle']);
   tlRenderEventList();
   // 모든 UI 갱신
   update();
   ['a','b'].forEach(ch => updateColor(ch));
+  updateTlHeaderColor();
+  updateTlPairName();
   // 배지 글자색 복원
   ['a','b'].forEach(ch => {
     const saved = data['__badgeTextColor_' + ch];
@@ -4311,7 +4286,8 @@ function doExportNow() {
   const date = today.getFullYear().toString().slice(2) + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
   const aName = v('a-name-ko')?.value?.trim() || '';
   const bName = v('b-name-ko')?.value?.trim() || '';
-  const label = [aName, bName].filter(Boolean).join('&') || '작업중';
+  const pairName = v('tl-pair-name')?.value?.trim() || '';
+  const label = pairName || [aName, bName].filter(Boolean).join('&') || '작업중';
   const fileName = date + '_' + SHEET_ID + '_' + label + '.json';
   const payload = { sheet: SHEET_ID, exportedAt: new Date().toISOString(), slots: { 0: { name: label, data, savedAt: new Date().toISOString() } } };
   triggerDownload(fileName, payload);
