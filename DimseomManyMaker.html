@@ -1,4 +1,16 @@
 <!--
+  돌딤섬 캐릭터시트 메이커 시리즈 v1.2.0
+
+  Credits
+  아래의 오픈소스 라이브러리와 폰트를 사용합니다.
+  html2canvas v1.4.1 — MIT License — https://html2canvas.hertzen.com
+  Pretendard — SIL OFL 1.1 — https://github.com/orioncactus/pretendard 
+  Google Fonts (Noto Sans KR, DM Sans, Cinzel 외) — https://fonts.google.com
+
+  이 파일은 클로드 AI를 활용하여 제작되었습니다.
+  Github: https://github.com/doldimseom/doldimseumsheet
+-->
+<!--
   ╔══════════════════════════════════════════════════════╗
   ║  돌딤섬 매니메이커 — 새 시트 만드는 방법             ║
   ╠══════════════════════════════════════════════════════╣
@@ -24,7 +36,7 @@
 
 <meta property="og:type"        content="website">
 <meta property="og:title"       content="돌딤섬 매니메이커">
-<meta property="og:description" content="최대 4인 팀 캐릭터시트 메이커입니다.">
+<meta property="og:description" content="캐릭터 1~4인 자료를 간단하게 정리할 수 있는 캐릭터시트 메이커입니다.">
 <meta property="og:image"       content="https://doldimseom.github.io/doldimseumsheet/og-manymaker.png">
 <meta name="twitter:card"       content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -329,6 +341,7 @@ body {
 .side-nav-icon-btn .nav-label { font-size: 7px; font-weight: 700; letter-spacing: 0.06em; font-family: 'Noto Sans KR', sans-serif; line-height: 1; opacity: 0.7; }
 
 /* 슬롯 모달 */
+/* 슬롯 토스트 */
 .slot-modal-backdrop {
   display: none;
   position: fixed;
@@ -390,17 +403,17 @@ body {
 .slot-list {
   overflow-y: auto;
   flex: 1;
-  padding: 10px 14px 14px;
+  padding: 10px 12px 6px;
 }
 .slot-list::-webkit-scrollbar { width: 4px; }
 .slot-list::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 2px; }
 .slot-item {
   border-radius: 8px;
   border: 1px solid var(--panel-border);
-  margin-bottom: 6px;
+  margin-bottom: 5px;
   background: #fff;
-  overflow: hidden;
   transition: border-color 0.12s;
+  position: relative;
 }
 .slot-item:last-child { margin-bottom: 0; }
 .slot-item.has-data { border-color: #AFA9EC; background: #EEEDFE0A; }
@@ -409,11 +422,11 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 10px;
+  padding: 7px 8px;
 }
 .slot-num {
-  width: 22px; height: 22px;
-  border-radius: 5px;
+  width: 20px; height: 20px;
+  border-radius: 4px;
   background: var(--input-bg);
   display: flex; align-items: center; justify-content: center;
   font-size: 9px; font-weight: 700; color: var(--label-color);
@@ -421,38 +434,33 @@ body {
   flex-shrink: 0;
 }
 .slot-num.filled { background: #EEEDFE; color: #534AB7; }
-.slot-name-input {
+.slot-text-wrap {
   flex: 1;
+  min-width: 0;
+}
+.slot-name-input {
+  display: block;
+  width: 100%;
   background: transparent;
   border: none;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text);
   font-family: 'Noto Sans KR', sans-serif;
   outline: none;
-  min-width: 0;
+  padding: 0;
+  line-height: 1.3;
 }
 .slot-name-input::placeholder { color: var(--label-color); font-weight: 400; }
-.slot-saved-tag {
-  font-size: 9px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: #EEEDFE;
-  color: #534AB7;
-  letter-spacing: 0.04em;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-.slot-meta {
+.slot-date-line {
   font-size: 9px;
   color: var(--label-color);
-  letter-spacing: 0.04em;
-  flex-shrink: 0;
+  margin-top: 2px;
+  line-height: 1;
   white-space: nowrap;
 }
 .slot-save-btn {
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 5px;
   border: 1px solid var(--panel-border);
   background: transparent;
@@ -466,29 +474,222 @@ body {
   flex-shrink: 0;
 }
 .slot-save-btn:hover { background: var(--input-bg); color: var(--text); }
-.slot-item-actions {
+.slot-icon-group {
   display: flex;
-  border-top: 1px solid #AFA9EC30;
+  align-items: center;
+  gap: 1px;
+  flex-shrink: 0;
 }
-.slot-act-btn {
-  flex: 1;
-  padding: 6px 0;
-  font-size: 10px;
-  font-weight: 700;
-  font-family: 'Noto Sans KR', sans-serif;
+.slot-icon-btn {
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
   border: none;
   background: transparent;
   cursor: pointer;
-  color: var(--label-color);
-  transition: background 0.12s, color 0.12s;
-  letter-spacing: 0.04em;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: background 0.12s;
+  position: relative;
 }
-.slot-act-btn:hover { background: var(--input-bg); color: var(--text); }
-.slot-act-btn.overwrite { color: #7C6FCF; }
-.slot-act-btn.overwrite:hover { background: #EEEDFE50; color: #534AB7; }
-.slot-act-btn.danger { color: #C0392B; }
-.slot-act-btn.danger:hover { background: #FDF2F1; }
-.slot-act-divider { width: 1px; background: #AFA9EC30; flex-shrink: 0; }
+.slot-icon-btn:hover { background: var(--input-bg); }
+.slot-icon-btn svg { display: block; pointer-events: none; }
+.slot-icon-divider {
+  width: 1px; height: 11px;
+  background: #AFA9EC40;
+  flex-shrink: 0;
+  margin: 0 1px;
+}
+/* 토스트 알림 */
+#slot-toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: var(--text);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  padding: 8px 16px;
+  border-radius: 8px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s, transform 0.18s;
+  z-index: 9999;
+}
+#slot-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* 툴팁 */
+.slot-icon-btn::after { display: none; }
+#slot-tooltip {
+  position: fixed;
+  background: var(--text);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  padding: 3px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+/* 슬롯 모달 하단 안내 */
+.slot-notice {
+  padding: 7px 12px 5px;
+  border-top: 1px solid var(--panel-border);
+  font-size: 9px;
+  font-weight: 700;
+  color: #7C6FCF;
+  font-family: 'Noto Sans KR', sans-serif;
+  line-height: 1.5;
+}
+.slot-notice span { color: var(--label-color); font-weight: 400; }
+
+/* 현재 작업 내보내기 */
+.slot-export-now {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 12px 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--panel-border);
+  background: var(--input-bg);
+}
+.slot-export-now-text { flex: 1; }
+.slot-export-now-label {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text);
+}
+.slot-export-now-desc {
+  font-size: 9px;
+  color: var(--label-color);
+  margin-top: 2px;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.slot-export-now-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--panel-border);
+  background: transparent;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--label-color);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.slot-export-now-btn:hover { background: var(--panel-bg); color: var(--text); border-color: #C8C4BE; }
+
+/* JSON 버튼 바 */
+.slot-json-bar {
+  display: flex;
+  gap: 5px;
+  padding: 5px 12px 12px;
+  flex-shrink: 0;
+}
+.slot-json-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 0;
+  border-radius: 7px;
+  border: 1px solid var(--panel-border);
+  background: transparent;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--label-color);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.slot-json-btn:hover { background: var(--input-bg); color: var(--text); border-color: #C8C4BE; }
+.slot-json-btn.reset-btn { flex: 0 0 36px; color: rgba(220,90,70,0.8); border-color: rgba(220,90,70,0.3); }
+.slot-json-btn.reset-btn:hover { background: #FDF2F1; color: #C0392B; border-color: #E8B4B0; }
+/* JSON 불러오기 모달 */
+.import-modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(10,9,8,0.55);
+  backdrop-filter: blur(2px);
+  align-items: center;
+  justify-content: center;
+}
+.import-modal-backdrop.open { display: flex; }
+.import-modal {
+  background: var(--panel-bg);
+  border-radius: 16px;
+  width: 320px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+}
+.import-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--panel-border);
+  flex-shrink: 0;
+}
+.import-modal-title { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--text); }
+.import-modal-body { overflow-y: auto; flex: 1; padding: 12px 16px; }
+.import-section-label { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; color: var(--label-color); margin-bottom: 6px; }
+.import-warn-banner {
+  display: none;
+  background: #FDF2F1;
+  border: 1px solid #E8B4B0;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 9px; font-weight: 700;
+  color: #C0392B;
+  margin-bottom: 8px;
+}
+.import-warn-banner.show { display: block; }
+.import-pick-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.pick-src-wrap { flex: 1; min-width: 0; }
+.pick-src-name { font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pick-src-date { font-size: 9px; color: var(--label-color); margin-top: 1px; }
+.pick-arrow { font-size: 11px; color: var(--label-color); flex-shrink: 0; }
+.pick-select { flex-shrink: 0; font-size: 10px; font-family: 'Noto Sans KR', sans-serif; border: 1px solid var(--panel-border); border-radius: 5px; padding: 3px 5px; background: #fff; color: var(--text); cursor: pointer; max-width: 130px; }
+.pick-select.warn { border-color: #E8B4B0; color: #C0392B; }
+.import-modal-footer { padding: 8px 16px 14px; border-top: 1px solid var(--panel-border); flex-shrink: 0; }
+.import-confirm-btn { width: 100%; padding: 8px 0; border-radius: 7px; border: none; background: var(--text); color: #fff; font-size: 11px; font-weight: 700; font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: opacity 0.12s; }
+.import-confirm-btn:hover { opacity: 0.85; }
+/* 삭제 확인 모달 */
+.delete-modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(10,9,8,0.45);
+  align-items: center;
+  justify-content: center;
+}
+.delete-modal-backdrop.open { display: flex; }
+.delete-modal { background: var(--panel-bg); border-radius: 12px; width: 280px; padding: 20px; box-shadow: 0 4px 24px rgba(0,0,0,0.18); }
+.delete-modal-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 16px; line-height: 1.4; }
+.delete-modal-btns { display: flex; gap: 8px; }
+.delete-modal-btns button { flex: 1; padding: 8px 0; border-radius: 7px; border: 1px solid var(--panel-border); font-size: 11px; font-weight: 700; font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: background 0.12s; }
+.delete-cancel-btn { background: transparent; color: var(--label-color); }
+.delete-cancel-btn:hover { background: var(--input-bg); }
+.delete-confirm-btn { background: #C0392B; color: #fff; border-color: #C0392B; }
+.delete-confirm-btn:hover { opacity: 0.85; }
 
 /* 콘텐츠 패널 */
 .content-panel {
@@ -993,6 +1194,34 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 .sticker-thumb-item:hover .sticker-thumb-add-badge { opacity: 1; }
 .sticker-thumb-item.dragging { opacity: 0.5; }
 #sheet.sticker-drop-over { outline: 2px dashed rgba(155,145,243,0.6); outline-offset: -2px; }
+/* 스티커 패널 내부 탭 */
+.sticker-tab-bar {
+  display: flex;
+  border-bottom: 1px solid var(--panel-border);
+  flex-shrink: 0;
+  margin: 0 -16px;
+}
+.sticker-tab {
+  flex: 1;
+  padding: 10px 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-family: 'Noto Sans KR', sans-serif;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--label-color);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.sticker-tab.active {
+  border-bottom-color: #9481f3;
+  color: var(--text);
+}
+.sticker-tab-panel { display: none; }
+.sticker-tab-panel.active { display: block; padding-top: 16px; }
+
 .sticker-section-label {
   font-size: 9px;
   font-weight: 700;
@@ -1901,58 +2130,6 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
             </ul>
           </div>
 
-          <!-- 텍스트 스티커 -->
-          <div class="sticker-section-label">TEXT</div>
-          <div class="text-sticker-box">
-            <span class="text-sticker-box-label">TEXT STICKER</span>
-            <input class="text-sticker-input" type="text" id="text-sticker-input"
-              placeholder="시트에 올릴 텍스트를 입력하세요"
-              onkeydown="if(event.key==='Enter') addTextSticker()">
-            <div class="text-sticker-controls">
-              <div class="text-sticker-color" id="text-sticker-color-swatch" style="background:#2C2825;">
-                <input type="color" id="text-sticker-color" value="#2C2825"
-                  oninput="document.getElementById('text-sticker-color-swatch').style.background=this.value">
-              </div>
-              <div class="text-size-chips" style="flex:1;">
-                <button class="text-size-chip" onclick="selectSizeChip(this,11)">작게</button>
-                <button class="text-size-chip active" onclick="selectSizeChip(this,12)">보통</button>
-                <button class="text-size-chip" onclick="selectSizeChip(this,14)">크게</button>
-                <button class="text-size-chip" onclick="selectSizeChip(this,16)">매우크게</button>
-              </div>
-            </div>
-            <button class="text-sticker-add-btn" onclick="addTextSticker()">＋ 텍스트 추가</button>
-          </div>
-          <div class="sticker-section-sub" style="margin-top:10px;">
-            <ul>
-              <li>더블클릭하면 시트 위 내용만 수정할 수 있습니다.</li>
-            </ul>
-          </div>
-
-          <!-- 텍스트 라이브러리 -->
-          <div class="text-library-grid" id="text-library-grid">
-            <div class="text-library-empty">추가한 텍스트가 없어요</div>
-          </div>
-
-          <!-- 이미지 스티커 -->
-          <div class="sticker-section-label" style="margin-top:8px;">IMAGE</div>
-          <div class="sticker-upload-row">
-            <label class="sticker-upload-btn">
-              ＋ 이미지 업로드
-              <input type="file" accept="image/*" id="sticker-img-input" style="display:none;" multiple onchange="uploadStickerImages(this)">
-            </label>
-          </div>
-          <div class="sticker-section-sub">
-            <ul>
-              <li>이미지 다중 업로드를 지원합니다.</li>
-              <li>섬네일을 클릭하거나 드래그 앤 드롭하면 시트에 추가됩니다.</li>
-            </ul>
-          </div>
-
-          <!-- 이미지 라이브러리 그리드 -->
-          <div class="sticker-library-grid" id="sticker-library-grid">
-            <div class="sticker-library-empty">업로드한 이미지가 없어요</div>
-          </div>
-
           <!-- 잠금 + 순서 변경 (단일 선택) -->
           <div id="sticker-action-btns" style="display:none; gap:6px; margin-bottom:8px;">
             <button id="sticker-lock-btn" class="sticker-order-btn" onclick="toggleStickerLock()" title="잠금">
@@ -1996,6 +2173,62 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
               <button class="sticker-align-icon-btn" onclick="alignStickers('distribute-v')" title="세로 간격 균등">
                 <svg width="18" height="18" viewBox="0 0 100 100"><rect x="20" y="8" width="60" height="10" rx="2" fill="#6B6560"/><rect x="20" y="82" width="60" height="10" rx="2" fill="#6B6560"/><rect x="30" y="36" width="40" height="28" rx="4" fill="#6B6560"/></svg>
               </button>
+            </div>
+          </div>
+
+          <!-- 탭 헤더 -->
+          <div class="sticker-tab-bar">
+            <button id="sticker-tab-image" class="sticker-tab active" onclick="switchStickerTab('image')">IMAGE</button>
+            <button id="sticker-tab-text" class="sticker-tab" onclick="switchStickerTab('text')">TEXT</button>
+          </div>
+
+          <!-- IMAGE 탭 -->
+          <div id="sticker-tab-panel-image" class="sticker-tab-panel active">
+            <div class="sticker-upload-row">
+              <label class="sticker-upload-btn">
+                ＋ 이미지 업로드
+                <input type="file" accept="image/*" id="sticker-img-input" style="display:none;" multiple onchange="uploadStickerImages(this)">
+              </label>
+            </div>
+            <div class="sticker-section-sub">
+              <ul>
+                <li>이미지 다중 업로드를 지원합니다.</li>
+                <li>섬네일을 클릭하거나 드래그 앤 드롭하면 시트에 추가됩니다.</li>
+              </ul>
+            </div>
+            <div class="sticker-library-grid" id="sticker-library-grid">
+              <div class="sticker-library-empty">업로드한 이미지가 없어요</div>
+            </div>
+          </div>
+
+          <!-- TEXT 탭 -->
+          <div id="sticker-tab-panel-text" class="sticker-tab-panel">
+            <div class="text-sticker-box">
+              <span class="text-sticker-box-label">TEXT STICKER</span>
+              <input class="text-sticker-input" type="text" id="text-sticker-input"
+                placeholder="시트에 올릴 텍스트를 입력하세요"
+                onkeydown="if(event.key==='Enter') addTextSticker()">
+              <div class="text-sticker-controls">
+                <div class="text-sticker-color" id="text-sticker-color-swatch" style="background:#2C2825;">
+                  <input type="color" id="text-sticker-color" value="#2C2825"
+                    oninput="document.getElementById('text-sticker-color-swatch').style.background=this.value">
+                </div>
+                <div class="text-size-chips" style="flex:1;">
+                  <button class="text-size-chip" onclick="selectSizeChip(this,11)">작게</button>
+                  <button class="text-size-chip active" onclick="selectSizeChip(this,12)">보통</button>
+                  <button class="text-size-chip" onclick="selectSizeChip(this,14)">크게</button>
+                  <button class="text-size-chip" onclick="selectSizeChip(this,16)">매우크게</button>
+                </div>
+              </div>
+              <button class="text-sticker-add-btn" onclick="addTextSticker()">＋ 텍스트 추가</button>
+            </div>
+            <div class="sticker-section-sub" style="margin-top:10px;">
+              <ul>
+                <li>더블클릭하면 시트 위 내용만 수정할 수 있습니다.</li>
+              </ul>
+            </div>
+            <div class="text-library-grid" id="text-library-grid">
+              <div class="text-library-empty">추가한 텍스트가 없어요</div>
             </div>
           </div>
 
@@ -2187,8 +2420,74 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
       <button class="slot-modal-close" onclick="closeSlotModal()">✕</button>
     </div>
     <div class="slot-list" id="slot-list"></div>
+    <div class="slot-notice">
+      <span style="color:var(--label-color); font-weight:400;">슬롯</span> — 텍스트만 저장 · 임시 보관&nbsp;&nbsp;<span>·&nbsp;&nbsp;</span><span style="color:var(--label-color); font-weight:400;">JSON</span> — 이미지 포함 완전 저장
+    </div>
+    <div class="slot-export-now">
+      <div class="slot-export-now-text">
+        <div class="slot-export-now-label">현재 작업 내보내기</div>
+        <div class="slot-export-now-desc">이미지 포함 · JSON 파일로 저장</div>
+      </div>
+      <button class="slot-export-now-btn" onclick="doExportNow()">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 10V13h10v-3"/><path d="M8 3v8M5 6l3-3 3 3"/>
+        </svg>
+        내보내기
+      </button>
+    </div>
+    <div class="slot-json-bar">
+      <button class="slot-json-btn" onclick="openImportModal()">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6z"/>
+          <path d="M9 2v4h4"/><path d="M8 8v4M5 10l3 3 3-3"/>
+        </svg>
+        JSON 불러오기
+      </button>
+      <button class="slot-json-btn reset-btn" onclick="resetSlotAll()" title="슬롯 초기화">
+        <span style="font-family:'Noto Sans KR',sans-serif; font-size:14px; line-height:1;">↺</span>
+      </button>
+    </div>
   </div>
 </div>
+
+<!-- 슬롯 아이콘 툴팁 -->
+<div id="slot-tooltip"></div>
+<!-- 토스트 알림 -->
+<div id="slot-toast"></div>
+
+<!-- JSON 불러오기 모달 -->
+<input type="file" id="json-file-input" accept=".json" style="display:none" onchange="onFileSelected(event)">
+<div class="import-modal-backdrop" id="import-backdrop" onclick="handleImportBackdrop(event)">
+  <div class="import-modal">
+    <div class="import-modal-header">
+      <span class="import-modal-title">JSON 불러오기</span>
+      <button class="slot-modal-close" onclick="closeImportModal()">✕</button>
+    </div>
+    <div class="import-modal-body">
+      <div id="import-file-area" style="margin-bottom:10px;"></div>
+      <div class="import-warn-banner" id="import-warn-banner">⚠ 기존 슬롯에 덮어쓰기됩니다</div>
+      <div id="import-section-slots" style="display:none;">
+        <div class="import-section-label">슬롯 배치 선택</div>
+        <div id="import-pick-list"></div>
+      </div>
+    </div>
+    <div class="import-modal-footer">
+      <button class="import-confirm-btn" onclick="doImport()">불러오기 완료</button>
+    </div>
+  </div>
+</div>
+
+<!-- 삭제 확인 모달 -->
+<div class="delete-modal-backdrop" id="delete-backdrop">
+  <div class="delete-modal">
+    <div class="delete-modal-title" id="delete-title">슬롯을 삭제할까요?</div>
+    <div class="delete-modal-btns">
+      <button class="delete-cancel-btn" onclick="closeDeleteModal()">취소</button>
+      <button class="delete-confirm-btn" id="delete-confirm-btn">삭제</button>
+    </div>
+  </div>
+</div>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
@@ -2726,6 +3025,7 @@ async function saveAsPNG() {
 // ══════════════════════════════════════════
 // 저장/불러오기 슬롯 시스템 (인원 수 전용 분리)
 // ══════════════════════════════════════════
+const SHEET_ID = 'manymaker';
 const SLOT_COUNT = 5;
 
 // 인원 수별 독립 키 — 현재 playerCount 기준
@@ -2752,6 +3052,8 @@ function collectData() {
     if (el) data[id] = el.value;
   });
   CHARS.forEach(ch => { data['__badgeTextColor_'+ch] = badgeTextColor[ch] || 'white'; });
+  // 텍스트 스티커만 슬롯에 보존 (이미지 스티커·이미지 데이터는 JSON 내보내기 시에만 포함)
+  data['__stickers']     = stickers.filter(s => s.type === 'text').map(s => Object.assign({}, s));
   return data;
 }
 
@@ -2775,6 +3077,39 @@ function applyData(data) {
   updateHeaderColor();
   updateTeamColor();
   updateImgBgColor();
+  // 이미지 복원
+  if (data['__imgStore']) {
+    Object.entries(data['__imgStore']).forEach(([previewId, src]) => {
+      if (!src) return;
+      imgStore[previewId] = src;
+      const imgEl = document.getElementById(previewId);
+      if (imgEl) {
+        imgEl.src = src;
+        imgEl.style.display = 'block';
+        imgEl.onload = () => {
+          if (data['__imgTransform'] && data['__imgTransform'][previewId]) {
+            imgTransform[previewId] = Object.assign({}, data['__imgTransform'][previewId]);
+          }
+          applyImgTransform(previewId);
+          const wrap = imgEl.parentElement;
+          if (wrap) wrap.classList.add('img-loaded');
+        };
+      }
+      const ch = previewId.replace('s-','').replace('-img','');
+      const ph = document.getElementById('s-' + ch + '-img-ph');
+      if (ph) ph.style.display = 'none';
+      const box = document.getElementById(ch + '-img-box');
+      if (box) box.classList.add('img-loaded');
+      const delBtn = document.getElementById(ch + '-img-del');
+      if (delBtn) delBtn.classList.add('visible');
+    });
+  }
+  // 스티커 복원
+  if (data['__stickers']) {
+    stickers.forEach(s => { const el = document.getElementById('sticker-'+s.id); if (el) el.remove(); });
+    stickers = data['__stickers'].map(s => Object.assign({}, s));
+    stickers.forEach(s => renderSticker(s));
+  }
 }
 
 function loadSlots() {
@@ -2794,8 +3129,14 @@ function formatDate(iso) {
   return mm+'/'+dd+' '+hh+':'+min;
 }
 
+function getSlotName(slots, i) {
+  return slots[i]?.name || ('슬롯 ' + (i + 1));
+}
+function getSlotDate(slots, i) {
+  return slots[i]?.savedAt || null;
+}
+
 function openSlotModal() {
-  // 모달 제목에 현재 인원 수 표시
   const heading = document.getElementById('slot-modal-heading');
   if (heading) heading.textContent = '저장 / 불러오기 · ' + playerCount + '인 슬롯';
   document.getElementById('slot-modal-backdrop').classList.add('open');
@@ -2803,105 +3144,349 @@ function openSlotModal() {
 }
 function closeSlotModal() {
   document.getElementById('slot-modal-backdrop').classList.remove('open');
+  hideSlotTooltip();
 }
 function handleBackdropClick(e) {
   if (e.target === document.getElementById('slot-modal-backdrop')) closeSlotModal();
+}
+
+// ── 슬롯 아이콘 툴팁 ──
+function showSlotTooltip(btn) {
+  const tip = btn.getAttribute('data-tip');
+  if (!tip) return;
+  const el = document.getElementById('slot-tooltip');
+  if (!el) return;
+  const rect = btn.getBoundingClientRect();
+  el.textContent = tip;
+  el.style.opacity = '0';
+  el.style.display = 'block';
+  const tw = el.offsetWidth;
+  el.style.left = (rect.left + rect.width / 2 - tw / 2) + 'px';
+  el.style.top  = (rect.top - el.offsetHeight - 5) + 'px';
+  el.style.opacity = '1';
+}
+function hideSlotTooltip() {
+  const el = document.getElementById('slot-tooltip');
+  if (el) { el.style.opacity = '0'; }
 }
 
 function renderSlotList() {
   const slots = loadSlots();
   const list = document.getElementById('slot-list');
   list.innerHTML = '';
-  for (let i=0; i<SLOT_COUNT; i++) {
+  for (let i = 0; i < SLOT_COUNT; i++) {
     const hasData = !!slots[i]?.data;
-    const name = slots[i]?.name || ('슬롯 '+(i+1));
-    const date = formatDate(slots[i]?.savedAt);
+    const name = getSlotName(slots, i);
+    const date = formatDate(getSlotDate(slots, i));
     const item = document.createElement('div');
     item.className = 'slot-item' + (hasData ? ' has-data' : '');
     if (!hasData) {
-      item.innerHTML = `<div class="slot-item-main">
-        <div class="slot-num">${i+1}</div>
-        <input class="slot-name-input" type="text" value="" placeholder="슬롯 ${i+1}" onclick="event.stopPropagation()">
-        <span class="slot-meta">비어있음</span>
-        <button class="slot-save-btn" onclick="saveToSlot(${i})">저장</button>
-      </div>`;
+      item.innerHTML = `
+        <div class="slot-item-main">
+          <div class="slot-num">${i + 1}</div>
+          <div class="slot-text-wrap">
+            <input class="slot-name-input" type="text" value="" placeholder="슬롯 ${i + 1}"
+              onclick="event.stopPropagation()">
+          </div>
+          <button class="slot-save-btn" onclick="saveToSlot(${i})">저장</button>
+        </div>`;
     } else {
-      item.innerHTML = `<div class="slot-item-main">
-        <div class="slot-num filled">${i+1}</div>
-        <input class="slot-name-input" type="text" value="${name}" placeholder="슬롯 ${i+1}" onchange="renameSlot(${i},this.value)" onclick="event.stopPropagation()">
-        <span class="slot-saved-tag">저장됨</span>
-        <span class="slot-meta">${date}</span>
-      </div>
-      <div class="slot-item-actions">
-        <button class="slot-act-btn overwrite" onclick="overwriteSlot(${i})">덮어쓰기</button>
-        <div class="slot-act-divider"></div>
-        <button class="slot-act-btn" onclick="loadFromSlot(${i})">불러오기</button>
-        <div class="slot-act-divider"></div>
-        <button class="slot-act-btn danger" onclick="deleteSlot(${i})">삭제</button>
-      </div>`;
+      item.innerHTML = `
+        <div class="slot-item-main">
+          <div class="slot-num filled">${i + 1}</div>
+          <div class="slot-text-wrap">
+            <input class="slot-name-input" type="text" value="${name}" placeholder="슬롯 ${i + 1}"
+              onchange="renameSlot(${i}, this.value)" onclick="event.stopPropagation()">
+            <div class="slot-date-line">${date} 저장</div>
+          </div>
+          <div class="slot-icon-group">
+            <button class="slot-icon-btn" data-tip="덮어쓰기" onmouseenter="showSlotTooltip(this)" onmouseleave="hideSlotTooltip()" onclick="overwriteSlot(${i})">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#7C6FCF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 10V13h10v-3"/><path d="M8 3v8M5 6l3-3 3 3"/>
+              </svg>
+            </button>
+            <button class="slot-icon-btn" data-tip="불러오기" onmouseenter="showSlotTooltip(this)" onmouseleave="hideSlotTooltip()" onclick="loadFromSlot(${i})">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#7A736B" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6V3h10v3"/><path d="M8 5v8M5 10l3 3 3-3"/>
+              </svg>
+            </button>
+            <div class="slot-icon-divider"></div>
+            <button class="slot-icon-btn" data-tip="삭제" onmouseenter="showSlotTooltip(this)" onmouseleave="hideSlotTooltip()" onclick="deleteSlot(${i})">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#C0392B" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 4h10M6 4V3h4v1M5 4v8a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V4"/>
+                <line x1="7" y1="7" x2="7" y2="10"/><line x1="9" y1="7" x2="9" y2="10"/>
+              </svg>
+            </button>
+          </div>
+        </div>`;
     }
     list.appendChild(item);
   }
-  const notice = document.createElement('div');
-  notice.style.cssText = 'padding:12px 4px 4px; border-top:1px solid var(--panel-border); margin-top:8px;';
-  notice.innerHTML = `
-    <p style="font-size:10px; font-weight:700; color:#7C6FCF; font-family:'Noto Sans KR',sans-serif; margin-bottom:5px;">
-      ⚠ 이미지 및 스티커를 제외한 편집 내용만 저장됩니다.
-    </p>
-    <p style="font-size:10px; color:#9B9189; font-family:'Noto Sans KR',sans-serif; line-height:1.7; margin-bottom:10px;">
-      슬롯은 인원 수별로 분리 저장됩니다.<br>슬롯명은 직접 클릭해서 수정할 수 있습니다.<br>삭제된 내용은 복구되지 않습니다.
-    </p>
-    <button onclick="resetSlotAll()" style="width:100%;padding:7px 0;background:transparent;border:1px solid var(--panel-border);border-radius:var(--radius-sm);cursor:pointer;font-size:10px;font-weight:600;color:#9B9189;font-family:'Noto Sans KR',sans-serif;letter-spacing:0.04em;transition:border-color 0.15s,color 0.15s;"
-    onmouseover="this.style.borderColor='#BBB6B0';this.style.color='#2C2825';"
-    onmouseout="this.style.borderColor='var(--panel-border)';this.style.color='#9B9189';"
-    >현재 인원 슬롯 초기화</button>`;
-  list.appendChild(notice);
 }
 
 function resetSlotAll() {
-  if (!confirm(playerCount+'인 슬롯 데이터를 모두 삭제합니다.\n삭제된 내용은 복구되지 않습니다. 계속할까요?')) return;
+  if (!confirm(playerCount + '인 슬롯 데이터를 모두 삭제합니다.\n삭제된 내용은 복구되지 않습니다. 계속할까요?')) return;
   try { localStorage.removeItem(getStorageKey()); } catch(e) {}
   try { localStorage.removeItem('dss_many_tour_seen'); } catch(e) {}
   closeSlotModal();
   location.reload();
 }
 function saveToSlot(i) {
-  const list=document.getElementById('slot-list');
-  const inputs=list.querySelectorAll('.slot-name-input');
-  const currentName=inputs[i]?inputs[i].value.trim():'';
-  const slots=loadSlots();
-  slots[i]={ name:currentName||('슬롯 '+(i+1)), data:collectData(), savedAt:new Date().toISOString() };
+  const list = document.getElementById('slot-list');
+  const inputs = list.querySelectorAll('.slot-name-input');
+  const currentName = inputs[i] ? inputs[i].value.trim() : '';
+  const slots = loadSlots();
+  slots[i] = { name: currentName || ('슬롯 ' + (i + 1)), data: collectData(), savedAt: new Date().toISOString() };
   saveSlots(slots); renderSlotList(); flashSaved();
 }
 function overwriteSlot(i) {
-  if (!confirm('슬롯 '+(i+1)+'에 현재 내용을 덮어씁니다. 계속할까요?')) return;
-  const list=document.getElementById('slot-list');
-  const inputs=list.querySelectorAll('.slot-name-input');
-  const currentName=inputs[i]?inputs[i].value.trim():'';
-  const slots=loadSlots();
-  slots[i]={ name:currentName||(slots[i]?.name||('슬롯 '+(i+1))), data:collectData(), savedAt:new Date().toISOString() };
+  if (!confirm('슬롯 ' + (i + 1) + '에 현재 내용을 덮어씁니다. 계속할까요?')) return;
+  const list = document.getElementById('slot-list');
+  const inputs = list.querySelectorAll('.slot-name-input');
+  const currentName = inputs[i] ? inputs[i].value.trim() : '';
+  const slots = loadSlots();
+  slots[i] = { name: currentName || getSlotName(slots, i), data: collectData(), savedAt: new Date().toISOString() };
   saveSlots(slots); renderSlotList(); flashSaved();
 }
 function loadFromSlot(i) {
-  const slots=loadSlots();
+  const slots = loadSlots();
   if (!slots[i]?.data) return;
-  if (!confirm('슬롯 '+(i+1)+'을 불러올까요?\n현재 작업 내용이 덮어씌워집니다.')) return;
-  applyData(slots[i].data); closeSlotModal();
+  if (!confirm('슬롯 ' + (i + 1) + '을 불러올까요?\n현재 작업 내용이 덮어씌워집니다.')) return;
+  applyData(slots[i].data);
+  closeSlotModal();
 }
 function deleteSlot(i) {
-  if (!confirm('슬롯 '+(i+1)+'을 삭제할까요?')) return;
-  const slots=loadSlots(); delete slots[i]; saveSlots(slots); renderSlotList();
+  const slots = loadSlots();
+  const name = getSlotName(slots, i);
+  document.getElementById('delete-title').textContent = '"' + name + '" 슬롯을 삭제할까요?';
+  document.getElementById('delete-backdrop').classList.add('open');
+  document.getElementById('delete-confirm-btn').onclick = function() {
+    delete slots[i];
+    saveSlots(slots);
+    closeDeleteModal();
+    renderSlotList();
+    showToast('"' + name + '" 삭제됨');
+  };
+}
+function closeDeleteModal() {
+  document.getElementById('delete-backdrop').classList.remove('open');
 }
 function renameSlot(i, newName) {
-  const slots=loadSlots();
-  if (!slots[i]) slots[i]={};
-  slots[i].name=newName.trim()||('슬롯 '+(i+1)); saveSlots(slots);
+  const slots = loadSlots();
+  if (!slots[i]) slots[i] = {};
+  slots[i].name = newName.trim() || ('슬롯 ' + (i + 1));
+  saveSlots(slots);
 }
 function flashSaved() {
-  const btn=document.querySelector('.side-nav-icon-btn[onclick="openSlotModal()"]');
+  const btn = document.querySelector('.side-nav-icon-btn[onclick="openSlotModal()"]');
   if (!btn) return;
-  btn.style.color='#6BCB8B';
-  setTimeout(()=>{ btn.style.color=''; }, 800);
+  btn.style.color = '#6BCB8B';
+  setTimeout(() => { btn.style.color = ''; }, 800);
+}
+
+// ── 토스트 알림 ──
+let _toastTimer = null;
+function showToast(msg, isWarn) {
+  const t = document.getElementById('slot-toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.style.background = isWarn ? '#C0392B' : 'var(--text)';
+  t.classList.add('show');
+  if (_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── JSON 내보내기 ──
+function makeFileName(slots, i) {
+  const slot = slots[i];
+  const today = new Date();
+  const date = today.getFullYear().toString().slice(2)
+    + String(today.getMonth() + 1).padStart(2, '0')
+    + String(today.getDate()).padStart(2, '0');
+  const slotName = slot?.name || ('슬롯' + (i + 1));
+  return date + '_' + SHEET_ID + '_' + playerCount + '인_' + slotName + '.json';
+}
+function triggerDownload(fileName, data) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fileName; a.click();
+  URL.revokeObjectURL(url);
+}
+// ── 현재 작업 내보내기 (이미지 포함) ──
+function doExportNow() {
+  const data = collectData();
+  data['__imgStore']     = Object.assign({}, imgStore);
+  data['__imgTransform'] = Object.assign({}, imgTransform);
+  data['__stickers']     = stickers.map(s => Object.assign({}, s));
+  const today = new Date();
+  const date = today.getFullYear().toString().slice(2) + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
+  const teamName = v('team-name')?.value?.trim() || '작업중';
+  const fileName = date + '_' + SHEET_ID + '_' + teamName + '.json';
+  const payload = { sheet: SHEET_ID, playerCount, exportedAt: new Date().toISOString(), slots: { 0: { name: teamName, data, savedAt: new Date().toISOString() } } };
+  triggerDownload(fileName, payload);
+  showToast(fileName + ' 저장됨');
+}
+
+// ── JSON 내보내기 (단건) ──
+function doExportSlot(i) {
+  const slots = loadSlots();
+  const slot = slots[i];
+  if (!slot) { showToast('슬롯 ' + (i + 1) + '에 저장된 데이터가 없습니다', true); return; }
+  const fileName = makeFileName(slots, i);
+  const payload = { sheet: SHEET_ID, playerCount: playerCount, exportedAt: new Date().toISOString(), slots: { [i]: slot } };
+  triggerDownload(fileName, payload);
+  showToast(fileName + ' 저장됨');
+}
+function doExportAll() {
+  const slots = loadSlots();
+  const today = new Date();
+  const date = today.getFullYear().toString().slice(2)
+    + String(today.getMonth() + 1).padStart(2, '0')
+    + String(today.getDate()).padStart(2, '0');
+  const fileName = date + '_' + SHEET_ID + '_' + playerCount + '인_backup.json';
+  const payload = { sheet: SHEET_ID, playerCount: playerCount, exportedAt: new Date().toISOString(), slots };
+  triggerDownload(fileName, payload);
+  showToast('전체 백업 완료 · ' + fileName);
+}
+
+// ── JSON 불러오기 ──
+let importedData = null;
+
+function openImportModal() {
+  importedData = null;
+  document.getElementById('json-file-input').value = '';
+  document.getElementById('json-file-input').click();
+}
+function closeImportModal() {
+  document.getElementById('import-backdrop').classList.remove('open');
+  document.getElementById('json-file-input').value = '';
+}
+function handleImportBackdrop(e) {
+  if (e.target === document.getElementById('import-backdrop')) closeImportModal();
+}
+function onFileSelected(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      // 시트 확인
+      if (parsed.sheet && parsed.sheet !== SHEET_ID) {
+        showToast('이 파일은 ' + parsed.sheet + ' 파일입니다', true); return;
+      }
+      // 인원 수 확인
+      const fileCount = parsed.playerCount;
+      if (fileCount && fileCount !== playerCount) {
+        showToast(fileCount + '인 슬롯입니다. ' + fileCount + '인 모드에서 불러와주세요', true); return;
+      }
+      importedData = parsed;
+      const currentSlots = loadSlots();
+      const keys = Object.keys(parsed.slots || {}).filter(k => !!parsed.slots[k]);
+      if (keys.length === 0) { showToast('저장된 슬롯이 없습니다', true); return; }
+      if (keys.length === 1) {
+        const srcIdx = parseInt(keys[0]);
+        const slot = parsed.slots[keys[0]];
+        applyData(slot.data);
+        closeSlotModal();
+        showToast('"' + (slot.name || '슬롯' + (srcIdx + 1)) + '" 불러오기 완료');
+      } else {
+        renderImportPicks(parsed.slots || {});
+        document.getElementById('import-file-area').innerHTML = `
+          <div style="display:flex;align-items:center;gap:8px;background:#EEEDFE;border-radius:6px;padding:8px 10px;margin-bottom:8px;">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#534AB7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6z"/>
+              <path d="M9 2v4h4"/>
+            </svg>
+            <span style="font-size:11px;font-weight:700;color:#534AB7;font-family:'Noto Sans KR',sans-serif;word-break:break-all;">${file.name}</span>
+          </div>`;
+        document.getElementById('import-section-slots').style.display = 'block';
+        document.getElementById('import-backdrop').classList.add('open');
+      }
+    } catch(err) {
+      showToast('올바른 JSON 파일이 아닙니다', true);
+    }
+  };
+  reader.readAsText(file);
+}
+function renderImportPicks(slots) {
+  const pickList = document.getElementById('import-pick-list');
+  pickList.innerHTML = '';
+  const currentSlots = loadSlots();
+  const keys = Object.keys(slots).filter(k => !!slots[k]);
+  if (keys.length === 0) {
+    pickList.innerHTML = `<p style="font-size:11px;color:var(--label-color);padding:8px 0;">저장된 슬롯이 없습니다.</p>`;
+    return;
+  }
+  keys.forEach(k => {
+    const slot = slots[k];
+    const srcIdx = parseInt(k);
+    const name = slot.name || ('슬롯 ' + (srcIdx + 1));
+    const date = slot.savedAt ? formatDate(slot.savedAt) : '';
+    const row = document.createElement('div');
+    row.className = 'import-pick-row';
+    let options = '';
+    for (let j = 0; j < SLOT_COUNT; j++) {
+      const targetSlot = currentSlots[j];
+      const label = targetSlot
+        ? '슬롯 ' + (j + 1) + ' · ' + (targetSlot.name || ('슬롯' + (j + 1))) + ' (덮어쓰기)'
+        : '슬롯 ' + (j + 1) + ' (빈 슬롯)';
+      const selected = j === srcIdx ? 'selected' : '';
+      options += `<option value="${j}" ${selected}>${label}</option>`;
+    }
+    row.innerHTML = `
+      <div class="pick-src-wrap">
+        <div class="pick-src-name">${name}</div>
+        <div class="pick-src-date">${date} 저장</div>
+      </div>
+      <span class="pick-arrow">→</span>
+      <select class="pick-select" onchange="onPickChange(this)">
+        ${options}
+      </select>`;
+    pickList.appendChild(row);
+  });
+  checkWarn();
+}
+function onPickChange(sel) {
+  const currentSlots = loadSlots();
+  const targetIdx = parseInt(sel.value);
+  const hasExisting = !!currentSlots[targetIdx];
+  sel.className = 'pick-select' + (hasExisting ? ' warn' : '');
+  checkWarn();
+}
+function checkWarn() {
+  const selects = document.querySelectorAll('.pick-select');
+  let hasWarn = false;
+  selects.forEach(s => { if (s.classList.contains('warn')) hasWarn = true; });
+  const banner = document.getElementById('import-warn-banner');
+  if (banner) { hasWarn ? banner.classList.add('show') : banner.classList.remove('show'); }
+}
+function doImport() {
+  if (!importedData) return;
+  const slots = loadSlots();
+  const selects = document.querySelectorAll('.pick-select');
+  const srcKeys = Object.keys(importedData.slots || {}).filter(k => !!importedData.slots[k]);
+  let lastSlot = null;
+  srcKeys.forEach((k, idx) => {
+    const sel = selects[idx];
+    if (!sel) return;
+    const targetIdx = parseInt(sel.value);
+    const slotToSave = Object.assign({}, importedData.slots[k]);
+    if (slotToSave.data) {
+      slotToSave.data = Object.assign({}, slotToSave.data);
+      delete slotToSave.data['__imgStore'];
+      delete slotToSave.data['__imgTransform'];
+      slotToSave.data['__stickers'] = (slotToSave.data['__stickers'] || []).filter(s => s.type === 'text');
+    }
+    slots[targetIdx] = slotToSave;
+    lastSlot = importedData.slots[k];
+  });
+  saveSlots(slots);
+  closeImportModal();
+  closeSlotModal();
+  if (lastSlot?.data) applyData(lastSlot.data);
+  showToast('불러오기 완료');
 }
 
 // ── 초기화 ──
@@ -3263,6 +3848,18 @@ const TEXT_SIZES = [11,12,14,16];
 const stickerLayer = () => document.getElementById('sticker-layer');
 const stickerEditBar = () => document.getElementById('sticker-edit-bar');
 
+function switchStickerTab(tab) {
+  const isImage = tab === 'image';
+  const imagePanel = document.getElementById('sticker-tab-panel-image');
+  const textPanel  = document.getElementById('sticker-tab-panel-text');
+  const imageBtn   = document.getElementById('sticker-tab-image');
+  const textBtn    = document.getElementById('sticker-tab-text');
+  if (imagePanel) imagePanel.classList.toggle('active', isImage);
+  if (textPanel)  textPanel.classList.toggle('active', !isImage);
+  if (imageBtn)   imageBtn.classList.toggle('active', isImage);
+  if (textBtn)    textBtn.classList.toggle('active', !isImage);
+}
+
 function selectSizeChip(btn, size) {
   selectedTextSize = size;
   document.querySelectorAll('.text-size-chip').forEach(c => c.classList.remove('active'));
@@ -3477,7 +4074,7 @@ function bindStickerEvents(el, sticker) {
     dragging = true; startX = e.clientX; startY = e.clientY;
     startPositions = selectedStickerIds.map(id => {
       const s = stickers.find(s => s.id === id);
-      return s ? { id, x: s.x, y: s.y } : null;
+      return (s && !s.locked) ? { id, x: s.x, y: s.y } : null;
     }).filter(Boolean);
     e.preventDefault();
   });
@@ -3486,6 +4083,7 @@ function bindStickerEvents(el, sticker) {
     const dx = e.clientX-startX, dy = e.clientY-startY;
     startPositions.forEach(({ id, x, y }) => {
       const s = stickers.find(s => s.id === id); if(!s) return;
+      if(s.locked) return;
       s.x=x+dx; s.y=y+dy;
       const sEl = document.getElementById('sticker-'+id);
       if (sEl) { sEl.style.left=s.x+'px'; sEl.style.top=s.y+'px'; }
@@ -3527,16 +4125,31 @@ function updateStickerHandles(el, sticker) {
       bindRotateHandle(rotH, sticker, el); el.appendChild(rotH);
     }
   } else {
-    const resH = document.createElement('div');
-    resH.className='sticker-handle resize'; resH.textContent='\u2921';
-    bindResizeHandleMulti(resH, sticker); el.appendChild(resH);
-    const delH = document.createElement('div');
-    delH.className='sticker-handle delete'; delH.textContent='\u2715';
-    delH.addEventListener('mousedown', e => { e.stopPropagation(); [...selectedStickerIds].forEach(id=>removeSticker(id)); });
-    el.appendChild(delH);
-    const rotH = document.createElement('div');
-    rotH.className='sticker-handle rotate'; rotH.textContent='\u21bb';
-    bindRotateHandleMulti(rotH, sticker); el.appendChild(rotH);
+    // 다중 선택 — 잠금 핸들 항상 표시
+    const lockH = document.createElement('div');
+    lockH.className = 'sticker-handle lock';
+    lockH.innerHTML = sticker.locked
+      ? `<svg width="9" height="11" viewBox="0 0 11 13" fill="none"><rect x="1" y="5.5" width="9" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M3 5.5V3.5C3 2.12 4.12 1 5.5 1C6.88 1 8 2.12 8 3.5V5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`
+      : `<svg width="9" height="11" viewBox="0 0 11 13" fill="none"><rect x="1" y="5.5" width="9" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M3 5.5V3.5C3 2.12 4.12 1 5.5 1C6.88 1 8 2.12 8 3.5V5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="2 2"/></svg>`;
+    lockH.title = sticker.locked ? '잠금 해제' : '잠금';
+    lockH.addEventListener('mousedown', e => {
+      e.stopPropagation();
+      sticker.locked = !sticker.locked;
+      renderSticker(sticker);
+    });
+    el.appendChild(lockH);
+    if (!sticker.locked) {
+      const resH = document.createElement('div');
+      resH.className='sticker-handle resize'; resH.textContent='\u2921';
+      bindResizeHandleMulti(resH, sticker); el.appendChild(resH);
+      const delH = document.createElement('div');
+      delH.className='sticker-handle delete'; delH.textContent='\u2715';
+      delH.addEventListener('mousedown', e => { e.stopPropagation(); [...selectedStickerIds].forEach(id=>removeSticker(id)); });
+      el.appendChild(delH);
+      const rotH = document.createElement('div');
+      rotH.className='sticker-handle rotate'; rotH.textContent='\u21bb';
+      bindRotateHandleMulti(rotH, sticker); el.appendChild(rotH);
+    }
   }
 }
 
@@ -3588,6 +4201,7 @@ function bindResizeHandleMulti(handle, triggerSticker) {
       const ratio=Math.max(0.2,1+(e2.clientX-startX)/120);
       startSizes.forEach(({id,size})=>{
         const s=stickers.find(s=>s.id===id); if(!s) return;
+        if(s.locked) return;
         if(s.type==='text'){const t=Math.round(size*ratio);const c=TEXT_SIZES.reduce((a,b)=>Math.abs(b-t)<Math.abs(a-t)?b:a);if(s.size!==c){s.size=c;renderSticker(s);}}
         else{const ns=Math.max(20,Math.round(size*ratio));if(s.size!==ns){s.size=ns;renderSticker(s);}}
       });
@@ -3607,7 +4221,7 @@ function bindRotateHandleMulti(handle, triggerSticker) {
     const startRotates=selectedStickerIds.map(id=>{const s=stickers.find(s=>s.id===id);return s?{id,rotate:s.rotate||0}:null;}).filter(Boolean);
     const onMove=e2=>{
       const delta=Math.atan2(e2.clientY-cy,e2.clientX-cx)*180/Math.PI-startAngle;
-      startRotates.forEach(({id,rotate})=>{const s=stickers.find(s=>s.id===id);if(!s)return;s.rotate=rotate+delta;const sEl=document.getElementById('sticker-'+id);if(sEl)sEl.style.transform=`rotate(${s.rotate}deg)`;});
+      startRotates.forEach(({id,rotate})=>{const s=stickers.find(s=>s.id===id);if(!s)return;if(s.locked)return;s.rotate=rotate+delta;const sEl=document.getElementById('sticker-'+id);if(sEl)sEl.style.transform=`rotate(${s.rotate}deg)`;});
     };
     const onUp=()=>{window.removeEventListener('mousemove',onMove);window.removeEventListener('mouseup',onUp);};
     window.addEventListener('mousemove',onMove); window.addEventListener('mouseup',onUp);
@@ -3702,7 +4316,7 @@ function toggleStickerLock() {
 
 // ── 정렬 ──
 function alignStickers(type) {
-  const selected = stickers.filter(s => selectedStickerIds.includes(s.id));
+  const selected = stickers.filter(s => selectedStickerIds.includes(s.id) && !s.locked);
   if (selected.length < 2) return;
   if (type === 'left') {
     const minX = Math.min(...selected.map(s => s.x));
@@ -3797,6 +4411,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if(e.target===layer||e.target.id==='sticker-edit-bar'){deselectSticker();}
     });
   }
+  // 편집 영역 외부 클릭 → 선택 해제
+  document.addEventListener('mousedown', e => {
+    if (!stickerEditMode) return;
+    const isSticker   = e.target.closest('.sticker-item');
+    const isBar       = e.target.closest('#sticker-edit-bar');
+    const isEditPanel = e.target.closest('.edit-panel');
+    const isHeader    = e.target.closest('.app-header');
+    if (!isSticker && !isBar && !isEditPanel && !isHeader) deselectSticker();
+  });
   // 시트 드래그 앤 드롭
   const sheetEl=document.getElementById('sheet');
   if(sheetEl){
