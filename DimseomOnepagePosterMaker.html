@@ -2201,9 +2201,9 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
         <span class="nav-icon">I</span>
         <span class="nav-label">이미지</span>
       </button>
-      <button class="side-nav-btn" onclick="switchSection('profile')" title="페어">
-        <span class="nav-icon">P</span>
-        <span class="nav-label">페어</span>
+      <button class="side-nav-btn" onclick="switchSection('profile')" title="캐릭터">
+        <span class="nav-icon">Ch</span>
+        <span class="nav-label">캐릭터</span>
       </button>
       <button class="side-nav-btn" onclick="switchSection('expr')" title="서브">
         <span class="nav-icon">S</span>
@@ -2248,15 +2248,15 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
         <div class="section-panel-body">
           <div class="field-row">
             <label class="field-label">헤더 텍스트</label>
-            <input class="field-input" type="text" id="e-banner" value="PAIR CATCHPHRASE" oninput="update()">
+            <input class="field-input" type="text" id="e-banner" value="CHARACTER CATCHPHRASE" oninput="update()">
           </div>
           <div class="field-row">
             <label class="field-label">좌측 텍스트</label>
-            <input class="field-input" type="text" id="e-top-left" value="CHA1" oninput="update()">
+            <input class="field-input" type="text" id="e-top-left" value="PC1" oninput="update()">
           </div>
           <div class="field-row">
             <label class="field-label">우측 텍스트</label>
-            <input class="field-input" type="text" id="e-top-right" value="CHA2" oninput="update()">
+            <input class="field-input" type="text" id="e-top-right" value="4.26" oninput="update()">
           </div>
           <div class="field-row">
             <label class="field-label">캐치프레이즈</label>
@@ -2270,7 +2270,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
             </div>
             <div class="field-row">
               <label class="field-label">좌측 타이포</label>
-              <input class="field-input" type="text" id="e-mega-text" value="PAIR NAME" oninput="update()">
+              <input class="field-input" type="text" id="e-mega-text" value="CHARACTER NAME" oninput="update()">
             </div>
             <div class="field-row">
               <label class="field-label">우측 타이포</label>
@@ -2366,14 +2366,14 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
       <!-- P 프로필 -->
       <div class="section-panel" id="sec-profile">
         <div class="section-panel-header">
-          <div class="section-panel-title"><span class="section-panel-badge">P</span>페어</div>
+          <div class="section-panel-title"><span class="section-panel-badge">Ch</span>캐릭터</div>
           <div class="section-panel-sub">PAIR</div>
         </div>
         <div class="section-panel-body">
           <div class="field-row">
-            <label class="field-label" style="display:block;margin-bottom:6px;">페어명</label>
-            <label class="field-label">페어명(한글)</label>
-            <input class="field-input" type="text" id="e-ko-name" value="페어명" oninput="update()">
+            <label class="field-label" style="display:block;margin-bottom:6px;">캐릭터명</label>
+            <label class="field-label">캐릭터명(한글)</label>
+            <input class="field-input" type="text" id="e-ko-name" value="캐릭터명" oninput="update()">
           </div>
           <div class="field-row" style="margin-top:4px;">
             <div class="color-row" style="margin-bottom:0;">
@@ -2396,8 +2396,8 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
             </div>
           </div>
           <div class="field-row">
-            <label class="field-label">페어명(영문)</label>
-            <input class="field-input" type="text" id="e-ko-sub" value="PAIR NAME" oninput="update()">
+            <label class="field-label">캐릭터명(영문)</label>
+            <input class="field-input" type="text" id="e-ko-sub" value="CHARACTER NAME" oninput="update()">
           </div>
           <div class="field-row" style="margin-top:4px;">
             <div class="color-row" style="margin-bottom:0;">
@@ -2438,27 +2438,27 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
             </div>
           </div>
           <div style="margin-top:14px; padding-top:12px; border-top:1px solid var(--panel-border);">
-            <label class="field-label" style="display:block;margin-bottom:2px;">페어 정보</label>
+            <label class="field-label" style="display:block;margin-bottom:2px;">캐릭터 정보</label>
             <div style="font-size:9px;color:var(--text-dim);margin-bottom:8px;letter-spacing:0.04em;">항목명은 수정할 수 있습니다.</div>
             <div class="field-row">
-              <input class="field-input" type="text" id="e-label-voice" value="SUMMARY" oninput="update()" style="font-size:10px;font-weight:700;letter-spacing:0.08em;color:var(--label-color);margin-bottom:4px;">
-              <textarea class="field-input" id="e-voice" oninput="update()" style="min-height:52px;resize:vertical;">페어 설명</textarea>
+              <input class="field-input" type="text" id="e-label-voice" value="VOICE" oninput="update()" style="font-size:10px;font-weight:700;letter-spacing:0.08em;color:var(--label-color);margin-bottom:4px;">
+              <textarea class="field-input" id="e-voice" oninput="update()" style="min-height:52px;resize:vertical;">캐릭터 한마디 또는 설명</textarea>
             </div>
             <div class="field-row">
-              <input class="field-input" type="text" id="e-label-gender" value="RELATION" oninput="update()" style="font-size:10px;font-weight:700;letter-spacing:0.08em;color:var(--label-color);margin-bottom:4px;">
-              <textarea class="field-input" id="e-gender" oninput="update()" style="min-height:52px;resize:vertical;">관계</textarea>
+              <input class="field-input" type="text" id="e-label-gender" value="GENDER" oninput="update()" style="font-size:10px;font-weight:700;letter-spacing:0.08em;color:var(--label-color);margin-bottom:4px;">
+              <textarea class="field-input" id="e-gender" oninput="update()" style="min-height:52px;resize:vertical;">젠더</textarea>
             </div>
             <div class="field-row">
-              <input class="field-input" type="text" id="e-label-age" value="GENRE" oninput="update()" style="font-size:10px;font-weight:700;letter-spacing:0.08em;color:var(--label-color);margin-bottom:4px;">
-              <textarea class="field-input" id="e-age" oninput="update()" style="min-height:52px;resize:vertical;">장르</textarea>
+              <input class="field-input" type="text" id="e-label-age" value="AGE" oninput="update()" style="font-size:10px;font-weight:700;letter-spacing:0.08em;color:var(--label-color);margin-bottom:4px;">
+              <textarea class="field-input" id="e-age" oninput="update()" style="min-height:52px;resize:vertical;">나이</textarea>
             </div>
             <div class="field-row">
-              <input class="field-input" type="text" id="e-label-htwt" value="OST" oninput="update()" style="font-size:10px;font-weight:700;letter-spacing:0.08em;color:var(--label-color);margin-bottom:4px;">
-              <textarea class="field-input" id="e-htwt" oninput="update()" style="min-height:52px;resize:vertical;">노래</textarea>
+              <input class="field-input" type="text" id="e-label-htwt" value="Ht/Wt" oninput="update()" style="font-size:10px;font-weight:700;letter-spacing:0.08em;color:var(--label-color);margin-bottom:4px;">
+              <textarea class="field-input" id="e-htwt" oninput="update()" style="min-height:52px;resize:vertical;">키/몸무게</textarea>
             </div>
             <div class="field-row">
-              <input class="field-input" type="text" id="e-label-job" value="D-DAY" oninput="update()" style="font-size:10px;font-weight:700;letter-spacing:0.08em;color:var(--label-color);margin-bottom:4px;">
-              <textarea class="field-input" id="e-job" oninput="update()" style="min-height:52px;resize:vertical;">디데이</textarea>
+              <input class="field-input" type="text" id="e-label-job" value="JOB" oninput="update()" style="font-size:10px;font-weight:700;letter-spacing:0.08em;color:var(--label-color);margin-bottom:4px;">
+              <textarea class="field-input" id="e-job" oninput="update()" style="min-height:52px;resize:vertical;">직업</textarea>
             </div>
           </div>
           <div style="margin-top:14px; padding-top:12px; border-top:1px solid var(--panel-border);">
@@ -2688,9 +2688,9 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 
       <!-- 상단 바 -->
       <div class="e-top-bar">
-        <div id="s-e-top-left">CHA1</div>
-        <div class="e-banner" id="s-e-banner">PAIR CATCHPHRASE</div>
-        <div id="s-e-top-right">CHA2</div>
+        <div id="s-e-top-left">PC1</div>
+        <div class="e-banner" id="s-e-banner">CHARACTER CATCHPHRASE</div>
+        <div id="s-e-top-right">4.26</div>
       </div>
 
       <!-- 캐치프레이즈 띠 -->
@@ -2712,8 +2712,8 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 
         <!-- 한글 이름 + 서브텍스트 -->
         <div class="e-ko-name">
-          <span id="s-e-ko-name">페어명</span>
-          <span class="sub" id="s-e-ko-sub">PAIR NAME</span>
+          <span id="s-e-ko-name">캐릭터명</span>
+          <span class="sub" id="s-e-ko-sub">CHARACTER NAME</span>
         </div>
 
         <!-- 우측 칩 레일 — 표정칩 3개 -->
@@ -2752,13 +2752,13 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
         <!-- 속성 테이블 -->
         <div class="e-attr-row">
           <div class="e-cell e-brief">
-            <div class="e-k" id="s-e-label-voice">SUMMARY</div>
-            <div class="e-v" id="s-e-voice">페어 설명</div>
+            <div class="e-k" id="s-e-label-voice">VOICE</div>
+            <div class="e-v" id="s-e-voice">캐릭터 한마디 또는 설명</div>
           </div>
-          <div class="e-cell"><div class="e-k" id="s-e-label-gender">RELATION</div><div class="e-v" id="s-e-gender">관계</div></div>
-          <div class="e-cell"><div class="e-k" id="s-e-label-age">GENRE</div><div class="e-v" id="s-e-age">장르</div></div>
-          <div class="e-cell"><div class="e-k" id="s-e-label-htwt">OST</div><div class="e-v" id="s-e-htwt">노래</div></div>
-          <div class="e-cell"><div class="e-k" id="s-e-label-job">D-DAY</div><div class="e-v" id="s-e-job">디데이</div></div>
+          <div class="e-cell"><div class="e-k" id="s-e-label-gender">GENDER</div><div class="e-v" id="s-e-gender">젠더</div></div>
+          <div class="e-cell"><div class="e-k" id="s-e-label-age">AGE</div><div class="e-v" id="s-e-age">나이</div></div>
+          <div class="e-cell"><div class="e-k" id="s-e-label-htwt">Ht/Wt</div><div class="e-v" id="s-e-htwt">키/몸무게</div></div>
+          <div class="e-cell"><div class="e-k" id="s-e-label-job">JOB</div><div class="e-v" id="s-e-job">직업</div></div>
         </div>
 
       </div><!-- /e-data-region -->
@@ -3398,9 +3398,9 @@ function update() {
   const safeText = (id, fallback) => { const el = v(id); return el ? el.value : fallback; };
   const safeSet  = (id, val)      => { const el = v(id); if (el) el.textContent = val; };
 
-  const tlEl = v('s-e-top-left');  if (tlEl) tlEl.textContent = safeText('e-top-left','CHA1');
-  const bnEl = v('s-e-banner');    if (bnEl) bnEl.textContent = safeText('e-banner','PAIR CATCHPHRASE');
-  const trEl = v('s-e-top-right'); if (trEl) trEl.textContent = safeText('e-top-right','CHA2');
+  const tlEl = v('s-e-top-left');  if (tlEl) tlEl.textContent = safeText('e-top-left','PC1');
+  const bnEl = v('s-e-banner');    if (bnEl) bnEl.textContent = safeText('e-banner','CHARACTER CATCHPHRASE');
+  const trEl = v('s-e-top-right'); if (trEl) trEl.textContent = safeText('e-top-right','4.26');
 
   // ── 캐치프레이즈 띠 — 띄어쓰기 단위 분할 ──
   const catchphrase = safeText('e-catchphrase','');
@@ -3426,11 +3426,11 @@ function update() {
   safeSet('s-e-char-id', safeText('e-char-id','CMS @COMMISSION'));
 
   // ── 속성 레이블 동기화 ──
-  safeSet('s-e-label-voice',  safeText('e-label-voice','SUMMARY'));
-  safeSet('s-e-label-gender', safeText('e-label-gender','RELATION'));
-  safeSet('s-e-label-age',    safeText('e-label-age','GENRE'));
-  safeSet('s-e-label-htwt',   safeText('e-label-htwt','OST'));
-  safeSet('s-e-label-job',    safeText('e-label-job','D-DAY'));
+  safeSet('s-e-label-voice',  safeText('e-label-voice','VOICE'));
+  safeSet('s-e-label-gender', safeText('e-label-gender','GENDER'));
+  safeSet('s-e-label-age',    safeText('e-label-age','AGE'));
+  safeSet('s-e-label-htwt',   safeText('e-label-htwt','Ht/Wt'));
+  safeSet('s-e-label-job',    safeText('e-label-job','JOB'));
 
   // ── 속성 값 ──
   safeSet('s-e-voice',  safeText('e-voice',''));
@@ -5217,15 +5217,15 @@ function resetAll() {
   // 텍스트 필드 초기값
   const defaults = {
     // 원돌 전용 필드
-    'e-top-left': 'CHA1', 'e-banner': 'PAIR CATCHPHRASE', 'e-top-right': 'CHA2',
+    'e-top-left': 'PC1', 'e-banner': 'CHARACTER CATCHPHRASE', 'e-top-right': '4.26',
     'e-catchphrase': 'WE WILL BE COUNTING STARS',
-    'e-mega-text': 'PAIR NAME', 'e-mega-row3': '— ETC',
-    'e-ko-name': '페어명', 'e-ko-sub': 'PAIR NAME', 'e-char-id': 'CMS @COMMISSION',
+    'e-mega-text': 'CHARACTER NAME', 'e-mega-row3': '— ETC',
+    'e-ko-name': '캐릭터명', 'e-ko-sub': 'CHARACTER NAME', 'e-char-id': 'CMS @COMMISSION',
     'e-tags': 'TAG1, TAG2, TAG3, TAG4, TAG5',
-    'e-voice': '페어 설명',
+    'e-voice': '캐릭터 한마디 또는 설명',
     'e-gender': '관계', 'e-age': '장르', 'e-htwt': '노래', 'e-job': '디데이',
-    'e-label-voice': 'SUMMARY', 'e-label-gender': 'RELATION', 'e-label-age': 'GENRE',
-    'e-label-htwt': 'OST', 'e-label-job': 'D-DAY',
+    'e-label-voice': 'VOICE', 'e-label-gender': 'GENDER', 'e-label-age': 'AGE',
+    'e-label-htwt': 'Ht/Wt', 'e-label-job': 'JOB',
     // 마스터 공통 필드
     'b-name-ko': '캐릭터 B 이름', 'b-name-en': 'Character B Name',
     'a-tags': '태그 1, 태그 2, 태그 3',
@@ -5249,7 +5249,7 @@ function resetAll() {
     'a-stat-str': '75', 'a-stat-agi': '60', 'a-stat-int': '90',
     'b-stat-str-name': '스탯1', 'b-stat-agi-name': '스탯2', 'b-stat-int-name': '스탯3',
     'b-stat-str': '55', 'b-stat-agi': '88', 'b-stat-int': '70',
-    'pair-name': 'PAIR NAME', 'pair-catchphrase': 'WE WILL BE COUNTING STARS',
+    'pair-name': 'CHARACTER NAME', 'pair-catchphrase': 'WE WILL BE COUNTING STARS',
     'pair-title': '페어 특징',
     'pair-body': '페어 특징 예시 내용 1\n페어 특징 예시 내용 2\n페어 특징 예시 내용 3',
     'pair-name-color': '#ffffff', 'pair-catch-color': '#ffffff',
