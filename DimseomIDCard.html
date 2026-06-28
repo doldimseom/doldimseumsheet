@@ -46,7 +46,7 @@
 <meta name="twitter:image"      content="https://doldimseom.github.io/doldimseumsheet/og-idcard.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Cinzel:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+TC:wght@500;700;900&family=Orbit&family=Reggae+One&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Cinzel:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+TC:wght@500;700;900&family=Orbit&family=Reggae+One&family=Space+Mono:wght@400;700&display=block" rel="stylesheet">
 <style>
 /* Google Fonts는 <head> link 태그로 로드 (dom-to-image CORS 우회) */
 
@@ -3657,12 +3657,27 @@ async function saveAsPNG() {
     // 1. 폰트 완전 로딩 대기
     await document.fonts.ready;
 
-    // 폰트 워밍업
+    // 실제 사용 폰트 전체를 명시적으로 로드 요청 (document.fonts.ready 이후에도
+    // 미렌더링 폰트는 일부 브라우저에서 fallback 출력되는 문제 방지)
+    const fontsToLoad = [
+      '700 12px "Noto Sans KR"',
+      '400 12px "Noto Sans KR"',
+      '600 13px "Cinzel"',
+      '700 13px "Cinzel"',
+      '400 11px "Space Mono"',
+      '700 11px "Space Mono"',
+      '400 14px "Caprasimo"',
+      '400 14px "Reggae One"',
+      '400 14px "Orbit"',
+    ];
+    await Promise.allSettled(fontsToLoad.map(f => document.fonts.load(f)));
+
+    // 폰트 워밍업 (Canvas에 실제로 그려야 일부 브라우저에서 폰트가 활성화됨)
     const warmupCanvas = document.createElement('canvas');
     warmupCanvas.width = 1; warmupCanvas.height = 1;
     const wctx = warmupCanvas.getContext('2d');
-    ['700 12px "Noto Sans KR"', '600 13px "Cinzel"', '400 11px "Space Mono"'].forEach(f => {
-      wctx.font = f; wctx.fillText('가나다ABC', 0, 0);
+    fontsToLoad.forEach(f => {
+      wctx.font = f; wctx.fillText('가나다ABC0123', 0, 0);
     });
     await new Promise(res => requestAnimationFrame(() => requestAnimationFrame(res)));
 
