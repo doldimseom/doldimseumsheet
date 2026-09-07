@@ -1227,7 +1227,9 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 .pair-name-area { text-align: center; }
 .pair-name-title {
   font-family: 'Cinzel', serif;
-  font-size: var(--fs-1);
+  /* 사용자 확정 2026-09-07 — 제목은 기존 크기(14px)를 유지한다.
+     22px 안은 되돌렸다. 위계보다 가독성이 먼저다 */
+  font-size: var(--fs-3);
   font-weight: 700;
   letter-spacing: var(--ls-label);
   line-height: var(--lh-display);
