@@ -1098,11 +1098,16 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   --dds-stat-val-pt: 3px;
   /* ── 시각보정 토큰 ──
      레퍼런스: user/reference/design/ddstr/시각보정1~4.jpg (DDSWindowSkin-work)
-     셋 다 취향 판단이라 기본값은 보정 없음이다. 사용자가 비교 시안을 보고 정한다. */
-  --dds-pill-lift: 0px;         /* 시각보정3 — 글자를 미세하게 위로 */
-  --dds-capsule-overshoot: 0px; /* 시각보정2 — 완전 캡슐만 위아래로 키운다 */
-  --rule-h: 1px;                /* 시각보정4 — 가로선 */
-  --rule-v: 1px;                /*             세로선 */
+     셋 다 취향 판단이고 2026-09-07에 사용자가 비교 시안을 보고 값을 정했다. */
+  --dds-pill-lift: 0.5px;         /* 시각보정3 — 글자를 미세하게 위로 (안 0/0.25/0.5 중 0.5) */
+  --dds-capsule-overshoot: 0.5px; /* 시각보정2 — 완전 캡슐만 위아래로 키운다 (안 0/0.5/1 중 0.5) */
+  /* ⚠️ 시각보정4(가로선 0.75px)는 두께로는 낼 수 없어 보류다. 크로미움이 1px 미만
+        border-width를 1px로 스냅한다 — 0.75px·0.5px 둘 다 1px과 출력 픽셀이 완전히
+        같았다(SVG 엔진 3500x2582 · 배율 1/2/3 전부 동일 · 2026-09-07 실측).
+        파이어폭스는 소수 두께를 그리므로 값을 넣으면 브라우저마다 다른 시트가 나온다.
+        두께 대신 농도로 내는 안을 사용자가 정한 뒤 넣는다. 그때까지 기준값 1px이다. */
+  --rule-h: 1px;                  /* 시각보정4 — 가로선 */
+  --rule-v: 1px;                  /*             세로선 */
   width: 1200px;
   min-height: 860px;
   background: var(--sheet-bg);
