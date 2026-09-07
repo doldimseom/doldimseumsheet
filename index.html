@@ -1086,6 +1086,23 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
    캐릭터 시트 (출력용)
 ══════════════════════════════════════════ */
 #sheet {
+  /* ── pill 폰트 보정 토큰 (2단계) ──
+     measureSheetFontMetrics()가 폰트를 실측해 인라인으로 덮어쓴다.
+     여기 값은 실측이 실패한 브라우저용 폴백이며 0 = 보정 없음이다.
+     본문 계열은 Noto Sans KR / Pretendard, 디스플레이 계열은 Cinzel이다. */
+  --dds-dy-chip: 0px;
+  --dds-dy-tag: 0px;
+  --dds-dy-charbadge: 0px;
+  --dds-dy-secnum: 0px;
+  --dds-stat-key-pt: 2px;
+  --dds-stat-val-pt: 3px;
+  /* ── 시각보정 토큰 ──
+     레퍼런스: user/reference/design/ddstr/시각보정1~4.jpg (DDSWindowSkin-work)
+     셋 다 취향 판단이라 기본값은 보정 없음이다. 사용자가 비교 시안을 보고 정한다. */
+  --dds-pill-lift: 0px;         /* 시각보정3 — 글자를 미세하게 위로 */
+  --dds-capsule-overshoot: 0px; /* 시각보정2 — 완전 캡슐만 위아래로 키운다 */
+  --rule-h: 1px;                /* 시각보정4 — 가로선 */
+  --rule-v: 1px;                /*             세로선 */
   width: 1200px;
   min-height: 860px;
   background: var(--sheet-bg);
@@ -1095,6 +1112,48 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
+}
+
+/* ══════════════════════════════════════════
+   pill · 배지 공통 (2단계)
+
+   높이를 고정하지 않고 padding으로 만든다. 폰트가 바뀌어도 박스가 따라간다.
+   세로 정렬은 폰트 메트릭에서 계산한 --pill-dy로 맞춘다 —
+   캡하이트의 중심을 박스 중심에 두는 것이 목표다.
+
+   유도: 박스 높이 H = pt + L + pb, 라인박스 안 베이스라인은
+         (L − (A+D))/2 + A 에 놓이고 캡 중심은 거기서 C/2 위다.
+         캡 중심을 H/2에 두려면 pt − pb = C + D − A 여야 하고,
+         이는 line-height L과 무관하다. 그래서 pt = py + dy, pb = py − dy,
+         dy = (C + D − A)/2 다. A·D·C는 measureSheetFontMetrics()가 1000px에서 잰다.
+
+   가로는 letter-spacing이 마지막 글자 뒤에도 붙는 것을 오른쪽 padding에서 뺀다.
+   유도: 가운데 정렬일 때 잉크 중심이 박스 중심에 오려면 pl − pr = letter-spacing 이다.
+
+   ⚠️ text-box: trim-both cap alphabetic 은 쓰지 않는다. 크로미움만 지원해서
+      지원 브라우저와 아닌 브라우저가 서로 다른 경로를 타면 같은 시트가
+      사용자마다 다르게 출력된다. 토큰 방식 하나로 통일한다.
+══════════════════════════════════════════ */
+.color-chip-btn,
+.profile-tag,
+.char-badge,
+.section-num,
+.pair-block-badge {
+  --pill-py: 0px;          /* 위아래 기본 여백 */
+  --pill-px: 0px;          /* 좌우 기본 여백 */
+  --pill-ls: 0em;          /* 그 요소의 letter-spacing */
+  --pill-dy: 0em;          /* 폰트 보정. 양수면 글자를 아래로 */
+  --pill-lift: var(--dds-pill-lift, 0px);   /* 시각적 중심 보정. 양수면 글자를 위로 */
+  --pill-overshoot: 0px;   /* 캡슐 오버슛. 박스를 위아래로 키운다 (레퍼런스 시각보정2) */
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding-block:
+    calc(var(--pill-py) + var(--pill-dy) - var(--pill-lift) + var(--pill-overshoot))
+    calc(var(--pill-py) - var(--pill-dy) + var(--pill-lift) + var(--pill-overshoot));
+  padding-inline: var(--pill-px) calc(var(--pill-px) - var(--pill-ls));
 }
 
 /* ── 시트 상단 이름 행 ── */
@@ -1114,9 +1173,11 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 }
 .sheet-char-label.right { flex-direction: row-reverse; }
 .char-badge {
+  /* 정사각 배지 — 크기는 고정이고 글자만 보정한다 */
+  --pill-py: 2px;
+  --pill-dy: var(--dds-dy-charbadge);
   width: 32px; height: 32px;
   border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
   font-family: 'Cinzel', serif;
   font-weight: 700;
   font-size: 15px;
@@ -1133,6 +1194,8 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.16em;
+  /* 마지막 글자 뒤에도 붙는 자간을 상쇄한다. 없으면 가운데 정렬이 왼쪽으로 쏠린다 */
+  margin-right: -0.16em;
   color: #fff;
   white-space: nowrap;
 }
@@ -1141,6 +1204,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   color: rgba(255,255,255,0.5);
   margin-top: 3px;
   letter-spacing: 0.1em;
+  margin-right: -0.1em;
 }
 
 /* ── 메인 그리드 ── */
@@ -1159,8 +1223,8 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   background: #fff;
   padding: 20px 20px 32px;
 }
-#side-a { border-right: 1px solid #F0EDEA; }
-#side-b { border-left: 1px solid #F0EDEA; }
+#side-a { border-right: var(--rule-v) solid #F0EDEA; }
+#side-b { border-left: var(--rule-v) solid #F0EDEA; }
 
 /* 서브 이미지 + 컬러칩 블록 */
 .sub-block {
@@ -1195,21 +1259,21 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   padding-top: 4px;
 }
 .color-chip-btn {
-  padding: 0 12px;
-  height: 23px;
+  /* 높이 23px = 위아래 6 + 글자 11. height를 박지 않는다.
+     폭은 hug이 아니다 — min-width 58px은 HAIR·EYE·EYE 세 칩의 폭을 맞추는 의도적 설계다. */
+  --pill-py: 6px;
+  --pill-px: 12px;
+  --pill-ls: 0.10em;
+  --pill-dy: var(--dds-dy-chip);
   border-radius: 7px;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.10em;
+  letter-spacing: var(--pill-ls);
   color: #fff;
-  text-align: center;
   min-width: 58px;
   background: #333;
   border: none;
   font-family: 'Noto Sans KR', sans-serif;
-  line-height: 23px;
-  display: block;
-  vertical-align: middle;
 }
 
 /* 프로필 블록 */
@@ -1226,17 +1290,18 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   margin-bottom: 0;
 }
 .profile-tag {
+  /* 높이 18px = 위아래 4 + 글자 10. 완전 캡슐이라 오버슛 대상이다 */
+  --pill-py: 4px;
+  --pill-px: 7px;
+  --pill-ls: 0.02em;
+  --pill-dy: var(--dds-dy-tag);
+  --pill-overshoot: var(--dds-capsule-overshoot, 0px);
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.02em;
-  padding: 0 7px;
-  height: 18px;
+  letter-spacing: var(--pill-ls);
   border-radius: 20px;
   border: none;
   white-space: nowrap;
-  display: inline-block;
-  line-height: 18px;
-  vertical-align: middle;
 }
 .profile-grid {
   display: grid;
@@ -1245,7 +1310,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 }
 .profile-item {
   padding: 7px 0;
-  border-bottom: 1px solid var(--sheet-border);
+  border-bottom: var(--rule-h) solid var(--sheet-border);
 }
 .profile-item-key {
   font-size: 11px;
@@ -1279,10 +1344,11 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 }
 .section-block-header::after { display: none; }
 .section-num {
+  --pill-py: 2px;
+  --pill-dy: var(--dds-dy-secnum);
   width: 18px; height: 18px;
   border-radius: 4px;
   background: #1E1C1A;
-  display: flex; align-items: center; justify-content: center;
   font-size: 9px; font-weight: 700; color: #fff;
   font-family: 'Cinzel', serif;
   flex-shrink: 0;
@@ -1343,7 +1409,9 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   color: var(--sheet-dimmer);
   line-height: 1.35;
   word-break: break-all;
-  padding-top: 2px;
+  /* 캡하이트 중심을 스탯 바(margin-top 5 + height 3)의 중심에 맞춘다.
+     기존 2px은 근거 없는 손 보정이었다 */
+  padding-top: var(--dds-stat-key-pt);
 }
 .stat-bar-wrap {
   display: block;
@@ -1365,7 +1433,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   color: var(--sheet-dimmer);
   text-align: right;
   line-height: 1;
-  padding-top: 3px;
+  padding-top: var(--dds-stat-val-pt);
 }
 
 /* 핵심 특징 */
@@ -1944,10 +2012,11 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 }
 .pair-block-header::after { display: none; }
 .pair-block-badge {
+  --pill-py: 2px;
+  --pill-dy: var(--dds-dy-secnum);
   width: 18px; height: 18px;
   border-radius: 4px;
   background: #1E1C1A;
-  display: flex; align-items: center; justify-content: center;
   font-size: 9px; font-weight: 700; color: #fff;
   font-family: 'Cinzel', serif;
   flex-shrink: 0;
@@ -3792,16 +3861,142 @@ function toggleFont() {
       pretendardLoaded = true;
     }
     applyFontFamily("'Pretendard', sans-serif");
+    measureSheetFontMetrics();
     currentFont = 'pretendard';
     v('font-toggle-label').textContent = 'Pret.';
     v('font-toggle-btn').style.color = 'rgba(255,255,255,0.9)';
   } else {
     // Noto로 복원
     applyFontFamily("'Noto Sans KR', sans-serif");
+    measureSheetFontMetrics();
     currentFont = 'noto';
     v('font-toggle-label').textContent = 'Noto';
     v('font-toggle-btn').style.color = '';
   }
+}
+
+/* ══════════════════════════════════════════
+   폰트 메트릭 실측 (2단계)
+
+   pill의 세로 정렬은 폰트의 어센트·디센트·캡하이트에 달려 있고 폰트마다 다르다.
+   여기서 실측해 #sheet에 인라인 CSS 변수로 심는다.
+   인라인이므로 SVG 내보내기에서 클론과 함께 그대로 따라간다.
+
+   ⚠️ 크로미움은 캔버스 폰트 메트릭을 정수로 반올림한다. 11px에서 재면 0.5px 단위로
+      뭉개져 목표 정밀도(±0.2px)를 낼 수 없다. 1000px에서 재서 em으로 환산한다.
+   ⚠️ measureText 전에 document.fonts.load로 그 조합을 실제로 적재한다.
+      안 하면 폴백 폰트를 재게 된다.
+══════════════════════════════════════════ */
+
+const FONT_METRIC_REF = 1000;   // 캡하이트 비율은 이 크기에서 재야 반올림 오차가 없다
+
+/* pill 규격표 — CSS의 SHEET ZONE과 짝을 이룬다.
+   ⚠️ CSS에서 글자 크기를 바꾸면 여기도 바꾼다. 어긋나면 콘솔에 [진단] 경고가 뜬다. */
+const PILL_SPECS = [
+  { varName: '--dds-dy-chip',      size: 11, lh: 1, role: 'body',    probe: 's-a-hair-chip' },
+  { varName: '--dds-dy-tag',       size: 10, lh: 1, role: 'body',    probe: null },
+  { varName: '--dds-dy-charbadge', size: 15, lh: 1, role: 'display', probe: 's-a-badge' },
+  { varName: '--dds-dy-secnum',    size:  9, lh: 1, role: 'display', probe: null },
+];
+
+// 캡하이트 비율(em) — 잉크를 재는 값이라 캔버스가 정확하다
+async function readCapRatio(fontStack, weight) {
+  const first = fontStack.split(',')[0].trim().replace(/^['"]|['"]$/g, '');
+  try { await document.fonts.load(weight + ' ' + FONT_METRIC_REF + 'px "' + first + '"', 'H'); } catch (e) {}
+  const ctx = readCapRatio._ctx
+    || (readCapRatio._ctx = document.createElement('canvas').getContext('2d'));
+  ctx.font = weight + ' ' + FONT_METRIC_REF + 'px ' + fontStack;
+  const C = ctx.measureText('H').actualBoundingBoxAscent;
+  return C > 0 ? C / FONT_METRIC_REF : null;
+}
+
+/* 라인박스 안 베이스라인 위치를 DOM에서 직접 잰다.
+   width:0 인라인블록은 베이스라인에 얹히므로 그 bottom이 베이스라인이다.
+
+   ⚠️ 반드시 실제로 쓰는 글자 크기에서 잰다. 큰 크기에서 재고 비례로 줄이면 안 된다 —
+      브라우저가 어센트·디센트를 그 크기에서 정수로 맞추기 때문에 비례하지 않는다.
+      1000px에서 재서 환산했을 때 칩이 0.29px, 태그가 0.37px 어긋났다.
+   ⚠️ 캔버스의 fontBoundingBoxAscent로 계산해도 안 된다. 브라우저가 라인박스를
+      만들 때 쓰는 값과 달라 Cinzel에서 1.4px 어긋났다. */
+function readBaseline(fontStack, weight, sizePx, lineHeight) {
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:absolute;left:-99999px;top:0;visibility:hidden;'
+    + 'white-space:nowrap;padding:0;margin:0;border:0;'
+    + 'font-size:' + sizePx + 'px;line-height:' + lineHeight + ';'
+    + 'font-weight:' + weight + ';font-family:' + fontStack + ';';
+  const strut = document.createElement('span');
+  strut.style.cssText = 'display:inline-block;width:0;height:0;';
+  probe.appendChild(strut);
+  probe.appendChild(document.createTextNode('H'));
+  document.body.appendChild(probe);
+  const pr = probe.getBoundingClientRect();
+  const sr = strut.getBoundingClientRect();
+  const out = { L: pr.height, b: sr.bottom - pr.top };
+  probe.remove();
+  return out.L > 0 ? out : null;
+}
+
+async function measureSheetFontMetrics() {
+  const sheet = v('sheet');
+  if (!sheet) return null;
+  await document.fonts.ready;
+
+  // 폰트 스택은 실제 요소에서 읽는다 — toggleFont가 인라인으로 덮어쓰기 때문이다
+  const chip  = v('s-a-hair-chip');
+  const badge = v('s-a-badge');
+  const stacks = {
+    body:    chip  ? getComputedStyle(chip).fontFamily  : "'Noto Sans KR', sans-serif",
+    display: badge ? getComputedStyle(badge).fontFamily : "'Cinzel', serif",
+  };
+  const caps = {
+    body:    await readCapRatio(stacks.body, 700),
+    display: await readCapRatio(stacks.display, 700),
+  };
+  const diag = { stacks: stacks, caps: caps, pills: {} };
+
+  for (const spec of PILL_SPECS) {
+    const cap = caps[spec.role];
+    if (cap == null) continue;
+
+    // 규격표가 CSS와 어긋나면 알린다
+    if (spec.probe) {
+      const el = v(spec.probe);
+      const live = el ? parseFloat(getComputedStyle(el).fontSize) : null;
+      if (live && Math.abs(live - spec.size) > 0.01) {
+        console.warn('[진단] PILL_SPECS의 글자 크기가 CSS와 다르다 —',
+          spec.varName, '표', spec.size, 'CSS', live);
+      }
+    }
+
+    const bl = readBaseline(stacks[spec.role], 700, spec.size, spec.lh);
+    if (!bl) continue;
+    // 캡 중심을 박스 중심에 두려면 pt − pb = L − 2b + C 여야 한다. dy는 그 절반이다
+    const dy = (bl.L - 2 * bl.b + cap * spec.size) / 2;
+    sheet.style.setProperty(spec.varName, dy.toFixed(4) + 'px');
+    diag.pills[spec.varName] = {
+      size: spec.size, L: bl.L, b: +bl.b.toFixed(4),
+      cap: +(cap * spec.size).toFixed(4), dy: +dy.toFixed(4),
+    };
+  }
+
+  // 스탯 행 — 키·값의 캡 중심을 스탯 바 중심에 맞춘다
+  if (caps.body != null) {
+    const BAR_CENTER = 6.5;   // .stat-bar-wrap { margin-top: 5px; height: 3px }
+    const STAT_FS = 8;        // .stat-key / .stat-val
+    const put = (name, lh) => {
+      const bl = readBaseline(stacks.body, 700, STAT_FS, lh);
+      if (!bl) return;
+      const capCenter = bl.b - (caps.body * STAT_FS) / 2;   // 요소 위에서 캡 중심까지
+      const pt = Math.max(0, BAR_CENTER - capCenter);
+      sheet.style.setProperty(name, pt.toFixed(3) + 'px');
+      diag.pills[name] = { lh: lh, b: +bl.b.toFixed(4), pt: +pt.toFixed(3) };
+    };
+    put('--dds-stat-key-pt', 1.35);   // .stat-key
+    put('--dds-stat-val-pt', 1);      // .stat-val
+  }
+
+  window.__ddsFontMetrics = diag;
+  return diag;
 }
 
 function applyFontFamily(fontValue) {
@@ -3987,7 +4182,7 @@ function collectUsedCodepoints() {
   return set;
 }
 
-function parseFontFaceBlocks(cssText) {
+function parseFontFaceBlocks(cssText, baseHref) {
   const out = [];
   const re = /@font-face\s*\{([^}]*)\}/g;
   let m;
@@ -3999,6 +4194,10 @@ function parseFontFaceBlocks(cssText) {
     };
     out.push({
       raw: m[0],
+      // ⚠️ url()의 상대경로는 문서가 아니라 스타일시트 기준으로 푼다.
+      //    Google Fonts는 절대경로라 티가 안 나지만 Pretendard의 static CSS는
+      //    ../../../packages/... 형태라 문서 기준으로 풀면 404가 나고 폴백된다.
+      base: baseHref,
       family: prop('font-family').replace(/^['"]|['"]$/g, '').toLowerCase(),
       weight: prop('font-weight') || '400',
       style: prop('font-style') || 'normal',
@@ -4036,30 +4235,43 @@ function faceRangeMatches(rangeStr, codepoints) {
   return false;
 }
 
-async function inlineFontUrls(cssText) {
-  const urls = Array.from(new Set(
-    Array.from(cssText.matchAll(/url\((['"]?)([^'")]+)\1\)/g)).map(m => m[2])
-  ));
-  let out = cssText;
-  let bytes = 0;
-  for (const u of urls) {
-    const abs = new URL(u, location.href).href;
+// @font-face 블록 하나를 인라인한다. 상대경로는 그 블록이 온 스타일시트 기준으로 푼다.
+// woff2가 있으면 그것만 쓴다 — woff까지 받으면 같은 폰트를 두 번 내려받게 된다.
+async function inlineFontFace(face, seen) {
+  const decls = Array.from(face.raw.matchAll(/url\((['"]?)([^'")]+)\1\)([^,;]*)/g))
+    .map(m => ({ raw: m[2], fmt: (m[3] || '').toLowerCase() }));
+  const pick = decls.filter(d => /woff2/.test(d.fmt) || /\.woff2(\?|$)/i.test(d.raw));
+  const use = pick.length ? pick : decls;
+
+  let out = face.raw;
+  let bytes = 0, files = 0;
+  for (const d of use) {
+    if (/^data:/i.test(d.raw)) continue;
+    const abs = new URL(d.raw, face.base).href;
     let dataUri = fontFileCache.get(abs);
     if (!dataUri) {
       const res = await fetch(abs, { mode: 'cors', credentials: 'omit' });
       if (!res.ok) throw new Error('폰트 다운로드 실패 ' + res.status + ' — ' + abs);
       const buf = await res.arrayBuffer();
-      bytes += buf.byteLength;
       const mime = /\.woff2(\?|$)/i.test(abs) ? 'font/woff2'
                  : /\.woff(\?|$)/i.test(abs)  ? 'font/woff'
                  : /\.otf(\?|$)/i.test(abs)   ? 'font/otf'
                  : 'font/ttf';
       dataUri = 'data:' + mime + ';base64,' + bufferToBase64(buf);
       fontFileCache.set(abs, dataUri);
+      bytes += buf.byteLength;
     }
-    out = out.split(u).join(dataUri);
+    if (!seen.has(abs)) { seen.add(abs); files++; }
+    out = out.split('(' + d.raw + ')').join('(' + dataUri + ')')
+             .split("('" + d.raw + "')").join("('" + dataUri + "')")
+             .split('("' + d.raw + '")').join('("' + dataUri + '")');
   }
-  return { css: out, bytes: bytes, files: urls.length };
+  // 인라인하지 않은 src 항목(woff 폴백 등)은 남기면 SVG 안에서 다시 네트워크를 타므로 지운다
+  for (const d of decls) {
+    if (use.includes(d) || /^data:/i.test(d.raw)) continue;
+    out = out.replace(new RegExp(',\\s*url\\(([\'"]?)' + d.raw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\1\\)[^,;]*', 'g'), '');
+  }
+  return { css: out, bytes, files };
 }
 
 async function buildInlinedFontCSS() {
@@ -4083,7 +4295,7 @@ async function buildInlinedFontCSS() {
     } catch (e) {
       throw new Error('폰트 스타일시트를 읽지 못했습니다 — ' + href + ' (' + e.message + ')');
     }
-    for (const face of parseFontFaceBlocks(text)) {
+    for (const face of parseFontFaceBlocks(text, href)) {
       const used = specs.get(face.family);
       if (!used) continue;
       let ok = false;
@@ -4093,16 +4305,21 @@ async function buildInlinedFontCSS() {
       }
       if (!ok) continue;
       if (!faceRangeMatches(face.range, codepoints)) continue;
-      kept.push(face.raw);
+      kept.push(face);
     }
   }
 
-  const inlined = await inlineFontUrls(kept.join('\n'));
-  bytes += inlined.bytes;
-  files += inlined.files;
+  const seen = new Set();
+  const parts = [];
+  for (const face of kept) {
+    const r = await inlineFontFace(face, seen);
+    parts.push(r.css);
+    bytes += r.bytes;
+    files += r.files;
+  }
 
   fontCssCache.key   = key;
-  fontCssCache.css   = inlined.css;
+  fontCssCache.css   = parts.join('\n');
   fontCssCache.faces = kept.length;
   fontCssCache.bytes = bytes;
   fontCssCache.files = files;
@@ -4180,6 +4397,7 @@ function buildExportRoot(fontCSS) {
 async function exportSheetCanvas() {
   const t0 = performance.now();
   await document.fonts.ready;
+  await measureSheetFontMetrics();   // 폰트가 늦게 로드된 경우를 막는다
 
   const fontPack = await buildInlinedFontCSS();
   const tFont = performance.now();
@@ -4362,13 +4580,10 @@ async function saveAsPNGViaHtml2Canvas() {
       windowWidth: sheetEl.scrollWidth,
       windowHeight: sheetEl.scrollHeight,
       onclone: (clonedDoc) => {
-        // 칩/태그 텍스트 위치 보정
-        clonedDoc.querySelectorAll('.color-chip-btn').forEach(el => {
-          el.style.lineHeight = '21px';
-        });
-        clonedDoc.querySelectorAll('.profile-tag').forEach(el => {
-          el.style.lineHeight = '15px';
-        });
+        // 칩·태그의 line-height 보정 두 줄(21px·15px)은 2단계에서 지웠다.
+        // 그 값은 height와 line-height를 고정하던 옛 CSS에 맞춰 손으로 맞춘 것이라
+        // pill이 padding 기반으로 바뀐 뒤에는 오히려 어긋나게 만든다.
+        // 실측: 보정을 유지하면 프리뷰 대비 픽셀차가 10~16, 지우면 1.7~2.9로 내려갔다.
 
         // 스티커 핸들/편집 UI 제거
         compositeStickersToClone(clonedDoc, CAPTURE_SCALE);
@@ -4539,6 +4754,8 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   update();
+  // 폰트가 준비되면 메트릭을 재서 pill 보정 토큰을 심는다
+  measureSheetFontMetrics();
   // 초기 컬러칩 색상 반영
   ['a','b'].forEach(ch => {
     ['hair','eye','etc'].forEach(type => updateChipColor(ch, type));
@@ -5493,6 +5710,7 @@ function resetAll() {
   // 폰트 초기화
   if (currentFont !== 'noto') {
     applyFontFamily("'Noto Sans KR', sans-serif");
+    measureSheetFontMetrics();
     currentFont = 'noto';
     v('font-toggle-label').textContent = 'Noto';
     v('font-toggle-btn').style.color = '';
