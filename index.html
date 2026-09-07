@@ -1108,22 +1108,33 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   /* ── 시각보정 토큰 ──
      레퍼런스: user/reference/design/ddstr/시각보정1~4.jpg (DDSWindowSkin-work)
      셋 다 취향 판단이고 2026-09-07에 사용자가 비교 시안을 보고 값을 정했다. */
-  /* ── 타이포 스케일 — 1.25 비율 5단계 ──
-     8~16px에 여덟 계단이 몰려 위계가 없던 것을 다섯으로 접었다.
+  /* ── 타이포 스케일 — 1.25 비율 4단계 ──
+     8~16px에 여덟 계단이 몰려 위계가 없던 것을 넷으로 접었다.
      단계를 늘리지 않는다. 더 필요하면 굵기와 색으로 낸다. */
-  --fs-1: 22px;      /* 시트 제목 */
-  --fs-2: 17.5px;    /* 캐릭터 이름 */
-  --fs-3: 14px;      /* 섹션 제목 · 배지 글자 */
-  --fs-4: 11px;      /* 본문 */
-  --fs-5: 9px;       /* 라벨 · 수치 */
-  /* ── 자간 ── */
-  --ls-display: -0.01em;  /* 큰 글자는 좁힌다 */
-  --ls-label: 0.12em;     /* 대문자 라벨. 상한이다 */
+  --fs-name:  17.5px;   /* 캐릭터 이름 */
+  --fs-title: 14px;     /* 제목 · 배지 글자 */
+  --fs-body:  11px;     /* 본문 */
+  --fs-label: 9px;      /* 라벨 · 수치 */
+
+  /* ── 자간 — 문자 기준으로 가른다 (2026-09-07 리서치) ──
+     한글은 solid setting이 원칙이다. 글자 사이에 공간을 더하지 않는다
+     (W3C 한국어 텍스트 레이아웃 요구사항 · 모리사와 한글 타이포그래피 가이드).
+     라틴 대문자 라벨의 0.08~0.14em 관례를 한글에 그대로 쓰면 음절이 낱글자로 흩어진다.
+     ⚠️ 사용자가 한글로 바꿀 수 있는 자리에는 --ls-latin-caps를 쓰지 않는다. */
+  --ls-ko: 0;              /* 한글이 들어갈 수 있는 라벨·본문 */
+  --ls-ko-title: -0.01em;  /* 14px 이상 한글. 살짝 좁힌다 */
+  --ls-mixed: 0.04em;      /* 라틴이 기본이지만 한글로 바뀔 수 있는 자리의 절충값 */
+  --ls-latin-caps: 0.12em; /* 코드에 박힌 라틴 대문자 전용 (STATUS) */
   --ls-body: 0.01em;
-  /* ── 행간 ── */
+
+  /* ── 행간 — 한글 기준 ──
+     한글 행간은 글자 크기의 150~190%가 일반적이다(라틴은 120~150%).
+     한글이 라틴보다 넓고 낮아 같은 크기에서 작아 보이기 때문이다.
+     사이드 단이 21.7자/줄로 권장 40~60자보다 짧으므로 상단값을 쓴다. */
   --lh-display: 1.15;
   --lh-label: 1.35;
-  --lh-body: 1.6;
+  --lh-title: 1.45;
+  --lh-body: 1.7;
   --dds-pill-lift: 0.5px;         /* 시각보정3 — 글자를 미세하게 위로 (안 0/0.25/0.5 중 0.5) */
   --dds-capsule-overshoot: 0.5px; /* 시각보정2 — 완전 캡슐만 위아래로 키운다 (안 0/0.5/1 중 0.5) */
   /* ⚠️ 시각보정4(가로선 0.75px)는 두께로는 낼 수 없어 보류다. 크로미움이 1px 미만
@@ -1216,26 +1227,26 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   border-radius: var(--radius-sm);
   font-family: 'Cinzel', serif;
   font-weight: 700;
-  font-size: var(--fs-3);
+  font-size: var(--fs-title);
   color: #fff;
   flex-shrink: 0;
 }
 .char-names { line-height: var(--lh-display); }
-.char-names .name-ko { font-size: var(--fs-2); font-weight: 700; letter-spacing: var(--ls-display); color: #fff; }
-.char-names .name-en { font-size: var(--fs-4); color: rgba(255,255,255,0.35); margin-top: 2px; font-family: 'Noto Sans KR', sans-serif; }
+.char-names .name-ko { font-size: var(--fs-name); font-weight: 700; letter-spacing: var(--ls-display); color: #fff; }
+.char-names .name-en { font-size: var(--fs-body); color: rgba(255,255,255,0.35); margin-top: 2px; font-family: 'Noto Sans KR', sans-serif; }
 .char-names.right { text-align: right; }
 .pair-name-area { text-align: center; }
 .pair-name-title {
   font-family: 'Cinzel', serif;
   /* 사용자 확정 2026-09-07 — 제목은 기존 크기(14px)를 유지한다.
      22px 안은 되돌렸다. 위계보다 가독성이 먼저다 */
-  font-size: var(--fs-3);
+  font-size: var(--fs-title);
   font-weight: 700;
-  letter-spacing: var(--ls-label);
+  letter-spacing: var(--ls-mixed);
   line-height: var(--lh-display);
   /* 마지막 글자 뒤에도 붙는 자간을 상쇄한다. 없으면 가운데 정렬이 왼쪽으로 쏠린다.
-     ⚠️ --ls-label과 같은 값이어야 한다 */
-  margin-right: -0.12em;
+     ⚠️ --ls-mixed와 같은 값이어야 한다 */
+  margin-right: -0.04em;
   color: #fff;
   /* ⚠️ nowrap을 되살리지 말 것 — 제목을 22px로 키운 뒤로는 nowrap이면
      긴 페어 이름이 좌우 이름칸을 밀어내고 시트가 가로로 넘친다(40자에서 1203px 실측).
@@ -1243,12 +1254,12 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   overflow-wrap: anywhere;
 }
 .pair-catchphrase {
-  font-size: var(--fs-5);
+  font-size: var(--fs-label);
   color: rgba(255,255,255,0.5);
   margin-top: var(--sp-1);
   line-height: var(--lh-label);
-  letter-spacing: var(--ls-label);
-  margin-right: -0.12em;
+  letter-spacing: var(--ls-mixed);
+  margin-right: -0.04em;
 }
 
 /* ── 메인 그리드 ── */
@@ -1263,10 +1274,21 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 .side-card {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
+  /* 기본 간격은 그룹 안쪽 값이다. 그룹 사이는 아래 margin-top으로 벌린다 —
+     균일한 12px 하나가 성격이 다른 블록을 전부 같은 거리로 떼어 놓아
+     묶음이 안 보이던 것을 고친다(근접성) */
+  gap: var(--sp-2);
   background: #fff;
   padding: var(--sp-5) var(--sp-5) var(--sp-6);
 }
+/* 그룹 1 인물 식별 = 서브이미지·색칩 + 태그 (기본 8px)
+   그룹 2 제원     = 프로필 + 스탯        (안 12px)
+   그룹 3 서술     = 섹션 블록들          (안 20px)
+   그룹 사이 24px */
+.side-card > .profile-block { margin-top: var(--sp-4); }
+.side-card > .stat-bar-block { margin-top: var(--sp-1); margin-bottom: 0; }
+.side-card > .section-block { margin-top: var(--sp-3); }
+.side-card > .stat-bar-block + .section-block { margin-top: var(--sp-4); }
 #side-a { border-right: var(--rule-v) solid #F0EDEA; }
 #side-b { border-left: var(--rule-v) solid #F0EDEA; }
 
@@ -1294,7 +1316,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 }
 .sub-img-wrap img { position: absolute; transform-origin: center center; display: block; max-width: none; }
 .sub-img-wrap.img-loaded { cursor: crosshair; }
-.sub-placeholder { font-size: var(--fs-5); color: #BCBAB7; letter-spacing: var(--ls-label); pointer-events: none; text-align: center; line-height: 2; }
+.sub-placeholder { font-size: var(--fs-label); color: #BCBAB7; letter-spacing: var(--ls-ko); pointer-events: none; text-align: center; line-height: 2; }
 
 .color-chips-col {
   display: flex;
@@ -1307,10 +1329,10 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
      폭은 hug이 아니다 — min-width 58px은 HAIR·EYE·EYE 세 칩의 폭을 맞추는 의도적 설계다. */
   --pill-py: 6px;
   --pill-px: 12px;
-  --pill-ls: 0.10em;
+  --pill-ls: 0.04em;   /* 라벨을 한글로 바꿀 수 있어 라틴 관례값(0.10em)을 못 쓴다 */
   --pill-dy: var(--dds-dy-chip);
   border-radius: var(--radius-sm);
-  font-size: var(--fs-4);
+  font-size: var(--fs-body);
   font-weight: 700;
   letter-spacing: var(--pill-ls);
   color: #fff;
@@ -1337,10 +1359,10 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   /* 높이 17px = 위아래 4 + 글자 9. 완전 캡슐이라 오버슛 대상이다 */
   --pill-py: 4px;
   --pill-px: 7px;
-  --pill-ls: 0.02em;
+  --pill-ls: 0em;      /* 한글이다. 벌리지 않는다 */
   --pill-dy: var(--dds-dy-tag);
   --pill-overshoot: var(--dds-capsule-overshoot, 0px);
-  font-size: var(--fs-5);
+  font-size: var(--fs-label);
   font-weight: 700;
   letter-spacing: var(--pill-ls);
   /* ⚠️ 20px이 아니라 999px이다 — 20px은 지금 높이에서만 캡슐로 보이고
@@ -1359,22 +1381,22 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   border-bottom: var(--rule-h) solid var(--sheet-border);
 }
 .profile-item-key {
-  font-size: var(--fs-5);
+  font-size: var(--fs-label);
   font-weight: 700;
-  letter-spacing: var(--ls-label);
+  letter-spacing: var(--ls-ko);
   line-height: var(--lh-label);
   color: var(--sheet-dimmer);
   margin-bottom: 2px;
 }
 .profile-item-val {
-  font-size: var(--fs-4);
+  font-size: var(--fs-body);
   font-weight: 500;
   line-height: var(--lh-body);
   color: var(--sheet-text);
 }
 .profile-keywords {
   margin-top: var(--sp-3);
-  font-size: var(--fs-4);
+  font-size: var(--fs-body);
   color: var(--sheet-dim);
   font-weight: 500;
   letter-spacing: 0.04em;
@@ -1397,22 +1419,22 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   width: 18px; height: 18px;
   border-radius: var(--radius-xs);
   background: #1E1C1A;
-  font-size: var(--fs-5); font-weight: 700; color: #fff;
+  font-size: var(--fs-label); font-weight: 700; color: #fff;
   font-family: 'Cinzel', serif;
   flex-shrink: 0;
 }
 .section-title-text {
-  font-size: var(--fs-3);
+  font-size: var(--fs-title);
   font-weight: 700;
   color: var(--sheet-text);
-  letter-spacing: var(--ls-label);
-  line-height: var(--lh-label);
+  letter-spacing: var(--ls-ko-title);
+  line-height: var(--lh-title);
   flex: 1;
 }
 .section-body { padding: 0; }
 .section-required-badge { display: none; }
 .section-main-text {
-  font-size: var(--fs-4);
+  font-size: var(--fs-body);
   font-weight: 700;
   color: var(--sheet-text);
   margin-bottom: var(--sp-1);
@@ -1425,7 +1447,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   padding: 0;
 }
 .section-list li {
-  font-size: var(--fs-4);
+  font-size: var(--fs-body);
   color: var(--sheet-dim);
   line-height: var(--lh-body);
   padding-left: var(--sp-3);
@@ -1437,9 +1459,9 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 /* 스탯 바 */
 .stat-bar-block { margin-bottom: var(--sp-3); }
 .stat-bar-label {
-  font-size: var(--fs-5);
+  font-size: var(--fs-label);
   font-weight: 700;
-  letter-spacing: var(--ls-label);
+  letter-spacing: var(--ls-latin-caps);
   line-height: var(--lh-label);
   color: var(--sheet-dimmer);
   margin-bottom: var(--sp-1);
@@ -1454,9 +1476,9 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 }
 .stat-row:last-child { margin-bottom: 0; }
 .stat-key {
-  font-size: var(--fs-5);
+  font-size: var(--fs-label);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--ls-ko);
   color: var(--sheet-dimmer);
   line-height: 1.35;
   word-break: break-all;
@@ -1479,7 +1501,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   background: var(--section-accent, #3A3835);
 }
 .stat-val {
-  font-size: var(--fs-5);
+  font-size: var(--fs-label);
   font-weight: 700;
   color: var(--sheet-dimmer);
   text-align: right;
@@ -1520,7 +1542,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 }
 .main-img-wrap img { position: absolute; transform-origin: center center; display: block; max-width: none; }
 .main-img-wrap.img-loaded { cursor: crosshair; }
-.main-img-placeholder { font-size: var(--fs-5); color: #BCBAB7; letter-spacing: var(--ls-label); text-align: center; line-height: 2; pointer-events: none; }
+.main-img-placeholder { font-size: var(--fs-label); color: #BCBAB7; letter-spacing: var(--ls-ko); text-align: center; line-height: 2; pointer-events: none; }
 
 /* ══════════════════════════════════════════
    스티커 레이어
@@ -2070,22 +2092,22 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   width: 18px; height: 18px;
   border-radius: var(--radius-xs);
   background: #1E1C1A;
-  font-size: var(--fs-5); font-weight: 700; color: #fff;
+  font-size: var(--fs-label); font-weight: 700; color: #fff;
   font-family: 'Cinzel', serif;
   flex-shrink: 0;
 }
 .pair-block-title {
-  font-size: var(--fs-3);
+  font-size: var(--fs-title);
   font-weight: 700;
   color: var(--sheet-text);
-  letter-spacing: var(--ls-label);
-  line-height: var(--lh-label);
+  letter-spacing: var(--ls-ko-title);
+  line-height: var(--lh-title);
   flex: 1;
 }
 .pair-block-sublabel { display: none; }
 .pair-block-body { padding: 0 0 0 var(--sp-2); }
 .pair-block-body p {
-  font-size: var(--fs-4);
+  font-size: var(--fs-body);
   color: var(--sheet-dim);
   line-height: var(--lh-body);
   white-space: pre-wrap;
