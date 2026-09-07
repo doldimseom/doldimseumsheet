@@ -3895,7 +3895,385 @@ function updateStat(ch, stat, rawVal) {
   if (valEl) valEl.textContent = val;
 }
 
+/* ══════════════════════════════════════════
+   PNG 출력 엔진 (1단계)
+
+   기본 경로는 SVG foreignObject다. 시트 DOM을 그대로 SVG 안에 넣고
+   브라우저가 직접 그리게 하므로, 프리뷰를 그린 엔진이 출력도 그린다.
+   프리뷰와 출력의 불일치를 보정으로 메우지 않는다.
+
+   html2canvas 경로(saveAsPNGViaHtml2Canvas)는 폴백으로 그대로 남아 있다.
+   ?engine=h2c 로 강제 전환할 수 있고, SVG 경로가 실패하면 자동으로 넘어간다.
+
+   ⚠️ 이 블록은 시트의 CSS 값과 HTML 구조를 바꾸지 않는다.
+══════════════════════════════════════════ */
+
+const EXPORT_TARGET_WIDTH = 3500;   // 최종 PNG 폭 — 현행 산출물과 동일하게 유지
+const EXPORT_FRAME_PAD    = 48;     // 시트 바깥 여백 (논리 px, 기존 PAD와 같은 값)
+const EXPORT_FRAME_BG     = '#FFFFFF';
+
+// 진단용 — 콘솔에서 window.__ddsExportDiag로 직전 저장의 수치를 볼 수 있다
+window.__ddsExportDiag = null;
+
+function resolveExportEngine() {
+  try {
+    const q = new URLSearchParams(location.search).get('engine');
+    if (q === 'h2c' || q === 'svg') return q;
+  } catch (e) {}
+  return 'svg';
+}
+
+/* ── 폰트 인라인 ──
+   foreignObject는 img 샌드박스에서 렌더되므로 외부 @font-face가 로드되지 않는다.
+   실제로 쓰이는 (패밀리 · 굵기 · 기울기) 조합과 실제로 등장하는 문자만 골라
+   woff2를 data URI로 박아 넣는다. 파일에 폰트를 넣지 않으므로 index.html은 커지지 않는다. */
+
+const fontFileCache = new Map();          // 절대 URL → data URI
+const fontCssCache  = { key: '', css: '', faces: 0, bytes: 0 };
+
+function bufferToBase64(buf) {
+  const bytes = new Uint8Array(buf);
+  let bin = '';
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(bin);
+}
+
+function fontStylesheetHrefs() {
+  return Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+    .map(l => l.href)
+    .filter(h => /fonts\.googleapis\.com|pretendard/i.test(h));
+}
+
+// #sheet 안에서 실제로 쓰이는 폰트 조합
+function collectUsedFontSpecs() {
+  const sheet = v('sheet');
+  const specs = new Map();  // family(lower) → Set('weight|style')
+  const add = (el) => {
+    if (el.nodeType !== 1) return;
+    const cs = getComputedStyle(el);
+    if (cs.display === 'none') return;
+    const w = String(parseInt(cs.fontWeight, 10) || 400);
+    const st = cs.fontStyle || 'normal';
+    cs.fontFamily.split(',').forEach(raw => {
+      const fam = raw.trim().replace(/^['"]|['"]$/g, '').toLowerCase();
+      if (!fam || /^(sans-serif|serif|monospace|cursive|fantasy|system-ui)$/.test(fam)) return;
+      if (!specs.has(fam)) specs.set(fam, new Set());
+      specs.get(fam).add(w + '|' + st);
+    });
+  };
+  add(sheet);
+  sheet.querySelectorAll('*').forEach(add);
+  return specs;
+}
+
+// #sheet 안에 실제로 등장하는 문자 + 기본 라틴(동적 입력 대비)
+function collectUsedCodepoints() {
+  const sheet = v('sheet');
+  const set = new Set();
+  for (let c = 0x20; c <= 0x7e; c++) set.add(c);
+  set.add(0x00a0);
+  const it = document.createNodeIterator(sheet, NodeFilter.SHOW_TEXT);
+  let n;
+  while ((n = it.nextNode())) {
+    for (const ch of n.nodeValue) set.add(ch.codePointAt(0));
+  }
+  // 텍스트 스티커는 입력 요소 안에 값이 있을 수 있다
+  sheet.querySelectorAll('input, textarea').forEach(el => {
+    for (const ch of (el.value || '')) set.add(ch.codePointAt(0));
+  });
+  return set;
+}
+
+function parseFontFaceBlocks(cssText) {
+  const out = [];
+  const re = /@font-face\s*\{([^}]*)\}/g;
+  let m;
+  while ((m = re.exec(cssText)) !== null) {
+    const body = m[1];
+    const prop = (name) => {
+      const mm = body.match(new RegExp('(?:^|;)\\s*' + name + '\\s*:\\s*([^;]+)', 'i'));
+      return mm ? mm[1].trim() : '';
+    };
+    out.push({
+      raw: m[0],
+      family: prop('font-family').replace(/^['"]|['"]$/g, '').toLowerCase(),
+      weight: prop('font-weight') || '400',
+      style: prop('font-style') || 'normal',
+      range: prop('unicode-range'),
+    });
+  }
+  return out;
+}
+
+function faceWeightMatches(faceWeight, usedWeight) {
+  const parts = String(faceWeight).trim().split(/\s+/).map(Number).filter(n => !isNaN(n));
+  const uw = Number(usedWeight) || 400;
+  if (parts.length >= 2) return uw >= parts[0] && uw <= parts[1];   // 가변 폰트 범위
+  if (parts.length === 1) return parts[0] === uw;
+  return true;
+}
+
+function faceRangeMatches(rangeStr, codepoints) {
+  if (!rangeStr) return true;
+  for (const spec of rangeStr.split(',')) {
+    const m = spec.trim().match(/^U\+([0-9A-Fa-f?]+)(?:-([0-9A-Fa-f]+))?$/);
+    if (!m) return true;                       // 파싱 실패는 보수적으로 포함
+    let lo, hi;
+    if (m[1].indexOf('?') !== -1) {
+      lo = parseInt(m[1].replace(/\?/g, '0'), 16);
+      hi = parseInt(m[1].replace(/\?/g, 'F'), 16);
+    } else {
+      lo = parseInt(m[1], 16);
+      hi = m[2] ? parseInt(m[2], 16) : lo;
+    }
+    for (const cp of codepoints) {
+      if (cp >= lo && cp <= hi) return true;
+    }
+  }
+  return false;
+}
+
+async function inlineFontUrls(cssText) {
+  const urls = Array.from(new Set(
+    Array.from(cssText.matchAll(/url\((['"]?)([^'")]+)\1\)/g)).map(m => m[2])
+  ));
+  let out = cssText;
+  let bytes = 0;
+  for (const u of urls) {
+    const abs = new URL(u, location.href).href;
+    let dataUri = fontFileCache.get(abs);
+    if (!dataUri) {
+      const res = await fetch(abs, { mode: 'cors', credentials: 'omit' });
+      if (!res.ok) throw new Error('폰트 다운로드 실패 ' + res.status + ' — ' + abs);
+      const buf = await res.arrayBuffer();
+      bytes += buf.byteLength;
+      const mime = /\.woff2(\?|$)/i.test(abs) ? 'font/woff2'
+                 : /\.woff(\?|$)/i.test(abs)  ? 'font/woff'
+                 : /\.otf(\?|$)/i.test(abs)   ? 'font/otf'
+                 : 'font/ttf';
+      dataUri = 'data:' + mime + ';base64,' + bufferToBase64(buf);
+      fontFileCache.set(abs, dataUri);
+    }
+    out = out.split(u).join(dataUri);
+  }
+  return { css: out, bytes: bytes, files: urls.length };
+}
+
+async function buildInlinedFontCSS() {
+  const specs = collectUsedFontSpecs();
+  const codepoints = collectUsedCodepoints();
+
+  const key = JSON.stringify(Array.from(specs).map(([f, s]) => [f, Array.from(s).sort()]).sort())
+            + '#' + Array.from(codepoints).sort((a, b) => a - b).join(',');
+  if (fontCssCache.key === key) return fontCssCache;
+
+  const hrefs = fontStylesheetHrefs();
+  const kept = [];
+  let bytes = 0, files = 0;
+
+  for (const href of hrefs) {
+    let text;
+    try {
+      const res = await fetch(href, { mode: 'cors', credentials: 'omit' });
+      if (!res.ok) throw new Error('스타일시트 ' + res.status);
+      text = await res.text();
+    } catch (e) {
+      throw new Error('폰트 스타일시트를 읽지 못했습니다 — ' + href + ' (' + e.message + ')');
+    }
+    for (const face of parseFontFaceBlocks(text)) {
+      const used = specs.get(face.family);
+      if (!used) continue;
+      let ok = false;
+      for (const combo of used) {
+        const [w, st] = combo.split('|');
+        if (st === face.style && faceWeightMatches(face.weight, w)) { ok = true; break; }
+      }
+      if (!ok) continue;
+      if (!faceRangeMatches(face.range, codepoints)) continue;
+      kept.push(face.raw);
+    }
+  }
+
+  const inlined = await inlineFontUrls(kept.join('\n'));
+  bytes += inlined.bytes;
+  files += inlined.files;
+
+  fontCssCache.key   = key;
+  fontCssCache.css   = inlined.css;
+  fontCssCache.faces = kept.length;
+  fontCssCache.bytes = bytes;
+  fontCssCache.files = files;
+  return fontCssCache;
+}
+
+/* ── 클론 정리 ──
+   캡처에 들어가면 안 되는 편집 UI만 뗀다. 나머지는 프리뷰 그대로 둔다.
+   compositeStickersToClone과 같은 일을 하지만 문서가 아니라 요소를 받는다. */
+function sanitizeExportClone(root) {
+  const layer = root.querySelector('#sticker-layer');
+  if (layer) layer.classList.remove('editing');
+
+  const bar = root.querySelector('#sticker-edit-bar');
+  if (bar) bar.style.display = 'none';
+
+  root.querySelectorAll('.sticker-handle').forEach(h => h.remove());
+  root.querySelectorAll('.sticker-item').forEach(el => {
+    el.classList.remove('selected');
+    el.style.outline = 'none';
+    const wrap = el.querySelector('.sticker-inline-editor');
+    if (!wrap) return;
+    const textInput  = wrap.querySelector('.sticker-text-editor');
+    const colorInput = wrap.querySelector('input[type=color]');
+    const span = document.createElement('span');
+    span.className = 'sticker-text-span';
+    span.style.fontSize   = textInput ? textInput.style.fontSize : '';
+    span.style.color      = colorInput ? colorInput.value : (textInput ? textInput.style.color : '');
+    span.style.fontFamily = textInput ? textInput.style.fontFamily : '';
+    span.style.display    = 'block';
+    span.style.whiteSpace = 'nowrap';
+    span.style.lineHeight = '1.2';
+    span.textContent = textInput ? (textInput.value || '') : '';
+    wrap.replaceWith(span);
+  });
+}
+
+/* ── 시트 CSS 수집 ──
+   문서의 <style>을 그대로 쓴다. 다만 :root에 걸린 변수는 foreignObject 안에서
+   문서 루트가 아니라 우리 래퍼가 최상위이므로 선택자를 래퍼로 옮긴다. */
+function collectSheetCSS() {
+  return Array.from(document.querySelectorAll('style'))
+    .map(s => s.textContent)
+    .join('\n')
+    .replace(/:root\b/g, '.dds-export-root');
+}
+
+function buildExportRoot(fontCSS) {
+  const sheet = v('sheet');
+  const root = document.createElement('div');
+  root.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+  root.className = 'dds-export-root';
+  root.style.cssText = [
+    'box-sizing:border-box',
+    'display:block',
+    'padding:' + EXPORT_FRAME_PAD + 'px',
+    'background:' + EXPORT_FRAME_BG,
+    'width:' + (sheet.offsetWidth + EXPORT_FRAME_PAD * 2) + 'px',
+    'height:' + (sheet.offsetHeight + EXPORT_FRAME_PAD * 2) + 'px',
+  ].join(';');
+
+  const styleEl = document.createElement('style');
+  styleEl.textContent = collectSheetCSS() + '\n' + fontCSS;
+  root.appendChild(styleEl);
+
+  // 시트는 인라인 box-shadow와 border-radius를 달고 있다. 그대로 복제하면
+  // 프리뷰와 같은 테두리·그림자가 나온다. Canvas로 다시 그리지 않는다.
+  const clone = sheet.cloneNode(true);
+  sanitizeExportClone(clone);
+  root.appendChild(clone);
+
+  return root;
+}
+
+async function exportSheetCanvas() {
+  const t0 = performance.now();
+  await document.fonts.ready;
+
+  const fontPack = await buildInlinedFontCSS();
+  const tFont = performance.now();
+
+  const sheet = v('sheet');
+  const W = sheet.offsetWidth  + EXPORT_FRAME_PAD * 2;
+  const H = sheet.offsetHeight + EXPORT_FRAME_PAD * 2;
+  const outW = EXPORT_TARGET_WIDTH;
+  const outH = Math.round(H * (EXPORT_TARGET_WIDTH / W));
+
+  const root  = buildExportRoot(fontPack.css);
+  const xhtml = new XMLSerializer().serializeToString(root);
+  const svg =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="' + outW + '" height="' + outH + '" ' +
+         'viewBox="0 0 ' + W + ' ' + H + '">' +
+      '<foreignObject x="0" y="0" width="' + W + '" height="' + H + '">' + xhtml + '</foreignObject>' +
+    '</svg>';
+
+  // ⚠️ blob: URL로 만든 SVG는 foreignObject를 담고 있으면 크로미움이 캔버스를 오염시켜
+  //    toDataURL이 SecurityError를 낸다. data: URL은 오염되지 않는다.
+  //    base64보다 퍼센트 인코딩이 base64 본문(이미지·폰트)에 대해 훨씬 덜 부푼다.
+  const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  try {
+    const img = new Image();
+    img.width = outW;
+    img.height = outH;
+    await new Promise((res, rej) => {
+      img.onload  = res;
+      img.onerror = () => rej(new Error('SVG를 이미지로 로드하지 못했습니다'));
+      img.src = url;
+    });
+    if (img.decode) { try { await img.decode(); } catch (e) {} }
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = outW;
+    canvas.height = outH;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = EXPORT_FRAME_BG;
+    ctx.fillRect(0, 0, outW, outH);
+    ctx.drawImage(img, 0, 0, outW, outH);
+
+    window.__ddsExportDiag = {
+      engine: 'svg',
+      width: outW,
+      height: outH,
+      logicalWidth: W,
+      logicalHeight: H,
+      scale: EXPORT_TARGET_WIDTH / W,
+      fontFaces: fontPack.faces,
+      fontFiles: fontPack.files,
+      fontBytes: fontPack.bytes,
+      svgBytes: svg.length,
+      msFont: Math.round(tFont - t0),
+      msTotal: Math.round(performance.now() - t0),
+    };
+    return canvas;
+  } finally {
+    /* data: URL이라 해제할 자원이 없다 */
+  }
+}
+
+function downloadCanvasPNG(canvas, fileName) {
+  const link = document.createElement('a');
+  link.download = fileName;
+  link.href = canvas.toDataURL('image/png');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 async function saveAsPNG() {
+  const engine = resolveExportEngine();
+  if (engine === 'h2c') return saveAsPNGViaHtml2Canvas();
+
+  const btn = document.querySelector('.save-btn');
+  const originalHTML = btn.innerHTML;
+  btn.textContent = '저장 중...';
+  btn.disabled = true;
+  try {
+    const canvas = await exportSheetCanvas();
+    downloadCanvasPNG(canvas, 'character-sheet.png');
+  } catch (e) {
+    console.warn('[출력] SVG 엔진이 실패해 html2canvas로 폴백합니다.', e);
+    window.__ddsExportDiag = { engine: 'h2c-fallback', reason: String((e && e.message) || e) };
+    btn.innerHTML = originalHTML;
+    btn.disabled = false;
+    return saveAsPNGViaHtml2Canvas();
+  }
+  btn.innerHTML = originalHTML;
+  btn.disabled = false;
+}
+
+// ── 폴백 경로 — html2canvas (기존 구현 그대로) ──
+async function saveAsPNGViaHtml2Canvas() {
   const btn = document.querySelector('.save-btn');
   const originalHTML = btn.innerHTML;
   btn.textContent = '저장 중...';
@@ -4078,7 +4456,7 @@ async function saveAsPNG() {
     fctx.drawImage(canvas, PAD, PAD);
     fctx.restore();
 
-    // 5. 최대 폭 2400px로 리샘플링 — 고해상도로 그린 뒤 줄여서 선명도 확보
+    // 5. 최대 폭 MAX_W(3500px)로 리샘플링 — 고해상도로 그린 뒤 줄여서 선명도 확보
     const MAX_W = 3500;
     let outCanvas;
     if (finalCanvas.width > MAX_W) {
