@@ -66,9 +66,18 @@
   --label-color: #9B9189;
   --text: #2C2825;
   --text-dim: #7A736B;
+  --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 20px;
+  --radius-pill: 999px;   /* 완전 캡슐 — 높이가 변해도 캡슐로 남는다 */
+  /* 간격 4pt 스케일 — 시트와 편집 UI가 함께 쓴다 */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 32px;
   /* 시트 색상 */
   --sheet-bg: #FFFFFF;
   --sheet-border: #E0DBD5;
@@ -1099,6 +1108,22 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   /* ── 시각보정 토큰 ──
      레퍼런스: user/reference/design/ddstr/시각보정1~4.jpg (DDSWindowSkin-work)
      셋 다 취향 판단이고 2026-09-07에 사용자가 비교 시안을 보고 값을 정했다. */
+  /* ── 타이포 스케일 — 1.25 비율 5단계 ──
+     8~16px에 여덟 계단이 몰려 위계가 없던 것을 다섯으로 접었다.
+     단계를 늘리지 않는다. 더 필요하면 굵기와 색으로 낸다. */
+  --fs-1: 22px;      /* 시트 제목 */
+  --fs-2: 17.5px;    /* 캐릭터 이름 */
+  --fs-3: 14px;      /* 섹션 제목 · 배지 글자 */
+  --fs-4: 11px;      /* 본문 */
+  --fs-5: 9px;       /* 라벨 · 수치 */
+  /* ── 자간 ── */
+  --ls-display: -0.01em;  /* 큰 글자는 좁힌다 */
+  --ls-label: 0.12em;     /* 대문자 라벨. 상한이다 */
+  --ls-body: 0.01em;
+  /* ── 행간 ── */
+  --lh-display: 1.15;
+  --lh-label: 1.35;
+  --lh-body: 1.6;
   --dds-pill-lift: 0.5px;         /* 시각보정3 — 글자를 미세하게 위로 (안 0/0.25/0.5 중 0.5) */
   --dds-capsule-overshoot: 0.5px; /* 시각보정2 — 완전 캡슐만 위아래로 키운다 (안 0/0.5/1 중 0.5) */
   /* ⚠️ 시각보정4(가로선 0.75px)는 두께로는 낼 수 없어 보류다. 크로미움이 1px 미만
@@ -1164,52 +1189,64 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 /* ── 시트 상단 이름 행 ── */
 .sheet-header {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  /* ⚠️ 가운데를 auto로 두지 말 것 — auto 트랙은 max-content를 먼저 가져가서
+     긴 페어 이름이 좌우 이름칸을 33px까지 밀어낸다(40자 실측).
+     1:2:1로 못 박으면 제목이 가운데 절반 안에서 줄바꿈하고 이름칸은 284px를 지킨다.
+     짧은 이름일 때의 화면은 종전과 같다(어차피 가운데 정렬이다) */
+  grid-template-columns: minmax(0,1fr) minmax(0,2fr) minmax(0,1fr);
   align-items: center;
   gap: 0;
   background: #1E1C1A;
-  padding: 16px 32px;
+  padding: var(--sp-4) var(--sp-6);
   margin-bottom: 0;
 }
 .sheet-char-label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-3);
+  min-width: 0;
 }
+.char-names { min-width: 0; overflow-wrap: anywhere; }
 .sheet-char-label.right { flex-direction: row-reverse; }
 .char-badge {
   /* 정사각 배지 — 크기는 고정이고 글자만 보정한다 */
   --pill-py: 2px;
   --pill-dy: var(--dds-dy-charbadge);
   width: 32px; height: 32px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-family: 'Cinzel', serif;
   font-weight: 700;
-  font-size: 15px;
+  font-size: var(--fs-3);
   color: #fff;
   flex-shrink: 0;
 }
-.char-names { line-height: 1.2; }
-.char-names .name-ko { font-size: 16px; font-weight: 700; color: #fff; }
-.char-names .name-en { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 1px; font-family: 'Noto Sans KR', sans-serif; }
+.char-names { line-height: var(--lh-display); }
+.char-names .name-ko { font-size: var(--fs-2); font-weight: 700; letter-spacing: var(--ls-display); color: #fff; }
+.char-names .name-en { font-size: var(--fs-4); color: rgba(255,255,255,0.35); margin-top: 2px; font-family: 'Noto Sans KR', sans-serif; }
 .char-names.right { text-align: right; }
 .pair-name-area { text-align: center; }
 .pair-name-title {
   font-family: 'Cinzel', serif;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  /* 마지막 글자 뒤에도 붙는 자간을 상쇄한다. 없으면 가운데 정렬이 왼쪽으로 쏠린다 */
-  margin-right: -0.16em;
+  font-size: var(--fs-1);
+  font-weight: 700;
+  letter-spacing: var(--ls-label);
+  line-height: var(--lh-display);
+  /* 마지막 글자 뒤에도 붙는 자간을 상쇄한다. 없으면 가운데 정렬이 왼쪽으로 쏠린다.
+     ⚠️ --ls-label과 같은 값이어야 한다 */
+  margin-right: -0.12em;
   color: #fff;
-  white-space: nowrap;
+  /* ⚠️ nowrap을 되살리지 말 것 — 제목을 22px로 키운 뒤로는 nowrap이면
+     긴 페어 이름이 좌우 이름칸을 밀어내고 시트가 가로로 넘친다(40자에서 1203px 실측).
+     줄바꿈을 허용하면 헤더 높이만 늘고 폭은 지켜진다 */
+  overflow-wrap: anywhere;
 }
 .pair-catchphrase {
-  font-size: 9px;
+  font-size: var(--fs-5);
   color: rgba(255,255,255,0.5);
-  margin-top: 3px;
-  letter-spacing: 0.1em;
-  margin-right: -0.1em;
+  margin-top: var(--sp-1);
+  line-height: var(--lh-label);
+  letter-spacing: var(--ls-label);
+  margin-right: -0.12em;
 }
 
 /* ── 메인 그리드 ── */
@@ -1224,9 +1261,9 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 .side-card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--sp-3);
   background: #fff;
-  padding: 20px 20px 32px;
+  padding: var(--sp-5) var(--sp-5) var(--sp-6);
 }
 #side-a { border-right: var(--rule-v) solid #F0EDEA; }
 #side-b { border-left: var(--rule-v) solid #F0EDEA; }
@@ -1237,7 +1274,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   border-radius: 0;
   padding: 0;
   display: flex;
-  gap: 12px;
+  gap: var(--sp-3);
   align-items: flex-start;
   border: none;
 }
@@ -1245,7 +1282,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 .sub-img-wrap {
   width: 130px;
   height: 160px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   flex-shrink: 0;
   background: var(--img-bg, #F2F1EF);
@@ -1255,13 +1292,13 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 }
 .sub-img-wrap img { position: absolute; transform-origin: center center; display: block; max-width: none; }
 .sub-img-wrap.img-loaded { cursor: crosshair; }
-.sub-placeholder { font-size: 9px; color: #BCBAB7; letter-spacing: 0.1em; pointer-events: none; text-align: center; line-height: 2; }
+.sub-placeholder { font-size: var(--fs-5); color: #BCBAB7; letter-spacing: var(--ls-label); pointer-events: none; text-align: center; line-height: 2; }
 
 .color-chips-col {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-top: 4px;
+  gap: var(--sp-2);
+  padding-top: var(--sp-1);
 }
 .color-chip-btn {
   /* 높이 23px = 위아래 6 + 글자 11. height를 박지 않는다.
@@ -1270,8 +1307,8 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   --pill-px: 12px;
   --pill-ls: 0.10em;
   --pill-dy: var(--dds-dy-chip);
-  border-radius: 7px;
-  font-size: 11px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-4);
   font-weight: 700;
   letter-spacing: var(--pill-ls);
   color: #fff;
@@ -1291,20 +1328,22 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 .profile-tag-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
+  gap: var(--sp-1);
   margin-bottom: 0;
 }
 .profile-tag {
-  /* 높이 18px = 위아래 4 + 글자 10. 완전 캡슐이라 오버슛 대상이다 */
+  /* 높이 17px = 위아래 4 + 글자 9. 완전 캡슐이라 오버슛 대상이다 */
   --pill-py: 4px;
   --pill-px: 7px;
   --pill-ls: 0.02em;
   --pill-dy: var(--dds-dy-tag);
   --pill-overshoot: var(--dds-capsule-overshoot, 0px);
-  font-size: 10px;
+  font-size: var(--fs-5);
   font-weight: 700;
   letter-spacing: var(--pill-ls);
-  border-radius: 20px;
+  /* ⚠️ 20px이 아니라 999px이다 — 20px은 지금 높이에서만 캡슐로 보이고
+     태그가 두 줄이 되면 둥근 사각형으로 무너진다 */
+  border-radius: var(--radius-pill);
   border: none;
   white-space: nowrap;
 }
@@ -1314,28 +1353,30 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   gap: 0;
 }
 .profile-item {
-  padding: 7px 0;
+  padding: var(--sp-2) 0;
   border-bottom: var(--rule-h) solid var(--sheet-border);
 }
 .profile-item-key {
-  font-size: 11px;
+  font-size: var(--fs-5);
   font-weight: 700;
-  letter-spacing: 0.10em;
+  letter-spacing: var(--ls-label);
+  line-height: var(--lh-label);
   color: var(--sheet-dimmer);
   margin-bottom: 2px;
 }
 .profile-item-val {
-  font-size: 11px;
+  font-size: var(--fs-4);
   font-weight: 500;
+  line-height: var(--lh-body);
   color: var(--sheet-text);
 }
 .profile-keywords {
-  margin-top: 10px;
-  font-size: 11px;
+  margin-top: var(--sp-3);
+  font-size: var(--fs-4);
   color: var(--sheet-dim);
   font-weight: 500;
   letter-spacing: 0.04em;
-  line-height: 1.5;
+  line-height: var(--lh-body);
 }
 
 /* ── 섹션 공통 ── */
@@ -1343,78 +1384,81 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 .section-block-header {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 0 0 7px 0;
-  margin-bottom: 8px;
+  gap: var(--sp-2);
+  padding: 0 0 var(--sp-2) 0;
+  margin-bottom: var(--sp-2);
 }
 .section-block-header::after { display: none; }
 .section-num {
   --pill-py: 2px;
   --pill-dy: var(--dds-dy-secnum);
   width: 18px; height: 18px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   background: #1E1C1A;
-  font-size: 9px; font-weight: 700; color: #fff;
+  font-size: var(--fs-5); font-weight: 700; color: #fff;
   font-family: 'Cinzel', serif;
   flex-shrink: 0;
 }
 .section-title-text {
-  font-size: 10px;
+  font-size: var(--fs-3);
   font-weight: 700;
   color: var(--sheet-text);
-  letter-spacing: 0.16em;
+  letter-spacing: var(--ls-label);
+  line-height: var(--lh-label);
   flex: 1;
 }
 .section-body { padding: 0; }
 .section-required-badge { display: none; }
 .section-main-text {
-  font-size: 12px;
+  font-size: var(--fs-4);
   font-weight: 700;
   color: var(--sheet-text);
-  margin-bottom: 5px;
-  letter-spacing: 0.01em;
-  padding-left: 10px;
+  margin-bottom: var(--sp-1);
+  letter-spacing: var(--ls-body);
+  line-height: var(--lh-body);
+  padding-left: var(--sp-3);
 }
 .section-list {
   list-style: none;
   padding: 0;
 }
 .section-list li {
-  font-size: 11px;
+  font-size: var(--fs-4);
   color: var(--sheet-dim);
-  line-height: 1.75;
-  padding-left: 10px;
+  line-height: var(--lh-body);
+  padding-left: var(--sp-3);
   margin-bottom: 1px;
   position: relative;
 }
 .section-list li::before { display: none; }
 
 /* 스탯 바 */
-.stat-bar-block { margin-bottom: 12px; }
+.stat-bar-block { margin-bottom: var(--sp-3); }
 .stat-bar-label {
-  font-size: 8px;
+  font-size: var(--fs-5);
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--ls-label);
+  line-height: var(--lh-label);
   color: var(--sheet-dimmer);
-  margin-bottom: 5px;
+  margin-bottom: var(--sp-1);
 }
 .stat-row {
   display: grid;
-  grid-template-columns: 34px 1fr 22px;
+  grid-template-columns: 36px 1fr 24px;
   align-items: start;
-  gap: 7px;
-  margin-bottom: 4px;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-1);
   min-height: 14px;
 }
 .stat-row:last-child { margin-bottom: 0; }
 .stat-key {
-  font-size: 8px;
+  font-size: var(--fs-5);
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--sheet-dimmer);
   line-height: 1.35;
   word-break: break-all;
-  /* 캡하이트 중심을 스탯 바(margin-top 5 + height 3)의 중심에 맞춘다.
+  /* 캡하이트 중심을 스탯 바(margin-top 4 + height 3)의 중심에 맞춘다.
      기존 2px은 근거 없는 손 보정이었다 */
   padding-top: var(--dds-stat-key-pt);
 }
@@ -1422,21 +1466,23 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   display: block;
   height: 3px;
   background: #EDEAE6;
-  border-radius: 2px;
+  border-radius: var(--radius-pill);
   overflow: hidden;
-  margin-top: 5px;
+  margin-top: var(--sp-1);
 }
 .stat-bar-fill {
   display: block;
   height: 3px;
-  border-radius: 2px;
+  border-radius: var(--radius-pill);
   background: var(--section-accent, #3A3835);
 }
 .stat-val {
-  font-size: 8px;
+  font-size: var(--fs-5);
   font-weight: 700;
   color: var(--sheet-dimmer);
   text-align: right;
+  /* 자릿수가 늘어도 오른쪽 정렬이 흔들리지 않게 고정폭 숫자를 쓴다 */
+  font-variant-numeric: tabular-nums;
   line-height: 1;
   padding-top: var(--dds-stat-val-pt);
 }
@@ -1451,17 +1497,17 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   background: transparent;
 }
 .center-imgs-area {
-  padding: 20px 20px 20px;
+  padding: var(--sp-5);
   background: transparent;
 }
 .main-imgs-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: var(--sp-3);
   align-items: start;
 }
 .main-img-wrap {
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--img-bg, #F2F1EF);
   display: flex; align-items: center; justify-content: center;
@@ -1472,7 +1518,7 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
 }
 .main-img-wrap img { position: absolute; transform-origin: center center; display: block; max-width: none; }
 .main-img-wrap.img-loaded { cursor: crosshair; }
-.main-img-placeholder { font-size: 9px; color: #BCBAB7; letter-spacing: 0.1em; text-align: center; line-height: 2; pointer-events: none; }
+.main-img-placeholder { font-size: var(--fs-5); color: #BCBAB7; letter-spacing: var(--ls-label); text-align: center; line-height: 2; pointer-events: none; }
 
 /* ══════════════════════════════════════════
    스티커 레이어
@@ -2003,15 +2049,15 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   background: #fff;
   border: none;
   border-radius: 0;
-  padding: 16px 20px 28px;
+  padding: var(--sp-4) var(--sp-5) 28px;
   border-top: 1px solid var(--sheet-border);
   flex: 1;
 }
 .pair-block-header {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 0 0 7px 0;
+  gap: var(--sp-2);
+  padding: 0 0 var(--sp-2) 0;
   margin-bottom: 8px;
   border-bottom: none;
 }
@@ -2020,25 +2066,26 @@ textarea.field-input { min-height: 72px; line-height: 1.6; }
   --pill-py: 2px;
   --pill-dy: var(--dds-dy-secnum);
   width: 18px; height: 18px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   background: #1E1C1A;
-  font-size: 9px; font-weight: 700; color: #fff;
+  font-size: var(--fs-5); font-weight: 700; color: #fff;
   font-family: 'Cinzel', serif;
   flex-shrink: 0;
 }
 .pair-block-title {
-  font-size: 10px;
+  font-size: var(--fs-3);
   font-weight: 700;
   color: var(--sheet-text);
-  letter-spacing: 0.16em;
+  letter-spacing: var(--ls-label);
+  line-height: var(--lh-label);
   flex: 1;
 }
 .pair-block-sublabel { display: none; }
-.pair-block-body { padding: 0 0 0 8px; }
+.pair-block-body { padding: 0 0 0 var(--sp-2); }
 .pair-block-body p {
-  font-size: 11px;
+  font-size: var(--fs-4);
   color: var(--sheet-dim);
-  line-height: 1.8;
+  line-height: var(--lh-body);
   white-space: pre-wrap;
 }
 
@@ -3899,8 +3946,8 @@ const FONT_METRIC_REF = 1000;   // 캡하이트 비율은 이 크기에서 재�
    ⚠️ CSS에서 글자 크기를 바꾸면 여기도 바꾼다. 어긋나면 콘솔에 [진단] 경고가 뜬다. */
 const PILL_SPECS = [
   { varName: '--dds-dy-chip',      size: 11, lh: 1, role: 'body',    probe: 's-a-hair-chip' },
-  { varName: '--dds-dy-tag',       size: 10, lh: 1, role: 'body',    probe: null },
-  { varName: '--dds-dy-charbadge', size: 15, lh: 1, role: 'display', probe: 's-a-badge' },
+  { varName: '--dds-dy-tag',       size:  9, lh: 1, role: 'body',    probe: null },
+  { varName: '--dds-dy-charbadge', size: 14, lh: 1, role: 'display', probe: 's-a-badge' },
   { varName: '--dds-dy-secnum',    size:  9, lh: 1, role: 'display', probe: null },
 ];
 
@@ -3986,8 +4033,8 @@ async function measureSheetFontMetrics() {
 
   // 스탯 행 — 키·값의 캡 중심을 스탯 바 중심에 맞춘다
   if (caps.body != null) {
-    const BAR_CENTER = 6.5;   // .stat-bar-wrap { margin-top: 5px; height: 3px }
-    const STAT_FS = 8;        // .stat-key / .stat-val
+    const BAR_CENTER = 5.5;   // .stat-bar-wrap { margin-top: 4px; height: 3px }
+    const STAT_FS = 9;        // .stat-key / .stat-val
     const put = (name, lh) => {
       const bl = readBaseline(stacks.body, 700, STAT_FS, lh);
       if (!bl) return;
