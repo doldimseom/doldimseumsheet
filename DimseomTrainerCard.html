@@ -4070,13 +4070,20 @@ function applyData(data) {
     try {
       const saved = JSON.parse(data['__pokemon_slots']);
       if (Array.isArray(saved)) {
-        pokemonSlots = saved;
+        // 이로치·암컷 업데이트 이전 저장본은 이로치·암컷 필드가 없다 → 기본값으로 채우고 암컷 여부만 다시 조회
+        pokemonSlots = saved.map(s => Object.assign(emptySlot(), s));
         renderAllPokemonSlots();
+        saved.forEach((s, i) => {
+          if (!s || !s.id || 'hasFemale' in s) return;
+          const slot = pokemonSlots[i];
+          fetchPokeMeta(slot).then(() => { if (pokemonSlots[i] === slot) renderAllPokemonSlots(); });
+        });
       }
     } catch(e) {}
   }
-  // 스프라이트 모드 복원
+  // 스프라이트 모드 복원 (스프라이트 경로 재해석 포함)
   if (data['__sprite_mode']) setSpriteMode(data['__sprite_mode']);
+  else resolveAllSprites();
   // UI 갱신
   update();
   updateHeaderColor();
@@ -4612,7 +4619,7 @@ function resetAll() {
   });
 
   // 포켓몬 슬롯 초기화
-  pokemonSlots = Array.from({length: 6}, () => ({ id: null, name: '', types: [], sprite: '', ace: false }));
+  pokemonSlots = Array.from({length: 6}, emptySlot);
   setSpriteMode('illust');
   renderAllPokemonSlots();
 
@@ -4661,6 +4668,46 @@ const POKE_TYPE_KO = {
   psychic:'에스퍼', bug:'벌레', rock:'바위', ghost:'고스트', dragon:'드래곤',
   dark:'악', steel:'강철', fairy:'페어리',
 };
+
+// ── 포켓몬 번호 → 타입 매핑 (런타임 캐싱) ──
+// 선택할 때마다 pokemon API(기술 목록 포함, 수백 KB)를 받던 것을 초기화 때 CSV 1회(약 19KB)로 대신한다
+// 표에 없으면 selectPokemon이 API로 폴백한다
+const POKE_TYPES_CACHE_KEY = 'tc_poke_types_v1';
+const POKE_TYPES_CSV_URL   = 'https://cdn.jsdelivr.net/gh/PokeAPI/pokeapi@master/data/v2/csv/pokemon_types.csv';
+// PokeAPI types.csv의 type_id 순서
+const POKE_TYPE_ID = [null, 'normal','fighting','flying','poison','ground','rock','bug','ghost','steel',
+  'fire','water','grass','electric','psychic','ice','dragon','dark','fairy'];
+let POKE_ID_TO_TYPES = null; // { 1: ['grass','poison'], ... }
+
+async function initPokeTypes() {
+  try {
+    const cached = localStorage.getItem(POKE_TYPES_CACHE_KEY);
+    if (cached) { POKE_ID_TO_TYPES = JSON.parse(cached); return; }
+  } catch(e) {}
+  try {
+    const res = await fetch(POKE_TYPES_CSV_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const map = {};
+    // 헤더: pokemon_id,type_id,slot — slot 순서대로 들어 있다
+    (await res.text()).trim().split('\n').slice(1).forEach(line => {
+      const [pid, tid] = line.split(',').map(n => parseInt(n, 10));
+      const t = POKE_TYPE_ID[tid];
+      if (pid && t) (map[pid] = map[pid] || []).push(t);
+    });
+    POKE_ID_TO_TYPES = map;
+    try { localStorage.setItem(POKE_TYPES_CACHE_KEY, JSON.stringify(map)); } catch(e) {}
+  } catch(e) {
+    console.warn('[PokeTypes] fetch 실패 — 선택 시 API로 조회:', e);
+  }
+}
+
+// ── 암컷 이미지가 있는 번호 (도트 female/ ∪ HOME female/, 2026-09-28 sprites 저장소 실측) ──
+// FEMALE_FORM_FILE 4종(678·876·902·916)도 포함된다
+const POKE_FEMALE_IDS = new Set([3,12,19,20,25,26,41,42,44,45,64,65,84,85,97,111,112,118,119,123,129,130,133,
+  154,165,166,178,185,186,190,194,195,198,202,203,207,208,212,214,215,217,221,224,229,232,255,256,257,267,269,
+  272,274,275,307,308,315,316,317,322,323,332,350,369,396,397,398,399,400,401,402,403,404,405,407,415,417,418,
+  419,424,443,444,445,449,450,453,454,456,457,459,460,461,464,465,473,521,592,593,668,678,876,902,916,
+  10033,10235]);
 
 // ── 한글 이름 → 포켓몬 번호 매핑 (런타임 캐싱) ──
 // GitHub raw CSV에서 1회 fetch 후 localStorage 캐시
@@ -4736,6 +4783,435 @@ const POKE_REGION_FORMS = {
   '우파 〔팔데아〕':         { id: 10253, slug: 'wooper-paldea',              region: '팔데아' },
 };
 
+// ── 추가 폼 매핑 테이블 (한글명 → { id, file, form, kind }) ──
+// 생성원: backup/poke-forms.json (PokeAPI CSV + sprites 파일 목록, 2026-09-28) · 규칙: backup/TrainerCard_ShinyGenderForms_Handoff.md
+// id = 정렬·타입 조회용(named = 도감번호, sep = 폼 번호) / file = 스프라이트 파일 키 / form = PokeAPI 식별자
+// kind: named = 이름형 폼(423-east 등, 타입은 pokemon-form) · sep = 별도 번호 폼(타입은 pokemon)
+const POKE_EXTRA_FORMS = {
+  '메가이상해꽃': { id: 10033, file: '10033', form: 'venusaur-mega', kind: 'sep' },
+  '이상해꽃 〔거다이맥스〕': { id: 10195, file: '10195', form: 'venusaur-gmax', kind: 'sep' },
+  '메가리자몽X': { id: 10034, file: '10034', form: 'charizard-mega-x', kind: 'sep' },
+  '메가리자몽Y': { id: 10035, file: '10035', form: 'charizard-mega-y', kind: 'sep' },
+  '리자몽 〔거다이맥스〕': { id: 10196, file: '10196', form: 'charizard-gmax', kind: 'sep' },
+  '메가거북왕': { id: 10036, file: '10036', form: 'blastoise-mega', kind: 'sep' },
+  '거북왕 〔거다이맥스〕': { id: 10197, file: '10197', form: 'blastoise-gmax', kind: 'sep' },
+  '버터플 〔거다이맥스〕': { id: 10198, file: '10198', form: 'butterfree-gmax', kind: 'sep' },
+  '메가독침붕': { id: 10090, file: '10090', form: 'beedrill-mega', kind: 'sep' },
+  '메가피죤투': { id: 10073, file: '10073', form: 'pidgeot-mega', kind: 'sep' },
+  '꼬렛 〔알로라〕': { id: 10091, file: '10091', form: 'rattata-alola', kind: 'sep' },
+  '레트라 〔알로라〕': { id: 10092, file: '10092', form: 'raticate-alola', kind: 'sep' },
+  '피카츄 〔하드록〕': { id: 10080, file: '10080', form: 'pikachu-rock-star', kind: 'sep' },
+  '피카츄 〔마담〕': { id: 10081, file: '10081', form: 'pikachu-belle', kind: 'sep' },
+  '피카츄 〔아이돌〕': { id: 10082, file: '10082', form: 'pikachu-pop-star', kind: 'sep' },
+  '피카츄 〔닥터〕': { id: 10083, file: '10083', form: 'pikachu-phd', kind: 'sep' },
+  '피카츄 〔마스크드〕': { id: 10084, file: '10084', form: 'pikachu-libre', kind: 'sep' },
+  '피카츄 〔옷갈아입기〕': { id: 10085, file: '10085', form: 'pikachu-cosplay', kind: 'sep' },
+  '피카츄 〔오리지널캡〕': { id: 10094, file: '10094', form: 'pikachu-original-cap', kind: 'sep' },
+  '피카츄 〔호연캡〕': { id: 10095, file: '10095', form: 'pikachu-hoenn-cap', kind: 'sep' },
+  '피카츄 〔신오캡〕': { id: 10096, file: '10096', form: 'pikachu-sinnoh-cap', kind: 'sep' },
+  '피카츄 〔하나캡〕': { id: 10097, file: '10097', form: 'pikachu-unova-cap', kind: 'sep' },
+  '피카츄 〔칼로스캡〕': { id: 10098, file: '10098', form: 'pikachu-kalos-cap', kind: 'sep' },
+  '피카츄 〔알로라캡〕': { id: 10099, file: '10099', form: 'pikachu-alola-cap', kind: 'sep' },
+  '피카츄 〔너로정했다캡〕': { id: 10148, file: '10148', form: 'pikachu-partner-cap', kind: 'sep' },
+  '피카츄 〔월드캡〕': { id: 10160, file: '10160', form: 'pikachu-world-cap', kind: 'sep' },
+  '피카츄 〔거다이맥스〕': { id: 10199, file: '10199', form: 'pikachu-gmax', kind: 'sep' },
+  '메가라이츄X': { id: 10304, file: '10304', form: 'raichu-mega-x', kind: 'sep' },
+  '메가라이츄Y': { id: 10305, file: '10305', form: 'raichu-mega-y', kind: 'sep' },
+  '메가픽시': { id: 10278, file: '10278', form: 'clefable-mega', kind: 'sep' },
+  '나옹 〔거다이맥스〕': { id: 10200, file: '10200', form: 'meowth-gmax', kind: 'sep' },
+  '메가후딘': { id: 10037, file: '10037', form: 'alakazam-mega', kind: 'sep' },
+  '괴력몬 〔거다이맥스〕': { id: 10201, file: '10201', form: 'machamp-gmax', kind: 'sep' },
+  '메가우츠보트': { id: 10279, file: '10279', form: 'victreebel-mega', kind: 'sep' },
+  '메가야도란': { id: 10071, file: '10071', form: 'slowbro-mega', kind: 'sep' },
+  '메가팬텀': { id: 10038, file: '10038', form: 'gengar-mega', kind: 'sep' },
+  '팬텀 〔거다이맥스〕': { id: 10202, file: '10202', form: 'gengar-gmax', kind: 'sep' },
+  '킹크랩 〔거다이맥스〕': { id: 10203, file: '10203', form: 'kingler-gmax', kind: 'sep' },
+  '메가캥카': { id: 10039, file: '10039', form: 'kangaskhan-mega', kind: 'sep' },
+  '메가아쿠스타': { id: 10280, file: '10280', form: 'starmie-mega', kind: 'sep' },
+  '메가쁘사이저': { id: 10040, file: '10040', form: 'pinsir-mega', kind: 'sep' },
+  '메가갸라도스': { id: 10041, file: '10041', form: 'gyarados-mega', kind: 'sep' },
+  '라프라스 〔거다이맥스〕': { id: 10204, file: '10204', form: 'lapras-gmax', kind: 'sep' },
+  '이브이 〔거다이맥스〕': { id: 10205, file: '10205', form: 'eevee-gmax', kind: 'sep' },
+  '메가프테라': { id: 10042, file: '10042', form: 'aerodactyl-mega', kind: 'sep' },
+  '잠만보 〔거다이맥스〕': { id: 10206, file: '10206', form: 'snorlax-gmax', kind: 'sep' },
+  '메가망나뇽': { id: 10281, file: '10281', form: 'dragonite-mega', kind: 'sep' },
+  '메가뮤츠X': { id: 10043, file: '10043', form: 'mewtwo-mega-x', kind: 'sep' },
+  '메가뮤츠Y': { id: 10044, file: '10044', form: 'mewtwo-mega-y', kind: 'sep' },
+  '메가메가니움': { id: 10282, file: '10282', form: 'meganium-mega', kind: 'sep' },
+  '메가장크로다일': { id: 10283, file: '10283', form: 'feraligatr-mega', kind: 'sep' },
+  '메가전룡': { id: 10045, file: '10045', form: 'ampharos-mega', kind: 'sep' },
+  '안농 〔B〕': { id: 201, file: '201-b', form: 'unown-b', kind: 'named' },
+  '안농 〔C〕': { id: 201, file: '201-c', form: 'unown-c', kind: 'named' },
+  '안농 〔D〕': { id: 201, file: '201-d', form: 'unown-d', kind: 'named' },
+  '안농 〔E〕': { id: 201, file: '201-e', form: 'unown-e', kind: 'named' },
+  '안농 〔F〕': { id: 201, file: '201-f', form: 'unown-f', kind: 'named' },
+  '안농 〔G〕': { id: 201, file: '201-g', form: 'unown-g', kind: 'named' },
+  '안농 〔H〕': { id: 201, file: '201-h', form: 'unown-h', kind: 'named' },
+  '안농 〔I〕': { id: 201, file: '201-i', form: 'unown-i', kind: 'named' },
+  '안농 〔J〕': { id: 201, file: '201-j', form: 'unown-j', kind: 'named' },
+  '안농 〔K〕': { id: 201, file: '201-k', form: 'unown-k', kind: 'named' },
+  '안농 〔L〕': { id: 201, file: '201-l', form: 'unown-l', kind: 'named' },
+  '안농 〔M〕': { id: 201, file: '201-m', form: 'unown-m', kind: 'named' },
+  '안농 〔N〕': { id: 201, file: '201-n', form: 'unown-n', kind: 'named' },
+  '안농 〔O〕': { id: 201, file: '201-o', form: 'unown-o', kind: 'named' },
+  '안농 〔P〕': { id: 201, file: '201-p', form: 'unown-p', kind: 'named' },
+  '안농 〔Q〕': { id: 201, file: '201-q', form: 'unown-q', kind: 'named' },
+  '안농 〔R〕': { id: 201, file: '201-r', form: 'unown-r', kind: 'named' },
+  '안농 〔S〕': { id: 201, file: '201-s', form: 'unown-s', kind: 'named' },
+  '안농 〔T〕': { id: 201, file: '201-t', form: 'unown-t', kind: 'named' },
+  '안농 〔U〕': { id: 201, file: '201-u', form: 'unown-u', kind: 'named' },
+  '안농 〔V〕': { id: 201, file: '201-v', form: 'unown-v', kind: 'named' },
+  '안농 〔W〕': { id: 201, file: '201-w', form: 'unown-w', kind: 'named' },
+  '안농 〔X〕': { id: 201, file: '201-x', form: 'unown-x', kind: 'named' },
+  '안농 〔Y〕': { id: 201, file: '201-y', form: 'unown-y', kind: 'named' },
+  '안농 〔Z〕': { id: 201, file: '201-z', form: 'unown-z', kind: 'named' },
+  '안농 〔!〕': { id: 201, file: '201-exclamation', form: 'unown-exclamation', kind: 'named' },
+  '안농 〔?〕': { id: 201, file: '201-question', form: 'unown-question', kind: 'named' },
+  '메가강철톤': { id: 10072, file: '10072', form: 'steelix-mega', kind: 'sep' },
+  '메가핫삼': { id: 10046, file: '10046', form: 'scizor-mega', kind: 'sep' },
+  '메가헤라크로스': { id: 10047, file: '10047', form: 'heracross-mega', kind: 'sep' },
+  '메가무장조': { id: 10284, file: '10284', form: 'skarmory-mega', kind: 'sep' },
+  '메가헬가': { id: 10048, file: '10048', form: 'houndoom-mega', kind: 'sep' },
+  '메가마기라스': { id: 10049, file: '10049', form: 'tyranitar-mega', kind: 'sep' },
+  '메가나무킹': { id: 10065, file: '10065', form: 'sceptile-mega', kind: 'sep' },
+  '메가번치코': { id: 10050, file: '10050', form: 'blaziken-mega', kind: 'sep' },
+  '메가대짱이': { id: 10064, file: '10064', form: 'swampert-mega', kind: 'sep' },
+  '메가가디안': { id: 10051, file: '10051', form: 'gardevoir-mega', kind: 'sep' },
+  '메가깜까미': { id: 10066, file: '10066', form: 'sableye-mega', kind: 'sep' },
+  '메가입치트': { id: 10052, file: '10052', form: 'mawile-mega', kind: 'sep' },
+  '메가보스로라': { id: 10053, file: '10053', form: 'aggron-mega', kind: 'sep' },
+  '메가요가램': { id: 10054, file: '10054', form: 'medicham-mega', kind: 'sep' },
+  '메가썬더볼트': { id: 10055, file: '10055', form: 'manectric-mega', kind: 'sep' },
+  '메가샤크니아': { id: 10070, file: '10070', form: 'sharpedo-mega', kind: 'sep' },
+  '메가폭타': { id: 10087, file: '10087', form: 'camerupt-mega', kind: 'sep' },
+  '메가파비코리': { id: 10067, file: '10067', form: 'altaria-mega', kind: 'sep' },
+  '캐스퐁 〔태양의 모습〕': { id: 10013, file: '10013', form: 'castform-sunny', kind: 'sep' },
+  '캐스퐁 〔빗방울의 모습〕': { id: 10014, file: '10014', form: 'castform-rainy', kind: 'sep' },
+  '캐스퐁 〔설운의 모습〕': { id: 10015, file: '10015', form: 'castform-snowy', kind: 'sep' },
+  '메가다크펫': { id: 10056, file: '10056', form: 'banette-mega', kind: 'sep' },
+  '메가치렁': { id: 10306, file: '10306', form: 'chimecho-mega', kind: 'sep' },
+  '메가앱솔': { id: 10057, file: '10057', form: 'absol-mega', kind: 'sep' },
+  '메가앱솔Z': { id: 10307, file: '10307', form: 'absol-mega-z', kind: 'sep' },
+  '메가얼음귀신': { id: 10074, file: '10074', form: 'glalie-mega', kind: 'sep' },
+  '메가보만다': { id: 10089, file: '10089', form: 'salamence-mega', kind: 'sep' },
+  '메가메타그로스': { id: 10076, file: '10076', form: 'metagross-mega', kind: 'sep' },
+  '메가라티아스': { id: 10062, file: '10062', form: 'latias-mega', kind: 'sep' },
+  '메가라티오스': { id: 10063, file: '10063', form: 'latios-mega', kind: 'sep' },
+  '가이오가 〔원시회귀의 모습〕': { id: 10077, file: '10077', form: 'kyogre-primal', kind: 'sep' },
+  '그란돈 〔원시회귀의 모습〕': { id: 10078, file: '10078', form: 'groudon-primal', kind: 'sep' },
+  '메가레쿠쟈': { id: 10079, file: '10079', form: 'rayquaza-mega', kind: 'sep' },
+  '테오키스 〔어택폼〕': { id: 10001, file: '10001', form: 'deoxys-attack', kind: 'sep' },
+  '테오키스 〔디펜스폼〕': { id: 10002, file: '10002', form: 'deoxys-defense', kind: 'sep' },
+  '테오키스 〔스피드폼〕': { id: 10003, file: '10003', form: 'deoxys-speed', kind: 'sep' },
+  '메가찌르호크': { id: 10308, file: '10308', form: 'staraptor-mega', kind: 'sep' },
+  '도롱충이 〔모래땅도롱〕': { id: 412, file: '412-sandy', form: 'burmy-sandy', kind: 'named' },
+  '도롱충이 〔슈레도롱〕': { id: 412, file: '412-trash', form: 'burmy-trash', kind: 'named' },
+  '도롱마담 〔모래땅도롱〕': { id: 10004, file: '10004', form: 'wormadam-sandy', kind: 'sep' },
+  '도롱마담 〔슈레도롱〕': { id: 10005, file: '10005', form: 'wormadam-trash', kind: 'sep' },
+  '체리꼬 〔포지폼〕': { id: 421, file: '421-sunshine', form: 'cherrim-sunshine', kind: 'named' },
+  '깝질무 〔동쪽바다〕': { id: 422, file: '422-east', form: 'shellos-east', kind: 'named' },
+  '트리토돈 〔동쪽바다〕': { id: 423, file: '423-east', form: 'gastrodon-east', kind: 'named' },
+  '메가이어롭': { id: 10088, file: '10088', form: 'lopunny-mega', kind: 'sep' },
+  '메가한카리아스': { id: 10058, file: '10058', form: 'garchomp-mega', kind: 'sep' },
+  '메가한카리아스Z': { id: 10309, file: '10309', form: 'garchomp-mega-z', kind: 'sep' },
+  '메가루카리오': { id: 10059, file: '10059', form: 'lucario-mega', kind: 'sep' },
+  '메가루카리오Z': { id: 10310, file: '10310', form: 'lucario-mega-z', kind: 'sep' },
+  '메가눈설왕': { id: 10060, file: '10060', form: 'abomasnow-mega', kind: 'sep' },
+  '메가엘레이드': { id: 10068, file: '10068', form: 'gallade-mega', kind: 'sep' },
+  '메가눈여아': { id: 10285, file: '10285', form: 'froslass-mega', kind: 'sep' },
+  '히트로토무': { id: 10008, file: '10008', form: 'rotom-heat', kind: 'sep' },
+  '워시로토무': { id: 10009, file: '10009', form: 'rotom-wash', kind: 'sep' },
+  '프로스트로토무': { id: 10010, file: '10010', form: 'rotom-frost', kind: 'sep' },
+  '스핀로토무': { id: 10011, file: '10011', form: 'rotom-fan', kind: 'sep' },
+  '커트로토무': { id: 10012, file: '10012', form: 'rotom-mow', kind: 'sep' },
+  '디아루가 〔오리진폼〕': { id: 10245, file: '10245', form: 'dialga-origin', kind: 'sep' },
+  '펄기아 〔오리진폼〕': { id: 10246, file: '10246', form: 'palkia-origin', kind: 'sep' },
+  '메가히드런': { id: 10311, file: '10311', form: 'heatran-mega', kind: 'sep' },
+  '기라티나 〔오리진폼〕': { id: 10007, file: '10007', form: 'giratina-origin', kind: 'sep' },
+  '메가다크라이': { id: 10312, file: '10312', form: 'darkrai-mega', kind: 'sep' },
+  '쉐이미 〔스카이폼〕': { id: 10006, file: '10006', form: 'shaymin-sky', kind: 'sep' },
+  '아르세우스 〔벌레〕': { id: 493, file: '493-bug', form: 'arceus-bug', kind: 'named' },
+  '아르세우스 〔악〕': { id: 493, file: '493-dark', form: 'arceus-dark', kind: 'named' },
+  '아르세우스 〔드래곤〕': { id: 493, file: '493-dragon', form: 'arceus-dragon', kind: 'named' },
+  '아르세우스 〔전기〕': { id: 493, file: '493-electric', form: 'arceus-electric', kind: 'named' },
+  '아르세우스 〔격투〕': { id: 493, file: '493-fighting', form: 'arceus-fighting', kind: 'named' },
+  '아르세우스 〔불꽃〕': { id: 493, file: '493-fire', form: 'arceus-fire', kind: 'named' },
+  '아르세우스 〔비행〕': { id: 493, file: '493-flying', form: 'arceus-flying', kind: 'named' },
+  '아르세우스 〔고스트〕': { id: 493, file: '493-ghost', form: 'arceus-ghost', kind: 'named' },
+  '아르세우스 〔풀〕': { id: 493, file: '493-grass', form: 'arceus-grass', kind: 'named' },
+  '아르세우스 〔땅〕': { id: 493, file: '493-ground', form: 'arceus-ground', kind: 'named' },
+  '아르세우스 〔얼음〕': { id: 493, file: '493-ice', form: 'arceus-ice', kind: 'named' },
+  '아르세우스 〔독〕': { id: 493, file: '493-poison', form: 'arceus-poison', kind: 'named' },
+  '아르세우스 〔에스퍼〕': { id: 493, file: '493-psychic', form: 'arceus-psychic', kind: 'named' },
+  '아르세우스 〔바위〕': { id: 493, file: '493-rock', form: 'arceus-rock', kind: 'named' },
+  '아르세우스 〔강철〕': { id: 493, file: '493-steel', form: 'arceus-steel', kind: 'named' },
+  '아르세우스 〔물〕': { id: 493, file: '493-water', form: 'arceus-water', kind: 'named' },
+  '아르세우스 〔???〕': { id: 493, file: '493-unknown', form: 'arceus-unknown', kind: 'named' },
+  '아르세우스 〔페어리〕': { id: 493, file: '493-fairy', form: 'arceus-fairy', kind: 'named' },
+  '메가염무왕': { id: 10286, file: '10286', form: 'emboar-mega', kind: 'sep' },
+  '메가몰드류': { id: 10287, file: '10287', form: 'excadrill-mega', kind: 'sep' },
+  '메가다부니': { id: 10069, file: '10069', form: 'audino-mega', kind: 'sep' },
+  '메가펜드라': { id: 10288, file: '10288', form: 'scolipede-mega', kind: 'sep' },
+  '배쓰나이 〔청색근의 모습〕': { id: 10016, file: '10016', form: 'basculin-blue-striped', kind: 'sep' },
+  '배쓰나이 〔백색근의 모습〕': { id: 10247, file: '10247', form: 'basculin-white-striped', kind: 'sep' },
+  '불비달마 〔달마모드〕': { id: 10017, file: '10017', form: 'darmanitan-zen', kind: 'sep' },
+  '불비달마 〔가라르·달마모드〕': { id: 10178, file: '10178', form: 'darmanitan-galar-zen', kind: 'sep' },
+  '메가곤율거니': { id: 10289, file: '10289', form: 'scrafty-mega', kind: 'sep' },
+  '더스트나 〔거다이맥스〕': { id: 10207, file: '10207', form: 'garbodor-gmax', kind: 'sep' },
+  '사철록 〔여름의 모습〕': { id: 585, file: '585-summer', form: 'deerling-summer', kind: 'named' },
+  '사철록 〔가을의 모습〕': { id: 585, file: '585-autumn', form: 'deerling-autumn', kind: 'named' },
+  '사철록 〔겨울의 모습〕': { id: 585, file: '585-winter', form: 'deerling-winter', kind: 'named' },
+  '바라철록 〔여름의 모습〕': { id: 586, file: '586-summer', form: 'sawsbuck-summer', kind: 'named' },
+  '바라철록 〔가을의 모습〕': { id: 586, file: '586-autumn', form: 'sawsbuck-autumn', kind: 'named' },
+  '바라철록 〔겨울의 모습〕': { id: 586, file: '586-winter', form: 'sawsbuck-winter', kind: 'named' },
+  '메가저리더프': { id: 10290, file: '10290', form: 'eelektross-mega', kind: 'sep' },
+  '메가샹델라': { id: 10291, file: '10291', form: 'chandelure-mega', kind: 'sep' },
+  '메가골루그': { id: 10313, file: '10313', form: 'golurk-mega', kind: 'sep' },
+  '토네로스 〔영물폼〕': { id: 10019, file: '10019', form: 'tornadus-therian', kind: 'sep' },
+  '볼트로스 〔영물폼〕': { id: 10020, file: '10020', form: 'thundurus-therian', kind: 'sep' },
+  '랜드로스 〔영물폼〕': { id: 10021, file: '10021', form: 'landorus-therian', kind: 'sep' },
+  '블랙큐레무': { id: 10022, file: '10022', form: 'kyurem-black', kind: 'sep' },
+  '화이트큐레무': { id: 10023, file: '10023', form: 'kyurem-white', kind: 'sep' },
+  '케르디오 〔각오의 모습〕': { id: 10024, file: '10024', form: 'keldeo-resolute', kind: 'sep' },
+  '메로엣타 〔스텝폼〕': { id: 10018, file: '10018', form: 'meloetta-pirouette', kind: 'sep' },
+  '게노세크트 〔아쿠아카세트〕': { id: 649, file: '649-douse', form: 'genesect-douse', kind: 'named' },
+  '게노세크트 〔번개카세트〕': { id: 649, file: '649-shock', form: 'genesect-shock', kind: 'named' },
+  '게노세크트 〔블레이즈카세트〕': { id: 649, file: '649-burn', form: 'genesect-burn', kind: 'named' },
+  '게노세크트 〔프리즈카세트〕': { id: 649, file: '649-chill', form: 'genesect-chill', kind: 'named' },
+  '메가브리가론': { id: 10292, file: '10292', form: 'chesnaught-mega', kind: 'sep' },
+  '메가마폭시': { id: 10293, file: '10293', form: 'delphox-mega', kind: 'sep' },
+  '메가개굴닌자': { id: 10294, file: '10294', form: 'greninja-mega', kind: 'sep' },
+  '비비용 〔빙설의 모양〕': { id: 666, file: '666-icy-snow', form: 'vivillon-icy-snow', kind: 'named' },
+  '비비용 〔설국의 모양〕': { id: 666, file: '666-polar', form: 'vivillon-polar', kind: 'named' },
+  '비비용 〔설원의 모양〕': { id: 666, file: '666-tundra', form: 'vivillon-tundra', kind: 'named' },
+  '비비용 〔대륙의 모양〕': { id: 666, file: '666-continental', form: 'vivillon-continental', kind: 'named' },
+  '비비용 〔정원의 모양〕': { id: 666, file: '666-garden', form: 'vivillon-garden', kind: 'named' },
+  '비비용 〔우아한 모양〕': { id: 666, file: '666-elegant', form: 'vivillon-elegant', kind: 'named' },
+  '비비용 〔모던한 모양〕': { id: 666, file: '666-modern', form: 'vivillon-modern', kind: 'named' },
+  '비비용 〔마린의 모양〕': { id: 666, file: '666-marine', form: 'vivillon-marine', kind: 'named' },
+  '비비용 〔군도의 모양〕': { id: 666, file: '666-archipelago', form: 'vivillon-archipelago', kind: 'named' },
+  '비비용 〔황야의 모양〕': { id: 666, file: '666-high-plains', form: 'vivillon-high-plains', kind: 'named' },
+  '비비용 〔사진의 모양〕': { id: 666, file: '666-sandstorm', form: 'vivillon-sandstorm', kind: 'named' },
+  '비비용 〔대하의 모양〕': { id: 666, file: '666-river', form: 'vivillon-river', kind: 'named' },
+  '비비용 〔스콜의 모양〕': { id: 666, file: '666-monsoon', form: 'vivillon-monsoon', kind: 'named' },
+  '비비용 〔사바나의 모양〕': { id: 666, file: '666-savanna', form: 'vivillon-savanna', kind: 'named' },
+  '비비용 〔태양의 모양〕': { id: 666, file: '666-sun', form: 'vivillon-sun', kind: 'named' },
+  '비비용 〔오션의 모양〕': { id: 666, file: '666-ocean', form: 'vivillon-ocean', kind: 'named' },
+  '비비용 〔정글의 모양〕': { id: 666, file: '666-jungle', form: 'vivillon-jungle', kind: 'named' },
+  '비비용 〔팬시한 모양〕': { id: 666, file: '666-fancy', form: 'vivillon-fancy', kind: 'named' },
+  '비비용 〔볼의 모양〕': { id: 666, file: '666-poke-ball', form: 'vivillon-poke-ball', kind: 'named' },
+  '메가화염레오': { id: 10295, file: '10295', form: 'pyroar-mega', kind: 'sep' },
+  '플라베베 〔노란 꽃〕': { id: 669, file: '669-yellow', form: 'flabebe-yellow', kind: 'named' },
+  '플라베베 〔오렌지색 꽃〕': { id: 669, file: '669-orange', form: 'flabebe-orange', kind: 'named' },
+  '플라베베 〔파란 꽃〕': { id: 669, file: '669-blue', form: 'flabebe-blue', kind: 'named' },
+  '플라베베 〔하얀 꽃〕': { id: 669, file: '669-white', form: 'flabebe-white', kind: 'named' },
+  '플라엣테 〔노란 꽃〕': { id: 670, file: '670-yellow', form: 'floette-yellow', kind: 'named' },
+  '플라엣테 〔오렌지색 꽃〕': { id: 670, file: '670-orange', form: 'floette-orange', kind: 'named' },
+  '플라엣테 〔파란 꽃〕': { id: 670, file: '670-blue', form: 'floette-blue', kind: 'named' },
+  '플라엣테 〔하얀 꽃〕': { id: 670, file: '670-white', form: 'floette-white', kind: 'named' },
+  '플라엣테 〔영원의 꽃〕': { id: 10061, file: '10061', form: 'floette-eternal', kind: 'sep' },
+  '메가플라엣테': { id: 10296, file: '10296', form: 'floette-mega', kind: 'sep' },
+  '플라제스 〔노란 꽃〕': { id: 671, file: '671-yellow', form: 'florges-yellow', kind: 'named' },
+  '플라제스 〔오렌지색 꽃〕': { id: 671, file: '671-orange', form: 'florges-orange', kind: 'named' },
+  '플라제스 〔파란 꽃〕': { id: 671, file: '671-blue', form: 'florges-blue', kind: 'named' },
+  '플라제스 〔하얀 꽃〕': { id: 671, file: '671-white', form: 'florges-white', kind: 'named' },
+  '트리미앙 〔하트컷〕': { id: 676, file: '676-heart', form: 'furfrou-heart', kind: 'named' },
+  '트리미앙 〔스타컷〕': { id: 676, file: '676-star', form: 'furfrou-star', kind: 'named' },
+  '트리미앙 〔다이아컷〕': { id: 676, file: '676-diamond', form: 'furfrou-diamond', kind: 'named' },
+  '트리미앙 〔레이디컷〕': { id: 676, file: '676-debutante', form: 'furfrou-debutante', kind: 'named' },
+  '트리미앙 〔마담컷〕': { id: 676, file: '676-matron', form: 'furfrou-matron', kind: 'named' },
+  '트리미앙 〔젠틀컷〕': { id: 676, file: '676-dandy', form: 'furfrou-dandy', kind: 'named' },
+  '트리미앙 〔퀸컷〕': { id: 676, file: '676-la-reine', form: 'furfrou-la-reine', kind: 'named' },
+  '트리미앙 〔가부키컷〕': { id: 676, file: '676-kabuki', form: 'furfrou-kabuki', kind: 'named' },
+  '트리미앙 〔킹덤컷〕': { id: 676, file: '676-pharaoh', form: 'furfrou-pharaoh', kind: 'named' },
+  '메가냐오닉스 〔수컷〕': { id: 10314, file: '10314', form: 'meowstic-male-mega', kind: 'sep' },
+  '메가냐오닉스 〔암컷〕': { id: 10326, file: '10326', form: 'meowstic-female-mega', kind: 'sep' },
+  '킬가르도 〔블레이드폼〕': { id: 10026, file: '10026', form: 'aegislash-blade', kind: 'sep' },
+  '메가칼라마네로': { id: 10297, file: '10297', form: 'malamar-mega', kind: 'sep' },
+  '메가거북손데스': { id: 10298, file: '10298', form: 'barbaracle-mega', kind: 'sep' },
+  '메가드래캄': { id: 10299, file: '10299', form: 'dragalge-mega', kind: 'sep' },
+  '메가루차불': { id: 10300, file: '10300', form: 'hawlucha-mega', kind: 'sep' },
+  '호바귀 〔작은 사이즈〕': { id: 10027, file: '10027', form: 'pumpkaboo-small', kind: 'sep' },
+  '호바귀 〔큰 사이즈〕': { id: 10028, file: '10028', form: 'pumpkaboo-large', kind: 'sep' },
+  '호바귀 〔특대 사이즈〕': { id: 10029, file: '10029', form: 'pumpkaboo-super', kind: 'sep' },
+  '펌킨인 〔작은 사이즈〕': { id: 10030, file: '10030', form: 'gourgeist-small', kind: 'sep' },
+  '펌킨인 〔큰 사이즈〕': { id: 10031, file: '10031', form: 'gourgeist-large', kind: 'sep' },
+  '펌킨인 〔특대 사이즈〕': { id: 10032, file: '10032', form: 'gourgeist-super', kind: 'sep' },
+  '제르네아스 〔액티브모드〕': { id: 716, file: '716-active', form: 'xerneas-active', kind: 'named' },
+  '지가르데 〔퍼펙트폼〕': { id: 10120, file: '10120', form: 'zygarde-complete', kind: 'sep' },
+  '지가르데 〔10%폼〕': { id: 10181, file: '10181', form: 'zygarde-10', kind: 'sep' },
+  '메가지가르데': { id: 10301, file: '10301', form: 'zygarde-mega', kind: 'sep' },
+  '메가디안시': { id: 10075, file: '10075', form: 'diancie-mega', kind: 'sep' },
+  '굴레를 벗어난 후파': { id: 10086, file: '10086', form: 'hoopa-unbound', kind: 'sep' },
+  '메가모단단게': { id: 10315, file: '10315', form: 'crabominable-mega', kind: 'sep' },
+  '춤추새 〔파칙파칙스타일〕': { id: 10123, file: '10123', form: 'oricorio-pom-pom', kind: 'sep' },
+  '춤추새 〔훌라훌라스타일〕': { id: 10124, file: '10124', form: 'oricorio-pau', kind: 'sep' },
+  '춤추새 〔하늘하늘스타일〕': { id: 10125, file: '10125', form: 'oricorio-sensu', kind: 'sep' },
+  '루가루암 〔한밤중의 모습〕': { id: 10126, file: '10126', form: 'lycanroc-midnight', kind: 'sep' },
+  '루가루암 〔황혼의 모습〕': { id: 10152, file: '10152', form: 'lycanroc-dusk', kind: 'sep' },
+  '약어리 〔군집의 모습〕': { id: 10127, file: '10127', form: 'wishiwashi-school', kind: 'sep' },
+  '메가갑주무사': { id: 10316, file: '10316', form: 'golisopod-mega', kind: 'sep' },
+  '실버디 〔타입:파이팅〕': { id: 773, file: '773-fighting', form: 'silvally-fighting', kind: 'named' },
+  '실버디 〔타입:플라잉〕': { id: 773, file: '773-flying', form: 'silvally-flying', kind: 'named' },
+  '실버디 〔타입:포이즌〕': { id: 773, file: '773-poison', form: 'silvally-poison', kind: 'named' },
+  '실버디 〔타입:그라운드〕': { id: 773, file: '773-ground', form: 'silvally-ground', kind: 'named' },
+  '실버디 〔타입:락〕': { id: 773, file: '773-rock', form: 'silvally-rock', kind: 'named' },
+  '실버디 〔타입:버그〕': { id: 773, file: '773-bug', form: 'silvally-bug', kind: 'named' },
+  '실버디 〔타입:고스트〕': { id: 773, file: '773-ghost', form: 'silvally-ghost', kind: 'named' },
+  '실버디 〔타입:스틸〕': { id: 773, file: '773-steel', form: 'silvally-steel', kind: 'named' },
+  '실버디 〔타입:파이어〕': { id: 773, file: '773-fire', form: 'silvally-fire', kind: 'named' },
+  '실버디 〔타입:워터〕': { id: 773, file: '773-water', form: 'silvally-water', kind: 'named' },
+  '실버디 〔타입:그래스〕': { id: 773, file: '773-grass', form: 'silvally-grass', kind: 'named' },
+  '실버디 〔타입:일렉트릭〕': { id: 773, file: '773-electric', form: 'silvally-electric', kind: 'named' },
+  '실버디 〔타입:사이킥〕': { id: 773, file: '773-psychic', form: 'silvally-psychic', kind: 'named' },
+  '실버디 〔타입:아이스〕': { id: 773, file: '773-ice', form: 'silvally-ice', kind: 'named' },
+  '실버디 〔타입:드래곤〕': { id: 773, file: '773-dragon', form: 'silvally-dragon', kind: 'named' },
+  '실버디 〔타입:다크〕': { id: 773, file: '773-dark', form: 'silvally-dark', kind: 'named' },
+  '실버디 〔타입:페어리〕': { id: 773, file: '773-fairy', form: 'silvally-fairy', kind: 'named' },
+  '메테노 〔빨간색 코어〕': { id: 10136, file: '10136', form: 'minior-red', kind: 'sep' },
+  '메테노 〔주황색 코어〕': { id: 10137, file: '10137', form: 'minior-orange', kind: 'sep' },
+  '메테노 〔노란색 코어〕': { id: 10138, file: '10138', form: 'minior-yellow', kind: 'sep' },
+  '메테노 〔초록색 코어〕': { id: 10139, file: '10139', form: 'minior-green', kind: 'sep' },
+  '메테노 〔옥색 코어〕': { id: 10140, file: '10140', form: 'minior-blue', kind: 'sep' },
+  '메테노 〔파란색 코어〕': { id: 10141, file: '10141', form: 'minior-indigo', kind: 'sep' },
+  '메테노 〔보라색 코어〕': { id: 10142, file: '10142', form: 'minior-violet', kind: 'sep' },
+  '따라큐 〔들킨 모습〕': { id: 10143, file: '10143', form: 'mimikyu-busted', kind: 'sep' },
+  '메가할비롱': { id: 10302, file: '10302', form: 'drampa-mega', kind: 'sep' },
+  '네크로즈마 〔황혼의 갈기〕': { id: 10155, file: '10155', form: 'necrozma-dusk', kind: 'sep' },
+  '네크로즈마 〔새벽의 날개〕': { id: 10156, file: '10156', form: 'necrozma-dawn', kind: 'sep' },
+  '울트라네크로즈마': { id: 10157, file: '10157', form: 'necrozma-ultra', kind: 'sep' },
+  '마기아나 〔500년 전의 색〕': { id: 10147, file: '10147', form: 'magearna-original', kind: 'sep' },
+  '메가마기아나': { id: 10317, file: '10317', form: 'magearna-mega', kind: 'sep' },
+  '메가마기아나 〔500년 전의 색〕': { id: 10318, file: '10318', form: 'magearna-original-mega', kind: 'sep' },
+  '메가제라오라': { id: 10319, file: '10319', form: 'zeraora-mega', kind: 'sep' },
+  '멜메탈 〔거다이맥스〕': { id: 10208, file: '10208', form: 'melmetal-gmax', kind: 'sep' },
+  '고릴타 〔거다이맥스〕': { id: 10209, file: '10209', form: 'rillaboom-gmax', kind: 'sep' },
+  '에이스번 〔거다이맥스〕': { id: 10210, file: '10210', form: 'cinderace-gmax', kind: 'sep' },
+  '인텔리레온 〔거다이맥스〕': { id: 10211, file: '10211', form: 'inteleon-gmax', kind: 'sep' },
+  '아머까오 〔거다이맥스〕': { id: 10212, file: '10212', form: 'corviknight-gmax', kind: 'sep' },
+  '이올브 〔거다이맥스〕': { id: 10213, file: '10213', form: 'orbeetle-gmax', kind: 'sep' },
+  '갈가부기 〔거다이맥스〕': { id: 10214, file: '10214', form: 'drednaw-gmax', kind: 'sep' },
+  '석탄산 〔거다이맥스〕': { id: 10215, file: '10215', form: 'coalossal-gmax', kind: 'sep' },
+  '애프룡 〔거다이맥스〕': { id: 10216, file: '10216', form: 'flapple-gmax', kind: 'sep' },
+  '단지래플 〔거다이맥스〕': { id: 10217, file: '10217', form: 'appletun-gmax', kind: 'sep' },
+  '사다이사 〔거다이맥스〕': { id: 10218, file: '10218', form: 'sandaconda-gmax', kind: 'sep' },
+  '윽우지 〔그대로 삼킨 모습〕': { id: 10182, file: '10182', form: 'cramorant-gulping', kind: 'sep' },
+  '윽우지 〔통째로 삼킨 모습〕': { id: 10183, file: '10183', form: 'cramorant-gorging', kind: 'sep' },
+  '스트린더 〔로우한 모습〕': { id: 10184, file: '10184', form: 'toxtricity-low-key', kind: 'sep' },
+  '스트린더 〔하이한 모습·거다이맥스〕': { id: 10219, file: '10219', form: 'toxtricity-amped-gmax', kind: 'sep' },
+  '스트린더 〔로우한 모습·거다이맥스〕': { id: 10228, file: '10228', form: 'toxtricity-low-key-gmax', kind: 'sep' },
+  '다태우지네 〔거다이맥스〕': { id: 10220, file: '10220', form: 'centiskorch-gmax', kind: 'sep' },
+  '데인차 〔진품〕': { id: 854, file: '854-antique', form: 'sinistea-antique', kind: 'named' },
+  '포트데스 〔진품〕': { id: 855, file: '855-antique', form: 'polteageist-antique', kind: 'named' },
+  '브리무음 〔거다이맥스〕': { id: 10221, file: '10221', form: 'hatterene-gmax', kind: 'sep' },
+  '오롱털 〔거다이맥스〕': { id: 10222, file: '10222', form: 'grimmsnarl-gmax', kind: 'sep' },
+  '마휘핑 〔밀키루비·딸기사탕공예〕': { id: 869, file: '869-ruby-cream-strawberry-sweet', form: 'alcremie-ruby-cream-strawberry-sweet', kind: 'named' },
+  '마휘핑 〔밀키말차·딸기사탕공예〕': { id: 869, file: '869-matcha-cream-strawberry-sweet', form: 'alcremie-matcha-cream-strawberry-sweet', kind: 'named' },
+  '마휘핑 〔밀키민트·딸기사탕공예〕': { id: 869, file: '869-mint-cream-strawberry-sweet', form: 'alcremie-mint-cream-strawberry-sweet', kind: 'named' },
+  '마휘핑 〔밀키레몬·딸기사탕공예〕': { id: 869, file: '869-lemon-cream-strawberry-sweet', form: 'alcremie-lemon-cream-strawberry-sweet', kind: 'named' },
+  '마휘핑 〔밀키솔트·딸기사탕공예〕': { id: 869, file: '869-salted-cream-strawberry-sweet', form: 'alcremie-salted-cream-strawberry-sweet', kind: 'named' },
+  '마휘핑 〔루비믹스·딸기사탕공예〕': { id: 869, file: '869-ruby-swirl-strawberry-sweet', form: 'alcremie-ruby-swirl-strawberry-sweet', kind: 'named' },
+  '마휘핑 〔캐러멜믹스·딸기사탕공예〕': { id: 869, file: '869-caramel-swirl-strawberry-sweet', form: 'alcremie-caramel-swirl-strawberry-sweet', kind: 'named' },
+  '마휘핑 〔트리플믹스·딸기사탕공예〕': { id: 869, file: '869-rainbow-swirl-strawberry-sweet', form: 'alcremie-rainbow-swirl-strawberry-sweet', kind: 'named' },
+  '마휘핑 〔밀키바닐라·베리사탕공예〕': { id: 869, file: '869-vanilla-cream-berry-sweet', form: 'alcremie-vanilla-cream-berry-sweet', kind: 'named' },
+  '마휘핑 〔밀키루비·베리사탕공예〕': { id: 869, file: '869-ruby-cream-berry-sweet', form: 'alcremie-ruby-cream-berry-sweet', kind: 'named' },
+  '마휘핑 〔밀키말차·베리사탕공예〕': { id: 869, file: '869-matcha-cream-berry-sweet', form: 'alcremie-matcha-cream-berry-sweet', kind: 'named' },
+  '마휘핑 〔밀키민트·베리사탕공예〕': { id: 869, file: '869-mint-cream-berry-sweet', form: 'alcremie-mint-cream-berry-sweet', kind: 'named' },
+  '마휘핑 〔밀키레몬·베리사탕공예〕': { id: 869, file: '869-lemon-cream-berry-sweet', form: 'alcremie-lemon-cream-berry-sweet', kind: 'named' },
+  '마휘핑 〔밀키솔트·베리사탕공예〕': { id: 869, file: '869-salted-cream-berry-sweet', form: 'alcremie-salted-cream-berry-sweet', kind: 'named' },
+  '마휘핑 〔루비믹스·베리사탕공예〕': { id: 869, file: '869-ruby-swirl-berry-sweet', form: 'alcremie-ruby-swirl-berry-sweet', kind: 'named' },
+  '마휘핑 〔캐러멜믹스·베리사탕공예〕': { id: 869, file: '869-caramel-swirl-berry-sweet', form: 'alcremie-caramel-swirl-berry-sweet', kind: 'named' },
+  '마휘핑 〔트리플믹스·베리사탕공예〕': { id: 869, file: '869-rainbow-swirl-berry-sweet', form: 'alcremie-rainbow-swirl-berry-sweet', kind: 'named' },
+  '마휘핑 〔밀키바닐라·하트사탕공예〕': { id: 869, file: '869-vanilla-cream-love-sweet', form: 'alcremie-vanilla-cream-love-sweet', kind: 'named' },
+  '마휘핑 〔밀키루비·하트사탕공예〕': { id: 869, file: '869-ruby-cream-love-sweet', form: 'alcremie-ruby-cream-love-sweet', kind: 'named' },
+  '마휘핑 〔밀키말차·하트사탕공예〕': { id: 869, file: '869-matcha-cream-love-sweet', form: 'alcremie-matcha-cream-love-sweet', kind: 'named' },
+  '마휘핑 〔밀키민트·하트사탕공예〕': { id: 869, file: '869-mint-cream-love-sweet', form: 'alcremie-mint-cream-love-sweet', kind: 'named' },
+  '마휘핑 〔밀키레몬·하트사탕공예〕': { id: 869, file: '869-lemon-cream-love-sweet', form: 'alcremie-lemon-cream-love-sweet', kind: 'named' },
+  '마휘핑 〔밀키솔트·하트사탕공예〕': { id: 869, file: '869-salted-cream-love-sweet', form: 'alcremie-salted-cream-love-sweet', kind: 'named' },
+  '마휘핑 〔루비믹스·하트사탕공예〕': { id: 869, file: '869-ruby-swirl-love-sweet', form: 'alcremie-ruby-swirl-love-sweet', kind: 'named' },
+  '마휘핑 〔캐러멜믹스·하트사탕공예〕': { id: 869, file: '869-caramel-swirl-love-sweet', form: 'alcremie-caramel-swirl-love-sweet', kind: 'named' },
+  '마휘핑 〔트리플믹스·하트사탕공예〕': { id: 869, file: '869-rainbow-swirl-love-sweet', form: 'alcremie-rainbow-swirl-love-sweet', kind: 'named' },
+  '마휘핑 〔밀키바닐라·스타사탕공예〕': { id: 869, file: '869-vanilla-cream-star-sweet', form: 'alcremie-vanilla-cream-star-sweet', kind: 'named' },
+  '마휘핑 〔밀키루비·스타사탕공예〕': { id: 869, file: '869-ruby-cream-star-sweet', form: 'alcremie-ruby-cream-star-sweet', kind: 'named' },
+  '마휘핑 〔밀키말차·스타사탕공예〕': { id: 869, file: '869-matcha-cream-star-sweet', form: 'alcremie-matcha-cream-star-sweet', kind: 'named' },
+  '마휘핑 〔밀키민트·스타사탕공예〕': { id: 869, file: '869-mint-cream-star-sweet', form: 'alcremie-mint-cream-star-sweet', kind: 'named' },
+  '마휘핑 〔밀키레몬·스타사탕공예〕': { id: 869, file: '869-lemon-cream-star-sweet', form: 'alcremie-lemon-cream-star-sweet', kind: 'named' },
+  '마휘핑 〔밀키솔트·스타사탕공예〕': { id: 869, file: '869-salted-cream-star-sweet', form: 'alcremie-salted-cream-star-sweet', kind: 'named' },
+  '마휘핑 〔루비믹스·스타사탕공예〕': { id: 869, file: '869-ruby-swirl-star-sweet', form: 'alcremie-ruby-swirl-star-sweet', kind: 'named' },
+  '마휘핑 〔캐러멜믹스·스타사탕공예〕': { id: 869, file: '869-caramel-swirl-star-sweet', form: 'alcremie-caramel-swirl-star-sweet', kind: 'named' },
+  '마휘핑 〔트리플믹스·스타사탕공예〕': { id: 869, file: '869-rainbow-swirl-star-sweet', form: 'alcremie-rainbow-swirl-star-sweet', kind: 'named' },
+  '마휘핑 〔밀키바닐라·클로버사탕공예〕': { id: 869, file: '869-vanilla-cream-clover-sweet', form: 'alcremie-vanilla-cream-clover-sweet', kind: 'named' },
+  '마휘핑 〔밀키루비·클로버사탕공예〕': { id: 869, file: '869-ruby-cream-clover-sweet', form: 'alcremie-ruby-cream-clover-sweet', kind: 'named' },
+  '마휘핑 〔밀키말차·클로버사탕공예〕': { id: 869, file: '869-matcha-cream-clover-sweet', form: 'alcremie-matcha-cream-clover-sweet', kind: 'named' },
+  '마휘핑 〔밀키민트·클로버사탕공예〕': { id: 869, file: '869-mint-cream-clover-sweet', form: 'alcremie-mint-cream-clover-sweet', kind: 'named' },
+  '마휘핑 〔밀키레몬·클로버사탕공예〕': { id: 869, file: '869-lemon-cream-clover-sweet', form: 'alcremie-lemon-cream-clover-sweet', kind: 'named' },
+  '마휘핑 〔밀키솔트·클로버사탕공예〕': { id: 869, file: '869-salted-cream-clover-sweet', form: 'alcremie-salted-cream-clover-sweet', kind: 'named' },
+  '마휘핑 〔루비믹스·클로버사탕공예〕': { id: 869, file: '869-ruby-swirl-clover-sweet', form: 'alcremie-ruby-swirl-clover-sweet', kind: 'named' },
+  '마휘핑 〔캐러멜믹스·클로버사탕공예〕': { id: 869, file: '869-caramel-swirl-clover-sweet', form: 'alcremie-caramel-swirl-clover-sweet', kind: 'named' },
+  '마휘핑 〔트리플믹스·클로버사탕공예〕': { id: 869, file: '869-rainbow-swirl-clover-sweet', form: 'alcremie-rainbow-swirl-clover-sweet', kind: 'named' },
+  '마휘핑 〔밀키바닐라·꽃사탕공예〕': { id: 869, file: '869-vanilla-cream-flower-sweet', form: 'alcremie-vanilla-cream-flower-sweet', kind: 'named' },
+  '마휘핑 〔밀키루비·꽃사탕공예〕': { id: 869, file: '869-ruby-cream-flower-sweet', form: 'alcremie-ruby-cream-flower-sweet', kind: 'named' },
+  '마휘핑 〔밀키말차·꽃사탕공예〕': { id: 869, file: '869-matcha-cream-flower-sweet', form: 'alcremie-matcha-cream-flower-sweet', kind: 'named' },
+  '마휘핑 〔밀키민트·꽃사탕공예〕': { id: 869, file: '869-mint-cream-flower-sweet', form: 'alcremie-mint-cream-flower-sweet', kind: 'named' },
+  '마휘핑 〔밀키레몬·꽃사탕공예〕': { id: 869, file: '869-lemon-cream-flower-sweet', form: 'alcremie-lemon-cream-flower-sweet', kind: 'named' },
+  '마휘핑 〔밀키솔트·꽃사탕공예〕': { id: 869, file: '869-salted-cream-flower-sweet', form: 'alcremie-salted-cream-flower-sweet', kind: 'named' },
+  '마휘핑 〔루비믹스·꽃사탕공예〕': { id: 869, file: '869-ruby-swirl-flower-sweet', form: 'alcremie-ruby-swirl-flower-sweet', kind: 'named' },
+  '마휘핑 〔캐러멜믹스·꽃사탕공예〕': { id: 869, file: '869-caramel-swirl-flower-sweet', form: 'alcremie-caramel-swirl-flower-sweet', kind: 'named' },
+  '마휘핑 〔트리플믹스·꽃사탕공예〕': { id: 869, file: '869-rainbow-swirl-flower-sweet', form: 'alcremie-rainbow-swirl-flower-sweet', kind: 'named' },
+  '마휘핑 〔밀키바닐라·리본사탕공예〕': { id: 869, file: '869-vanilla-cream-ribbon-sweet', form: 'alcremie-vanilla-cream-ribbon-sweet', kind: 'named' },
+  '마휘핑 〔밀키루비·리본사탕공예〕': { id: 869, file: '869-ruby-cream-ribbon-sweet', form: 'alcremie-ruby-cream-ribbon-sweet', kind: 'named' },
+  '마휘핑 〔밀키말차·리본사탕공예〕': { id: 869, file: '869-matcha-cream-ribbon-sweet', form: 'alcremie-matcha-cream-ribbon-sweet', kind: 'named' },
+  '마휘핑 〔밀키민트·리본사탕공예〕': { id: 869, file: '869-mint-cream-ribbon-sweet', form: 'alcremie-mint-cream-ribbon-sweet', kind: 'named' },
+  '마휘핑 〔밀키레몬·리본사탕공예〕': { id: 869, file: '869-lemon-cream-ribbon-sweet', form: 'alcremie-lemon-cream-ribbon-sweet', kind: 'named' },
+  '마휘핑 〔밀키솔트·리본사탕공예〕': { id: 869, file: '869-salted-cream-ribbon-sweet', form: 'alcremie-salted-cream-ribbon-sweet', kind: 'named' },
+  '마휘핑 〔루비믹스·리본사탕공예〕': { id: 869, file: '869-ruby-swirl-ribbon-sweet', form: 'alcremie-ruby-swirl-ribbon-sweet', kind: 'named' },
+  '마휘핑 〔캐러멜믹스·리본사탕공예〕': { id: 869, file: '869-caramel-swirl-ribbon-sweet', form: 'alcremie-caramel-swirl-ribbon-sweet', kind: 'named' },
+  '마휘핑 〔트리플믹스·리본사탕공예〕': { id: 869, file: '869-rainbow-swirl-ribbon-sweet', form: 'alcremie-rainbow-swirl-ribbon-sweet', kind: 'named' },
+  '마휘핑 〔거다이맥스〕': { id: 10223, file: '10223', form: 'alcremie-gmax', kind: 'sep' },
+  '메가대여르': { id: 10303, file: '10303', form: 'falinks-mega', kind: 'sep' },
+  '빙큐보 〔나이스페이스〕': { id: 10185, file: '10185', form: 'eiscue-noice', kind: 'sep' },
+  '모르페코 〔배고픈 모양〕': { id: 10187, file: '10187', form: 'morpeko-hangry', kind: 'sep' },
+  '대왕끼리동 〔거다이맥스〕': { id: 10224, file: '10224', form: 'copperajah-gmax', kind: 'sep' },
+  '두랄루돈 〔거다이맥스〕': { id: 10225, file: '10225', form: 'duraludon-gmax', kind: 'sep' },
+  '자시안 〔검왕〕': { id: 10188, file: '10188', form: 'zacian-crowned', kind: 'sep' },
+  '자마젠타 〔방패왕〕': { id: 10189, file: '10189', form: 'zamazenta-crowned', kind: 'sep' },
+  '무한다이노 〔무한다이맥스〕': { id: 10190, file: '10190', form: 'eternatus-eternamax', kind: 'sep' },
+  '우라오스 〔연격의 태세〕': { id: 10191, file: '10191', form: 'urshifu-rapid-strike', kind: 'sep' },
+  '우라오스 〔일격의 태세·거다이맥스〕': { id: 10226, file: '10226', form: 'urshifu-single-strike-gmax', kind: 'sep' },
+  '우라오스 〔연격의 태세·거다이맥스〕': { id: 10227, file: '10227', form: 'urshifu-rapid-strike-gmax', kind: 'sep' },
+  '자루도 〔아빠〕': { id: 10192, file: '10192', form: 'zarude-dada', kind: 'sep' },
+  '버드렉스 〔백마 탄 모습〕': { id: 10193, file: '10193', form: 'calyrex-ice', kind: 'sep' },
+  '버드렉스 〔흑마 탄 모습〕': { id: 10194, file: '10194', form: 'calyrex-shadow', kind: 'sep' },
+  '다투곰 〔붉은 달〕': { id: 10272, file: '10272', form: 'ursaluna-bloodmoon', kind: 'sep' },
+  '러브로스 〔영물폼〕': { id: 10249, file: '10249', form: 'enamorus-therian', kind: 'sep' },
+  '파밀리쥐 〔세 식구〕': { id: 10257, file: '10257', form: 'maushold-family-of-three', kind: 'sep' },
+  '시비꼬 〔블루 페더〕': { id: 10260, file: '10260', form: 'squawkabilly-blue-plumage', kind: 'sep' },
+  '시비꼬 〔옐로 페더〕': { id: 10261, file: '10261', form: 'squawkabilly-yellow-plumage', kind: 'sep' },
+  '시비꼬 〔화이트 페더〕': { id: 10262, file: '10262', form: 'squawkabilly-white-plumage', kind: 'sep' },
+  '메가스코빌런': { id: 10320, file: '10320', form: 'scovillain-mega', kind: 'sep' },
+  '돌핀맨 〔마이티폼〕': { id: 10256, file: '10256', form: 'palafin-hero', kind: 'sep' },
+  '메가킬라플로르': { id: 10321, file: '10321', form: 'glimmora-mega', kind: 'sep' },
+  '싸리용 〔늘어진 모습〕': { id: 10258, file: '10258', form: 'tatsugiri-droopy', kind: 'sep' },
+  '싸리용 〔뻗은 모습〕': { id: 10259, file: '10259', form: 'tatsugiri-stretchy', kind: 'sep' },
+  '메가싸리용': { id: 10324, file: '10324', form: 'tatsugiri-stretchy-mega', kind: 'sep' },
+  '노고고치 〔세마디폼〕': { id: 10255, file: '10255', form: 'dudunsparce-three-segment', kind: 'sep' },
+  '메가드닐레이브': { id: 10325, file: '10325', form: 'baxcalibur-mega', kind: 'sep' },
+  '모으령 〔도보폼〕': { id: 10263, file: '10263', form: 'gimmighoul-roaming', kind: 'sep' },
+  '차데스 〔알짜배기의 모습〕': { id: 1012, file: '1012-artisan', form: 'poltchageist-artisan', kind: 'named' },
+  '그우린차 〔걸작의 모습〕': { id: 1013, file: '1013-masterpiece', form: 'sinistcha-masterpiece', kind: 'named' },
+  '오거폰 〔우물의가면〕': { id: 10273, file: '10273', form: 'ogerpon-wellspring-mask', kind: 'sep' },
+  '오거폰 〔화덕의가면〕': { id: 10274, file: '10274', form: 'ogerpon-hearthflame-mask', kind: 'sep' },
+  '오거폰 〔주춧돌의가면〕': { id: 10275, file: '10275', form: 'ogerpon-cornerstone-mask', kind: 'sep' },
+  '테라파고스 〔테라스탈폼〕': { id: 10276, file: '10276', form: 'terapagos-terastal', kind: 'sep' },
+  '테라파고스 〔스텔라폼〕': { id: 10277, file: '10277', form: 'terapagos-stellar', kind: 'sep' },
+};
+
+// ── 기본폼 표기 (종 검색 결과·슬롯 이름에 〔 〕로 붙임) ──
+const POKE_DEFAULT_FORM_LABEL = {
+  422: '서쪽바다', 423: '서쪽바다', 745: '한낮의 모습', 869: '밀키바닐라·딸기사탕공예',
+  931: '그린 페더', 978: '젖힌 모습', 1024: '노말폼',
+};
+
 // ── CSV 파싱: local_language_id=3(한국어) 행만 추출 ──
 function parsePokeKoCSV(csvText) {
   const map = {};
@@ -4756,6 +5232,7 @@ function parsePokeKoCSV(csvText) {
 
 // ── 초기화: 캐시 확인 → 없으면 fetch ──
 async function initPokeMap() {
+  if (!POKE_ID_TO_TYPES) initPokeTypes(); // 타입 표는 이름 표와 따로 받는다 (실패해도 검색은 된다)
   // 1. localStorage 캐시 확인
   try {
     const cached = localStorage.getItem(POKE_KO_CACHE_KEY);
@@ -4810,18 +5287,88 @@ function updatePokeLoadingUI(state) {
 
 
 // ── 포켓몬 슬롯 상태 (6개) ──
-let pokemonSlots = Array.from({length: 6}, () => ({
-  id: null, name: '', types: [], sprite: '', ace: false,
-}));
+// file·form·kind = 추가 폼 표 값 / shiny·female = 패널 토글 / hasFemale = 암컷 이미지 존재 여부(API 응답)
+function emptySlot() {
+  return { id: null, name: '', types: [], sprite: '', ace: false,
+           file: '', form: '', kind: '', shiny: false, female: false, hasFemale: false };
+}
+let pokemonSlots = Array.from({length: 6}, emptySlot);
 
 // ── 스프라이트 모드 ('illust' | 'dot') ──
 let spriteMode = 'illust';
 
-function getSpriteUrl(id) {
-  if (spriteMode === 'dot') {
-    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+const SPRITE_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
+
+// 암컷이 별도 폼 번호로 있는 종 — ♀ 토글이 켜지면 그 폼 파일을 쓴다 (일러스트 원본 있음)
+// 냐오닉스 · 에써르 · 대쓰여너 · 퍼퓨돈
+const FEMALE_FORM_FILE = { 678: '10025', 876: '10186', 902: '10248', 916: '10254' };
+
+// 모드·이로치·암컷별 후보 경로 — 앞에서부터 시도하고 없는 파일(404)이면 다음 후보
+// 일러스트 암컷은 592·593·668만 원본이 있어 나머지는 HOME 이미지로 대체된다
+function getSpriteCandidates(slot) {
+  const femaleForm = slot.female && !slot.file && FEMALE_FORM_FILE[slot.id];
+  const k = femaleForm || slot.file || slot.id;
+  const s = slot.shiny ? 'shiny/' : '';
+  const art  = `other/official-artwork/${s}${k}.png`;
+  const home = `other/home/${s}${k}.png`;
+  const dot  = `${s}${k}.png`;
+  let list;
+  if (slot.female && !femaleForm) {
+    const artF  = `other/official-artwork/${s}${k}-female.png`;
+    const homeF = `other/home/${s}female/${k}.png`;
+    const dotF  = `${s}female/${k}.png`;
+    list = spriteMode === 'dot' ? [dotF, homeF, artF, dot] : [artF, homeF, dotF, art];
+  } else {
+    list = spriteMode === 'dot' ? [dot, home, art] : [art, home, dot];
   }
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+  return list.map(p => SPRITE_BASE + p);
+}
+
+function loadImage(url) {
+  return new Promise(resolve => {
+    const im = new Image();
+    im.onload  = () => resolve(true);
+    im.onerror = () => resolve(false);
+    im.src = url;
+  });
+}
+
+// 후보를 차례로 로드해 처음 열리는 주소를 돌려준다 (로드된 이미지는 캐시에 남아 바로 그려진다)
+async function findSprite(slot) {
+  for (const url of getSpriteCandidates(slot)) {
+    if (await loadImage(url)) return url;
+  }
+  return '';
+}
+
+// 찾은 주소를 slot.sprite에 기록한다 — 찾는 동안은 기존 이미지를 유지해 엑박이 뜨지 않는다
+// PNG 저장이 slot.sprite를 fetch하므로 화면에서만 대체하면 저장본에서 빠진다
+const spriteResolveSeq = [0, 0, 0, 0, 0, 0];
+async function resolveSprite(idx) {
+  const slot = pokemonSlots[idx];
+  if (!slot || !slot.id) return;
+  const seq = ++spriteResolveSeq[idx];
+  const found = await findSprite(slot);
+  // 그 사이 토글·재선택이 있었으면 버린다
+  if (seq !== spriteResolveSeq[idx] || pokemonSlots[idx] !== slot) return;
+  if (slot.sprite !== found) {
+    slot.sprite = found;
+    renderAllPokemonSlots();
+  }
+}
+
+function resolveAllSprites() {
+  pokemonSlots.forEach((slot, i) => resolveSprite(i));
+}
+
+// ── 이로치 · 암컷 토글 ──
+function setSlotFlag(idx, key, val) {
+  const slot = pokemonSlots[idx];
+  if (!slot || !slot.id) return;
+  slot[key] = val;
+  renderAllPokemonSlots();
+  resolveSprite(idx);
+  markDirty();
 }
 
 function setSpriteMode(mode) {
@@ -4836,9 +5383,7 @@ function setSpriteMode(mode) {
   }
 
   // 이미 등록된 슬롯 스프라이트 URL 전체 갱신
-  pokemonSlots.forEach(slot => {
-    if (slot.id) slot.sprite = getSpriteUrl(slot.id);
-  });
+  resolveAllSprites();
 
   // 도트 모드: image-rendering pixelated, 일러스트: auto
   const spriteCSS = document.getElementById('tc-sprite-rendering');
@@ -4960,7 +5505,8 @@ function renderPanelSlots() {
     clearBtn.textContent = '✕ 삭제';
     clearBtn.style.cssText = 'position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;font-size:9px;color:var(--label-color);cursor:pointer;font-family:"Noto Sans KR",sans-serif;display:' + (slot.name ? 'block' : 'none');
     clearBtn.onclick = () => {
-      pokemonSlots[i] = { id: null, name: '', types: [], sprite: '', ace: false };
+      spriteResolveSeq[i]++; // 불러오는 중인 선택이 있으면 취소
+      pokemonSlots[i] = emptySlot();
       renderAllPokemonSlots();
       markDirty();
     };
@@ -4984,6 +5530,23 @@ function renderPanelSlots() {
     aceBox.onclick = toggleAce;
     aceLabel.onclick = toggleAce;
 
+    // 이로치 · ♀ 체크박스 (ACE와 같은 마크업) — ♀는 암컷 이미지가 있는 포켓몬만
+    const makeFlagToggle = (text, key) => {
+      const lb = document.createElement('label');
+      lb.textContent = text;
+      lb.style.cssText = aceLabel.style.cssText + 'margin-left:6px;';
+      const box = document.createElement('span');
+      box.style.cssText = aceBox.style.cssText;
+      if (slot[key]) box.textContent = '✓';
+      const toggle = () => setSlotFlag(i, key, !slot[key]);
+      box.onclick = toggle;
+      lb.onclick = toggle;
+      aceRow.appendChild(lb);
+      aceRow.appendChild(box);
+    };
+    makeFlagToggle('이로치', 'shiny');
+    if (slot.hasFemale) makeFlagToggle('♀', 'female');
+
     const dropdown = document.createElement('div');
     dropdown.className = 'poke-dropdown';
 
@@ -4994,18 +5557,22 @@ function renderPanelSlots() {
       const results = searchPokemon(q);
       if (!results.length) { dropdown.classList.remove('open'); return; }
       dropdown.innerHTML = '';
-      results.slice(0, 8).forEach(({id, name, slug}) => {
+      results.forEach(r => {
+        const {id, name} = r;
         const item = document.createElement('div');
         item.className = 'poke-dropdown-item';
-        const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+        const spriteUrl = `${SPRITE_BASE}other/official-artwork/${r.file || id}.png`;
         const regionMatch = name.match(/〔(.+?)〕/);
         const regionBadge = regionMatch
           ? `<span style="margin-left:auto;font-size:7px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.05em;color:#7C6FCF;white-space:nowrap;">${regionMatch[1]}</span>`
           : '';
-        item.innerHTML = `<img src="${spriteUrl}" alt=""><span class="poke-dropdown-num">#${String(id).padStart(3,'0')}</span><span>${name}</span>${regionBadge}`;
+        item.innerHTML = `<img src="${spriteUrl}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span class="poke-dropdown-num">#${String(id).padStart(3,'0')}</span><span>${name}</span>${regionBadge}`;
+        // 마우스를 올리면 슬롯 이미지를 미리 받아 둔다 (도트 모드 등 썸네일과 주소가 다를 때 효과)
+        item.addEventListener('mouseenter', () => findSprite(slotFromResult(r)), { once: true });
         item.addEventListener('mousedown', e => {
           e.preventDefault();
-          selectPokemon(i, id, name, slug);
+          input.value = name; // 이미지·타입을 받는 동안 고른 이름을 보여 준다
+          selectPokemon(i, r);
           dropdown.classList.remove('open');
           input.blur();
         });
@@ -5035,13 +5602,19 @@ function searchPokemon(query) {
   if (!pokeMapReady) return [];
   const q = query.toLowerCase();
   const results = [];
-  // 한글 이름 부분 일치 (일반 포켓몬)
-  for (const [name, id] of Object.entries(POKE_NAME_TO_ID)) {
+  // 한글 이름 부분 일치 (일반 포켓몬 — 기본폼 표기가 있으면 〔 〕로 붙임)
+  for (const [baseName, id] of Object.entries(POKE_NAME_TO_ID)) {
+    const label = POKE_DEFAULT_FORM_LABEL[id];
+    const name = label ? `${baseName} 〔${label}〕` : baseName;
     if (name.includes(q)) results.push({ id, name, slug: null });
   }
   // 리전폼 부분 일치
   for (const [name, form] of Object.entries(POKE_REGION_FORMS)) {
     if (name.includes(q)) results.push({ id: form.id, name, slug: form.slug });
+  }
+  // 추가 폼 부분 일치 (안농 〔B〕 등 영문 표기는 대소문자 무시)
+  for (const [name, form] of Object.entries(POKE_EXTRA_FORMS)) {
+    if (name.toLowerCase().includes(q)) results.push({ id: form.id, name, slug: null, file: form.file, form: form.form, kind: form.kind });
   }
   // 번호 검색 (#006 또는 6)
   const numQ = q.replace(/^#/, '');
@@ -5051,34 +5624,71 @@ function searchPokemon(query) {
       results.unshift({ id: numId, name: `#${String(numId).padStart(3,'0')}`, slug: null });
     }
   }
-  // 중복 제거 + id순 정렬
+  // 중복 제거 + id순 정렬 — 이름형 폼은 도감번호가 기본형과 같으므로 파일 키로 구분
+  // 상한 80 = 마휘핑 63종이 한 번에 나오도록 (드롭다운은 max-height 스크롤)
   const seen = new Set();
   return results.filter(r => {
-    if (seen.has(r.id)) return false;
-    seen.add(r.id); return true;
-  }).sort((a,b) => a.id - b.id).slice(0, 8);
+    const key = r.file || r.id;
+    if (seen.has(key)) return false;
+    seen.add(key); return true;
+  }).sort((a,b) => a.id - b.id).slice(0, 80);
 }
 
 // ── 포켓몬 선택 → PokeAPI로 타입·스프라이트 fetch ──
-async function selectPokemon(slotIdx, pokeId, koName, slug = null) {
-  // 슬러그가 있으면(리전폼) 슬러그로, 없으면 id로 API 호출
-  const apiKey = slug || pokeId;
-  const sprite = getSpriteUrl(pokeId);
-  pokemonSlots[slotIdx] = { id: pokeId, name: koName, types: [], sprite, slug };
-  renderAllPokemonSlots();
+// 이미지·타입을 모두 받은 뒤 한 번에 슬롯에 넣는다 — 타입 칩이 뒤늦게 붙어 정렬이 흔들리지 않게
+function slotFromResult(r) {
+  return Object.assign(emptySlot(), {
+    id: r.id, name: r.name, slug: r.slug || null,
+    file: r.file || '', form: r.form || '', kind: r.kind || '',
+  });
+}
 
-  // 타입은 API fetch
+async function selectPokemon(slotIdx, r) {
+  const slot = slotFromResult(r);
+  const seq = ++spriteResolveSeq[slotIdx];
+  const [sprite] = await Promise.all([findSprite(slot), fetchPokeMeta(slot)]);
+  // 기다리는 사이 같은 칸에 다른 선택·삭제가 있었으면 버린다
+  if (seq !== spriteResolveSeq[slotIdx]) return;
+  slot.sprite = sprite;
+  pokemonSlots[slotIdx] = slot;
+  renderAllPokemonSlots();
+  markDirty();
+}
+
+// ── 로컬 타입 표 조회 — 아르세우스·실버디 이름형 폼은 폼 이름이 곧 타입, 나머지 이름형 폼은 기본형과 같다 ──
+function localPokeTypes(slot) {
+  if (slot.kind === 'named' && /^(arceus|silvally)-/.test(slot.form)) {
+    const t = slot.form.replace(/^(arceus|silvally)-/, '');
+    return [POKE_TYPE_KO[t] || '???'];
+  }
+  const ts = POKE_ID_TO_TYPES && POKE_ID_TO_TYPES[slot.id];
+  return ts ? ts.map(t => POKE_TYPE_KO[t] || t) : null;
+}
+
+// ── 타입 · 암컷 이미지 여부 조회 (slot 객체에 기록만 하고 렌더는 호출한 쪽이 한다) ──
+// 로컬 표 우선. 없을 때만 API — 이름형 폼(kind 'named')은 pokemon-form, 그 외는 pokemon
+// (추가 폼 식별자 → 리전폼 슬러그 → 번호 순)
+async function fetchPokeMeta(slot) {
+  if (!slot || !slot.id) return;
+  // 이름형 폼은 암컷 이미지가 없다
+  slot.hasFemale = slot.kind !== 'named' && POKE_FEMALE_IDS.has(slot.id);
+  const local = localPokeTypes(slot);
+  if (local) { slot.types = local; return; }
+  const url = slot.kind === 'named'
+    ? `https://pokeapi.co/api/v2/pokemon-form/${slot.form}`
+    : `https://pokeapi.co/api/v2/pokemon/${slot.form || slot.slug || slot.id}`;
   try {
-    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiKey}`);
+    const res = await fetch(url);
     const data = await res.json();
-    const types = data.types.map(t => POKE_TYPE_KO[t.type.name] || t.type.name);
-    pokemonSlots[slotIdx].types = types;
-    renderAllPokemonSlots();
+    let types = data.types || [];
+    if (!types.length && slot.kind === 'named') {
+      const res2 = await fetch(`https://pokeapi.co/api/v2/pokemon/${slot.id}`);
+      types = (await res2.json()).types || [];
+    }
+    slot.types = types.map(t => POKE_TYPE_KO[t.type.name] || t.type.name);
   } catch(e) {
     console.warn('PokeAPI fetch 실패:', e);
   }
-
-  markDirty();
 }
 
 // ══════════════════════════════════════════
